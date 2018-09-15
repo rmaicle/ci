@@ -1221,26 +1221,27 @@ while [ "$1" == "--rectangle" ]; do
     [[ "$1" == "-r" ]] && { rect_corner="$2"; shift 2; }
     [[ "$1" == "-o" ]] && { destination_file="$2"; shift 2; }
 
-
-    if [[ ! "$rect_gradient_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
-        echo_err "Unknown gravity ($image_gradient_gravity)."
-        exit 1
-    fi
-    if [[ "$rect_gradient_gravity" == "custom" ]]; then
-        if [[ -z ${rect_gradient_rotation+x} ]]; then
-            echo_err "Missing argument (rotation)."
+    if [[ -n ${rect_gradient_color_string+x} ]]; then
+        if [[ ! "$rect_gradient_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
+            echo_err "Unknown gravity ($image_gradient_gravity)."
             exit 1
         fi
-        if [[ -z ${rect_gradient_color_string+x} ]]; then
-            echo_err "Missing argument (color string)."
-            exit 1
-        fi
-    else
-        rect_gradient_rotation=0
-        rect_gradient_color_string=""
-        if [[ -z ${rect_color_2} ]]; then
-            echo_err "Rectangle second gradient color not specified."
-            exit 1
+        if [[ "$rect_gradient_gravity" == "custom" ]]; then
+            if [[ -z ${rect_gradient_rotation+x} ]]; then
+                echo_err "Missing argument (rotation)."
+                exit 1
+            fi
+            if [[ -z ${rect_gradient_color_string+x} ]]; then
+                echo_err "Missing argument (color string)."
+                exit 1
+            fi
+        else
+            rect_gradient_rotation=0
+            rect_gradient_color_string=""
+            if [[ -z ${rect_color_2} ]]; then
+                echo_err "Rectangle second gradient color not specified."
+                exit 1
+            fi
         fi
     fi
 
