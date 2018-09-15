@@ -831,7 +831,7 @@ while [ "$1" == "--image" ]; do
 
     cp -f "$image_file" int_image.png
 
-    while [[ "$1" == @("-blue"|"-color"|"-corner"|"-cut"|"-flip"|"-gradient"|"-size"|"-tint"|"-vignette") ]]; do
+    while [[ "$1" == @("-blur"|"-color"|"-corner"|"-cut"|"-flip"|"-gradient"|"-size"|"-tint"|"-vignette") ]]; do
         if [ "$1" == "-blur" ]; then
             shift 1
             if [ "$1" == "-simple" ]; then
