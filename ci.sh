@@ -91,8 +91,8 @@ function show_usage {
     echo "         <-cs <color string>>>]             color string (ex. \"red yellow 33 blue 66 red\")"
     echo "  --image                             Define image properties"
     echo "    <filename>                          image file"
-    echo "    [-o <position>]                     offset position relative to gravity"
     echo "    [-g <gravity>]                      where the image position gravitates to"
+    echo "    [-o <position>]                     offset position relative to gravity"
     echo "    [-blur                              blur image"
     echo "      <-simple> |                         simple blurring"
     echo "      [-r <radius>]                       radius, default is 0"
@@ -815,14 +815,16 @@ while [ $# -gt 0 ] && [[ "--image --rectangle --bottombar --hbar --logo --text -
 
 while [ "$1" == "--image" ]; do
     shift 1
-
-    [[ ! -f "$1" ]] && { echo_err "Cannot find image file: '$1'"; exit 1; }
-    image_file="" && \
-        [[ -f "$1" ]] && { image_file="$1"; shift; }
-    image_offset="+0+0" && \
-        [[ "$1" == "-o" ]] && { image_offset="$2"; shift 2; }
+    if [[ ! -f "$1" ]]; then
+        echo_err "Cannot find image file '$1'"
+        exit 1
+    fi
+    image_file="$1"
+    shift 1
     image_gravity="northwest" && \
         [[ "$1" == "-g" ]] && { image_gravity="$2"; shift 2; }
+    image_offset="+0+0" && \
+        [[ "$1" == "-o" ]] && { image_offset="$2"; shift 2; }
 
     echo_debug "Image:"
     echo_debug "  File: $image_file"
