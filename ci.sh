@@ -507,7 +507,6 @@ function create_gradient {
     local arg_output=""
 
     local dimension=""
-    #local rotation=0
 
     [[ "$1" == "-d" ]]  && { dimension="$2"; shift 2; }
     [[ "$1" == "-dw" ]] && { arg_width=$2; shift 2; }
@@ -519,7 +518,6 @@ function create_gradient {
     [[ "$1" == "-cs" ]] && { arg_color_string="$2"; shift 2; }
     [[ "$1" == "-c1" ]] && { arg_color_1="$2"; shift 2; }
     [[ "$1" == "-c2" ]] && { arg_color_2="$2"; shift 2; }
-    #[[ "$1" == "-c3" ]] && { arg_color3="$2"; shift 2; }
     [[ "$1" == "-o" ]]  && { arg_output="$2"; shift 2; }
 
     if [[ ! "$arg_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
@@ -543,7 +541,6 @@ function create_gradient {
     echo_debug "  Color string: ${arg_color_string}"
     echo_debug "  Color: $arg_color_1"
     echo_debug "  Color: $arg_color_2"
-    #echo_debug "  Color: $arg_color_3"
     echo_debug "  Output file: $arg_output"
 
     if [[ "$arg_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest") ]]; then
@@ -742,7 +739,6 @@ if [ "$1" == "--canvas" ]; then
     shift 1
     [[ "$1" == "-c" ]] && { canvas_color="$2"; shift 2; }
     [[ "$1" == "-c2" ]] && { canvas_color_2="$2"; shift 2; }
-#    [[ "$1" == "-c3" ]] && { canvas_color_3="$2"; shift 2; }
     [[ "$1" == "-g" ]] && { canvas_gravity="$2"; shift 2; }
     [[ "$1" == "-r" ]] && { canvas_gradient_rotation="$2"; shift 2; }
     [[ "$1" == "-cs" ]] && { canvas_gradient_color_string="$2"; shift 2; }
@@ -814,7 +810,6 @@ if [ $debug -eq 1 ]; then
     cp -f $OUTPUT_FILE int_canvas.png
 fi
 
-#while [ $# -gt 0 ] && [[ "--image --rectangle --bottombar --hbar --logo --text --author" == *"$1"* ]]; do
 while [ $# -gt 0 ] && \
       [[ "$1" == @("--image"|"--rectangle"|"--bottombar"|"--hbar"|"--logo"|"--text"|"--author") ]]; do
 
@@ -1238,7 +1233,6 @@ while [ "$1" == "--rectangle" ]; do
     [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
     [[ "$1" == "-c" ]] && { rect_color="$2"; shift 2; }
     [[ "$1" == "-c2" ]] && { rect_color_2="$2"; shift 2; }
-    #[[ "$1" == "-c3" ]] && { rect_color_3="$2"; shift 2; }
     [[ "$1" == "-d" ]] && { rect_dissolve="$2"; shift 2; }
     [[ "$1" == "-gg" ]] && { rect_gradient_gravity="$2"; shift 2; }
     unset rect_gradient_rotation
@@ -1552,8 +1546,6 @@ while [ "$1" == "--text" ]; do
         if [ "$1" == "-w" ]; then
             text_width="$2"
             shift 2
-        #else
-        #    text_width="$text_width_all"
         fi
         [[ "$1" == "-r" ]] && { text_corner="$2"; shift 2; }
         [[ "$1" == "-rg" ]] && { text_corner_gravity="$2"; shift 2; }
