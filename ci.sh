@@ -1467,7 +1467,9 @@ text_shadow_offset=3
 pos_x=0
 pos_y=0
 
-text_count=0
+if [ $debug -gt 0 ]; then
+    text_count=0
+fi
 
 while [ "$1" == "--text" ]; do
     shift 1
@@ -1580,7 +1582,7 @@ while [ "$1" == "--text" ]; do
 
     if [[ -n "$text_string" ]]; then
 
-        text_count=$((text_count + 1))
+
 
         if [[ $text_stroke_width -gt 0 && $text_shadow_percent -eq 0 ]]; then
             convert                                                 \
@@ -1656,6 +1658,7 @@ while [ "$1" == "--text" ]; do
         fi
 
         if [ $debug -gt 0 ]; then
+            text_count=$((text_count + 1))
             cp -f int_text.png "int_text_${text_count}.png"
         fi
 
