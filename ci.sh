@@ -723,20 +723,21 @@ unset canvas_gradient_rotation
 unset canvas_gradient_color_string
 if [ "$1" == "--canvas" ]; then
     shift 1
-    if [[ "-default -big -bigger -large -huge -square -square-big -square-large" == *"$1"* ]]; then
-        case "$1" in
-            -default)       canvas="$CANVAS_DEFAULT" ;;
-            -big)           canvas="$CANVAS_BIG" ;;
-            -bigger)        canvas="$CANVAS_BIGGER" ;;
-            -large)         canvas="$CANVAS_LARGE" ;;
-            -huge)          canvas="$CANVAS_HUGE" ;;
-            -square)        canvas="$CANVAS_SQUARE" ;;
-            -square-big)    canvas="$CANVAS_SQUARE_BIG" ;;
-            -square-large)  canvas="$CANVAS_SQUARE_LARGE" ;;
-            *)              canvas="$CANVAS_DEFAULT" ;;
-        esac
-        shift 1
+    if [[ ! "$1" == @("-default"|"-big"|"-bigger"|"-huge"|"-square"|"-square-big"|"-square-large") ]]; then
+        echo_err "Unknown canvas size constant."
+        exit 1
     fi
+    case "$1" in
+        -default)       canvas="$CANVAS_DEFAULT" ;;
+        -big)           canvas="$CANVAS_BIG" ;;
+        -bigger)        canvas="$CANVAS_BIGGER" ;;
+        -large)         canvas="$CANVAS_LARGE" ;;
+        -huge)          canvas="$CANVAS_HUGE" ;;
+        -square)        canvas="$CANVAS_SQUARE" ;;
+        -square-big)    canvas="$CANVAS_SQUARE_BIG" ;;
+        -square-large)  canvas="$CANVAS_SQUARE_LARGE" ;;
+    esac
+    shift 1
     [[ "$1" == "-c" ]] && { canvas_color="$2"; shift 2; }
     [[ "$1" == "-c2" ]] && { canvas_color_2="$2"; shift 2; }
 #    [[ "$1" == "-c3" ]] && { canvas_color_3="$2"; shift 2; }
