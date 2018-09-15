@@ -720,7 +720,7 @@ canvas_color_2=""
 canvas_color_3=""
 unset canvas_gravity
 unset canvas_gradient_rotation
-unset canvas_gradient_color_string
+canvas_gradient_color_string=""
 if [ "$1" == "--canvas" ]; then
     shift 1
     if [[ ! "$1" == @("-default"|"-big"|"-bigger"|"-huge"|"-square"|"-square-big"|"-square-large") ]]; then
