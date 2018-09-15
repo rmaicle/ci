@@ -812,7 +812,9 @@ if [ $debug -eq 1 ]; then
     cp -f $OUTPUT_FILE int_canvas.png
 fi
 
-while [ $# -gt 0 ] && [[ "--image --rectangle --bottombar --hbar --logo --text --author" == *"$1"* ]]; do
+#while [ $# -gt 0 ] && [[ "--image --rectangle --bottombar --hbar --logo --text --author" == *"$1"* ]]; do
+while [ $# -gt 0 ] && \
+      [[ "$1" == @("--image"|"--rectangle"|"--bottombar"|"--hbar"|"--logo"|"--text"|"--author") ]]; do
 
 while [ "$1" == "--image" ]; do
     shift 1
