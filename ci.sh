@@ -798,7 +798,7 @@ if [ -n "$canvas_gravity" ]; then
         -r  $canvas_gradient_rotation       \
         -cs "$canvas_gradient_color_string" \
         -c1 $canvas_color                   \
-        -c2 "$canvas_color_2"               \
+        -c2 $canvas_color_2                 \
         -o $OUTPUT_FILE
 else
     convert                         \
@@ -1191,7 +1191,7 @@ while [ "$1" == "--rectangle" ]; do
     rect_color="black"
     rect_color_2=""
     rect_color_3=""
-    rect_dissolve="50"
+    rect_dissolve=100
     rect_gradient_gravity=""
     rect_gradient_rotation=0
     rect_gradient_color_string=""
@@ -1206,7 +1206,7 @@ while [ "$1" == "--rectangle" ]; do
     [[ "$1" == "-c2" ]] && { rect_color_2="$2"; shift 2; }
     #[[ "$1" == "-c3" ]] && { rect_color_3="$2"; shift 2; }
     [[ "$1" == "-d" ]] && { rect_dissolve="$2"; shift 2; }
-    [[ "$1" == "-gg" ]] && { rect_gradient_gravity=$2; shift 2; }
+    [[ "$1" == "-gg" ]] && { rect_gradient_gravity="$2"; shift 2; }
     unset rect_gradient_rotation
     [[ "$1" == "-gr" ]] && { rect_gradient_rotation=$2; shift 2; }
     unset rect_gradient_color_string
