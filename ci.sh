@@ -1182,8 +1182,6 @@ done # --image
 
 while [ "$1" == "--rectangle" ]; do
     shift 1
-#    rect_dimension="${canvas_width}x${canvas_height}" && \
-#        [[ "$1" == "-s" ]] && { rect_dimension="$2"; shift 2; }
     rect_width="${canvas_width}"
     rect_height="${canvas_height}"
     rect_position="+0+0"
@@ -1432,9 +1430,6 @@ if [ "$1" == "--logo" ]; then
     fi
 fi # --logo
 
-# Be sure there is no int_text.png file present
-#rm -f int_text.png
-
 guide_show=0
 guide_color=black
 
@@ -1452,7 +1447,6 @@ text_interline_spacing=0
 text_width="$text_width_all"
 text_corner=0
 text_corner_gravity="all"
-#text_position_x="$text_position_x_all"
 compute_next=0
 text_stroke_width=0
 text_stroke_color="black"
@@ -1478,7 +1472,6 @@ while [ "$1" == "--text" ]; do
     fi
     if [ "$1" == "-Py" ]; then
         text_position_y_all="$2"
-        #next_y_pos="$text_position_y_all"
         pos_y="$2"
         shift 2
     fi
@@ -1533,7 +1526,6 @@ while [ "$1" == "--text" ]; do
         text_position_gravity="northwest" && \
             [[ "$1" == "-pg" ]] && { text_position_gravity="$2"; shift 2; }
         if [ "$1" == "-ox" ]; then
-            #text_position_x=$((text_position_x_all + $2))
             pos_x=$((text_position_x_all + $2))
             shift 2
         fi
@@ -1680,10 +1672,6 @@ while [ "$1" == "--text" ]; do
                 $OUTPUT_FILE
         fi
 
-        #if [ $debug -gt 0 ]; then
-        #    cp -f $OUTPUT_FILE "out_${text_count}.png"
-        #fi
-
         # Compute next y position
         if [[ $compute_next -eq 1 ]]; then
             temp_height=`convert int_text.png -ping -format "%h" info:`
@@ -1691,10 +1679,6 @@ while [ "$1" == "--text" ]; do
         fi
     fi # if -n $text_string
 done # --text
-
-#if [ $debug -eq 0 ]; then
-#    rm -f int_text.png
-#fi
 
 if [ "$1" == "--author" ]; then
     shift 1
