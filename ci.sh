@@ -152,8 +152,8 @@ function show_usage {
     echo "  --rectangle                         Define rectangular area"
     echo "    [-w <width>]                        width in pixels, defaults to canvas width"
     echo "    [-h <height>]                       height in pixels, defaults to canvas height"
-    echo "    [-p <position>]                     position, defaults to +0+0"
     echo "    [-g <gravity>]                      gravity"
+    echo "    [-p <position>]                     position, defaults to +0+0"
     echo "    [-c <color>]                        fill color or first gradient color"
     echo "    [-c2 <color>]                       second gradient color"
     echo "    [-c3 <color>]                       third gradient color"
@@ -1207,8 +1207,8 @@ while [ "$1" == "--rectangle" ]; do
 
     [[ "$1" == "-w" ]] && { rect_width="$2"; shift 2; }
     [[ "$1" == "-h" ]] && { rect_height="$2"; shift 2; }
-    [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
     [[ "$1" == "-g" ]] && { rect_gravity="$2"; shift 2; }
+    [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
     [[ "$1" == "-c" ]] && { rect_color="$2"; shift 2; }
     [[ "$1" == "-c2" ]] && { rect_color_2="$2"; shift 2; }
     #[[ "$1" == "-c3" ]] && { rect_color_3="$2"; shift 2; }
