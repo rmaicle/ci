@@ -217,7 +217,7 @@ function show_usage {
     echo "    [-i <inter-line spacing>]           inter-line spacing"
     echo "    [-w <width>]                        text width"
     echo "    [-r <radius>]                       rounded corner radius"
-    echo "    [-rg <gravity>]                     gravity, default is all"
+    #echo "    [-rg <gravity>]                     gravity, default is all"
     echo "    [-px <x position>]                  x position for this text entry only"
     echo "    [-py <y position>]                  y position for this text entry only"
     echo "    [-pg <gravity>]                     position for this text entry only"
