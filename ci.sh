@@ -775,7 +775,6 @@ get_canvas_height "$canvas"
 
 canvas_width="$width_temp"
 canvas_height="$height_temp"
-canvas_dimension="$width_temp"x"$height_temp"
 
 echo_debug "Canvas"
 echo_debug "  Size: $canvas"
@@ -786,7 +785,7 @@ echo_debug "  Gradient rotation: $canvas_gradient_rotation"
 echo_debug "  Gradient color string: $canvas_gradient_color_string"
 echo_debug "  Width: $canvas_width"
 echo_debug "  Height: $canvas_height"
-echo_debug "  Dimension: $canvas_dimension"
+echo_debug "  Dimension: ${canvas_width}x${canvas_height}"
 
 if [ -n "$canvas_gravity" ]; then
     create_gradient                         \
@@ -799,9 +798,9 @@ if [ -n "$canvas_gravity" ]; then
         -c2 $canvas_color_2                 \
         -o $OUTPUT_FILE
 else
-    convert                         \
-        -size "$canvas_dimension"   \
-        xc:"$canvas_color"          \
+    convert                                     \
+        -size ${canvas_width}x${canvas_height}  \
+        xc:"$canvas_color"                      \
         $OUTPUT_FILE
 fi
 
@@ -1059,8 +1058,8 @@ while [ "$1" == "--image" ]; do
                 -o int_image.png
         elif [ "$1" == "-size" ]; then
             shift 1
-            image_dimension="$canvas_dimension" && \
-                [[ "$1" == "-s" ]] && { image_dimension="$2"; shift 2; }
+            image_dimension="${canvas_width}x${canvas_height}"
+            [[ "$1" == "-s" ]] && { image_dimension="$2"; shift 2; }
             # Size/dimension adjustment is appended
             [[ "$1" == "-a" ]] \
                 && { image_dimension="$image_dimension$2"; shift 2; } \
