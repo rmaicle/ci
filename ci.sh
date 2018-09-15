@@ -220,6 +220,7 @@ function show_usage {
     echo "    [-rg <gravity>]                     gravity, default is all"
     echo "    [-px <x position>]                  x position for this text entry only"
     echo "    [-py <y position>]                  y position for this text entry only"
+    echo "    [-pg <gravity>]                     position for this text entry only"
     echo "    [-ox <x position>]                  offset x position for this text entry only"
     echo "    [-oy <y position>]                  offset y position for this text entry only"
     echo "    [-sw <width>]                       stroke width in pixels"
