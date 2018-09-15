@@ -619,6 +619,46 @@ function apply_mask {
 
 
 
+# Blur image
+#
+# Arguments:
+#   input file
+#   output file
+function simple_blur {
+    local arg_input_file="$1"
+    local arg_output_file="$2"
+    convert                         \
+        $arg_input_file             \
+        -filter Gaussian            \
+        -resize 50%                 \
+        -define filter:sigma=2.5    \
+        -resize 200%                \
+        $arg_output_file
+}
+
+
+
+# Blur image
+#
+# Arguments:
+#   input file
+#   output file
+function blur {
+    local arg_input_file="$1"
+    local arg_output_file="$2"
+    local arg_radius=$3
+    local arg_sigma=$4
+    convert                                 \
+        $arg_input_file                     \
+        -channel A                          \
+        -blur ${arg_radius}x${arg_sigma}    \
+        -channel RGB                        \
+        -blur ${arg_radius}x${arg_sigma}    \
+        $arg_output_file
+}
+
+
+
 # Make a rounded corner image
 #
 # Arguments:
@@ -797,12 +837,8 @@ while [ "$1" == "--image" ]; do
             if [ "$1" == "-simple" ]; then
                 shift 1
                 echo_debug "  Blur: simple"
-                convert                         \
-                    int_image.png               \
-                    -filter Gaussian            \
-                    -resize 50%                 \
-                    -define filter:sigma=2.5    \
-                    -resize 200%                \
+                simple_blur         \
+                    int_image.png   \
                     int_image.png
             else
                 blur_radius=0 && \
@@ -814,13 +850,11 @@ while [ "$1" == "--image" ]; do
                 echo_debug "    Radius: $blur_radius"
                 echo_debug "    Sigma: $blur_sigma"
 
-                convert                                 \
-                    int_image.png                       \
-                    -channel A                          \
-                    -blur ${blur_radius}x${blur_sigma}  \
-                    -channel RGB                        \
-                    -blur ${blur_radius}x${blur_sigma}  \
-                    int_image.png
+                blur                \
+                    int_image.png   \
+                    int_image.png   \
+                    $blur_radius    \
+                    $blur_sigma
             fi
         elif [ "$1" == "-color" ]; then
             shift 1
