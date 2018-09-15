@@ -403,7 +403,7 @@ function get_font_family {
         default-condensed)          font_temp="Roboto-Condensed" ;;
         default-condensed-light)    font_temp="Roboto-Condensed-Light" ;;
         default-condensed-bold)     font_temp="Roboto-Condensed-Bold" ;;
-        sans)                       font_temp="Open-Sans" ;;
+        sans)                       font_temp="Open-Sans-Regular" ;;
         sans-light)                 font_temp="Open-Sans-Light" ;;
         sans-semibold)              font_temp="Open-Sans-SemiBold" ;;
         sans-bold)                  font_temp="Open-Sans-Bold" ;;
