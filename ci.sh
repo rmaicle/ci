@@ -1199,7 +1199,7 @@ while [ "$1" == "--rectangle" ]; do
     rect_color_2=""
     rect_color_3=""
     rect_dissolve=100
-    rect_gradient_gravity=""
+    unset rect_gradient_gravity
     rect_gradient_rotation=0
     rect_gradient_color_string=""
     rect_corner=0
