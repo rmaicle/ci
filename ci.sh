@@ -703,16 +703,14 @@ if [ "$1" == "--help" ]; then
     exit
 fi
 
+# Collect all arguments so it can be passed to Exif later
+args=("$@")                             # store arguments in a special array
+ELEMENTS=${#args[@]}                    # get number of elements
 commandline_arguments=""
-# store arguments in a special array
-args=("$@")
-# get number of elements
-ELEMENTS=${#args[@]}
-# echo each element in array
-# for loop
 for (( i=0;i<$ELEMENTS;i++)); do
     commandline_arguments="$commandline_arguments ${args[${i}]}"
 done
+
 if [ "$1" == "--debug" ]; then
     echo "Mode: Debug"
     debug=1
