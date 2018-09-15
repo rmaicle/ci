@@ -1447,14 +1447,14 @@ if [ "$1" == "--logo" ]; then
             -size 150x18                                    \
             -font "Oswald-Regular"                          \
             -pointsize 13                                   \
-            -gravity east                          \
+            -gravity east                                   \
             -fill "$logo_color"                             \
             caption:"$logo_label"                           \
             png:-                                           \
         | convert                                           \
             $OUTPUT_FILE                                    \
             -                                               \
-            -gravity $logo_gravity                                   \
+            -gravity $logo_gravity                          \
             -geometry +${label_offset_x}+${label_offset_y}  \
             -composite                                      \
             $OUTPUT_FILE
