@@ -671,7 +671,7 @@ function round_corner {
     local arg_output="$3"
     convert                         \
         $arg_image                  \
-        \( +clone  -alpha extract   \
+        \( +clone -alpha extract    \
             -draw "fill black polygon 0,0 0,$arg_corner $arg_corner,0 fill white circle $arg_corner,$arg_corner $arg_corner,0" \
             \( +clone -flip \) -compose Multiply -composite \
             \( +clone -flop \) -compose Multiply -composite \
