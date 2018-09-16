@@ -249,11 +249,17 @@ function show_usage {
     echo "  font-sans-semibold              Open-Sans-SemiBold"
     echo "  font-sans-bold                  Open-Sans-Bold"
     echo "  font-sans-extrabold             Open-Sans-ExtraBold"
-    echo "  font-sans-1                     Muli-Regular"
-    echo "  font-sans-1-light               Muli-Light"
-    echo "  font-sans-1-semibold            Muli-SemiBold"
-    echo "  font-sans-1-bold                Muli-Bold"
-    echo "  font-sans-1-black               Muli-Black"
+    echo "  font-sans-condensed-light       Open-Sans-Condensed-Light"
+    echo "  font-sans-condensed-bold        Open-Sans-Condensed-Bold"
+    echo "  font-sans-1                     Poppins-Regular"
+    echo "  font-sans-1-thin                Poppins-Thin"
+    echo "  font-sans-1-light               Poppins-Light"
+    echo "  font-sans-1-extralight          Poppins-ExtraLight"
+    echo "  font-sans-1-medium              Poppins-Medium"
+    echo "  font-sans-1-semibold            Poppins-SemiBold"
+    echo "  font-sans-1-bold                Poppins-Bold"
+    echo "  font-sans-1-extrabold           Poppins-ExtraBold"
+    echo "  font-sans-1-black               Poppins-Black"
     echo "  font-sans-2                     Share-Regular"
     echo "  font-sans-2-bold                Share-Bold"
     echo "  font-serif                      Merriweather-Regular"
@@ -286,7 +292,11 @@ function show_usage {
     echo "  font-comic-3                    Komika-Title---Axis"
     echo "  font-comic-4                    BadaBoom-BB"
     echo "  font-comic-5                    Bangers"
-    echo "  font-comic-6                    Helsinki"
+    echo "  font-comic-6                    Yikes!"
+    echo "  font-comic-7                    Mouse-Memoirs"
+    echo "  font-comic-8                    GROBOLD"
+    echo "  font-comic-9                    Helsinki"
+    echo "  font-display                    Coda-ExtraBold"
     echo "  font-display-1                  Playfair-Display"
     echo "  font-display-1-bold             Playfair-Display-Bold"
     echo "  font-display-1-black            Playfair-Display-Black"
@@ -297,10 +307,12 @@ function show_usage {
     echo "  font-dirty-2                    DCC-SharpDistressBlack"
     echo "  font-dirty-3                    Dark-Underground"
     echo "  font-dirty-4                    Iron-&-Brine"
+    echo "  font-dirty-5                    A-Love-of-Thunder"
     echo "  font-brush                      LemonTuesday"
     echo "  font-brush-1                    Edo-SZ"
     echo "  font-brush-2                    ProtestPaint-BB"
     echo "  font-brush-2-italic             ProtestPaint-BB-Italic"
+    echo "  font-brush-3                    SketchaLot"
     echo "  font-horror                     YouMurdererBB"
     echo "  font-horror-1                   FaceYourFears"
     echo "  font-horror-2                   Something-Strange"
@@ -420,11 +432,17 @@ function get_font_family {
         sans-semibold)              font_temp="Open-Sans-SemiBold" ;;
         sans-bold)                  font_temp="Open-Sans-Bold" ;;
         sans-extrabold)             font_temp="Open-Sans-ExtraBold" ;;
-        sans-1)                     font_temp="Muli-Regular" ;;
-        sans-1-light)               font_temp="Muli-Light" ;;
-        sans-1-semibold)            font_temp="Muli-SemiBold" ;;
-        sans-1-bold)                font_temp="Muli-Bold" ;;
-        sans-1-black)               font_temp="Muli-Black" ;;
+        sans-condensed-light)       font_temp="Open-Sans-Condensed-Light" ;;
+        sans-condensed-bold)        font_temp="Open-Sans-Condensed-Bold" ;;
+        sans-1)                     font_temp="Poppins-Regular" ;;
+        sans-1-thin)                font_temp="Poppins-Thin" ;;
+        sans-1-light)               font_temp="Poppins-Light" ;;
+        sans-1-extralight)          font_temp="Poppins-ExtraLight" ;;
+        sans-1-medium)              font_temp="Poppins-Medium" ;;
+        sans-1-semibold)            font_temp="Poppins-SemiBold" ;;
+        sans-1-bold)                font_temp="Poppins-Bold" ;;
+        sans-1-extrabold)           font_temp="Poppins-ExtraBold" ;;
+        sans-1-black)               font_temp="Poppins-Black" ;;
         sans-2)                     font_temp="Share-Regular" ;;
         sans-2-bold)                font_temp="Share-Bold" ;;
         serif)                      font_temp="Merriweather-Regular" ;;
@@ -457,7 +475,11 @@ function get_font_family {
         comic-3)                    font_temp="Komika-Title---Axis" ;;
         comic-4)                    font_temp="BadaBoom-BB" ;;
         comic-5)                    font_temp="Bangers" ;;
-        comic-6)                    font_temp="Helsinki" ;;
+        comic-6)                    font_temp="Yikes!" ;;
+        comic-7)                    font_temp="Mouse-Memoirs" ;;
+        comic-8)                    font_temp="GROBOLD" ;;
+        comic-9)                    font_temp="Helsinki" ;;
+        display)                    font_temp="Coda-ExtraBold" ;;
         display-1)                  font_temp="Playfair-Display" ;;
         display-1-bold)             font_temp="Playfair-Display-Bold" ;;
         display-1-black)            font_temp="Playfair-Display-Black" ;;
@@ -468,10 +490,12 @@ function get_font_family {
         dirty-2)                    font_temp="DCC-SharpDistressBlack" ;;
         dirty-3)                    font_temp="Dark-Underground" ;;
         dirty-4)                    font_temp="Iron-&-Brine" ;;
+        dirty-5)                    font_temp="A-Love-of-Thunder" ;;
         brush)                      font_temp="LemonTuesday" ;;
         brush-1)                    font_temp="Edo-SZ" ;;
         brush-2)                    font_temp="ProtestPaint-BB" ;;
         brush-2-italic)             font_temp="ProtestPaint-BB-Italic" ;;
+        brush-3)                    font_temp="SketchaLot" ;;
         horror)                     font_temp="YouMurdererBB" ;;
         horror-1)                   font_temp="FaceYourFears" ;;
         horror-2)                   font_temp="Something-Strange" ;;
