@@ -140,10 +140,10 @@ function show_usage {
     echo "        <pixels>]]                          number of pixels to cut"
     echo "    [-flip]                             flip image horizontally"
     echo "    [-gradient                          transparent gradient"
-    echo "      <gravity |                          constants"
-    echo "       northsouth |                       north and south"
-    echo "       eastwest |                         east and west"
-    echo "       custom                             custom rotation and color string"
+    echo "      <[gravity | northwest | eastwest]   constants"
+    echo "       -c1 <color>                        first gradient color"
+    echo "       -c2 <color>> |                     second gradient color"
+    echo "      <custom                             custom rotation and color string"
     echo "         <-r <rotation>>                    rotation (0-360), 0=south"
     echo "         <-cs <color string>>>]             color string (ex. \"red yellow 33 blue 66 red\")"
     echo "    [-size                              resize image to dimension"
@@ -1097,6 +1097,10 @@ while [ "$1" == "--image" ]; do
         elif [ "$1" == "-gradient" ]; then
             image_gradient_gravity="$2"
             shift 2
+            image_gradient_color_1="black"
+            image_gradient_color_2="white"
+            [[ "$1" == "-c1" ]] && { image_gradient_color_1="$2"; shift 2; }
+            [[ "$1" == "-c2" ]] && { image_gradient_color_2="$2"; shift 2; }
 
             unset image_gradient_rotation
             unset image_gradient_color_string
@@ -1127,6 +1131,8 @@ while [ "$1" == "--image" ]; do
             echo_debug "    Width: $image_width"
             echo_debug "    Height: $image_height"
             echo_debug "    Gravity: $image_gradient_gravity"
+            echo_debug "    Color: $image_gradient_color_1"
+            echo_debug "    Color: $image_gradient_color_2"
             echo_debug "    Rotation: $image_gradient_rotation"
             echo_debug "    Color string: $image_gradient_color_string"
 
@@ -1136,8 +1142,8 @@ while [ "$1" == "--image" ]; do
                 -g  $image_gradient_gravity         \
                 -r  $image_gradient_rotation        \
                 -cs "$image_gradient_color_string"  \
-                -c1 black                           \
-                -c2 white                           \
+                -c1 $image_gradient_color_1         \
+                -c2 $image_gradient_color_2         \
                 -o  int_gradient.png
             apply_mask                      \
                 -i int_image.png            \
