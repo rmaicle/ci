@@ -117,9 +117,8 @@ function show_usage {
     echo "      <-s <sigma>>]                       sigma, default is 4"
     echo "    [-border                            draw border"
     echo "        <color>                           color"
-    echo "        [-w <pixels>]                     width in pixels, default is 3,"
-    echo "                                            ignored if radius is specified"
-    echo "        [-r <pixels>]]                    radius in pixels for rounded corner"
+    echo "        <[-w <pixels>] |                   width in pixels, default is 3,"
+    echo "        [-r <pixels>]>]                    radius in pixels for rounded corner"
     echo "    [-color                             change color"
     echo "      -f <color>                          source color"
     echo "      [-t <color> | -x]                   destination color or transparent"
@@ -922,7 +921,7 @@ while [ "$1" == "--image" ]; do
 
     cp -f "$image_file" int_image.png
 
-    while [[ "$1" == @("-blur"|"-color"|"-corner"|"-cut"|"-flip"|"-gradient"|"-size"|"-tint"|"-vignette") ]]; do
+    while [[ "$1" == @("-blur"|"-border"|"-color"|"-corner"|"-cut"|"-flip"|"-gradient"|"-rotate"|"-size"|"-tint"|"-vignette") ]]; do
         if [ "$1" == "-blur" ]; then
             shift 1
             if [ "$1" == "-simple" ]; then
@@ -946,6 +945,46 @@ while [ "$1" == "--image" ]; do
                     int_image.png   \
                     $blur_radius    \
                     $blur_sigma
+            fi
+        elif [ "$1" == "-border" ]; then
+            image_border_color="$2"
+            shift 2
+            image_border_width=3
+            [[ "$1" == "-w" ]] && { image_border_width=$2; shift 2; }
+            image_border_radius=0
+            [[ "$1" == "-r" ]] && { image_border_radius=$2; shift 2; }
+
+            echo_debug "  Border:"
+            echo_debug "    Color: $image_border_color"
+            echo_debug "    Width: $image_border_width"
+            echo_debug "    Radius: $image_border_radius"
+
+            if [ $image_border_radius -eq 0 ]; then
+                convert                                     \
+                    int_image.png                           \
+                    -shave 1x1                              \
+                    -bordercolor "$image_border_color"      \
+                    -border $image_border_width             \
+                    int_image.png
+            else
+
+                image_border_width=`convert int_image.png -ping -format '%w' info:`
+                image_border_height=`convert int_image.png -ping -format '%h' info:`
+
+                image_border_width=$((image_border_width + image_border_radius))
+                image_border_height=$((image_border_height + image_border_radius))
+
+                convert                                                 \
+                    -size ${image_border_width}x${image_border_height}  \
+                    xc:none -fill $image_border_color                   \
+                    -draw "roundrectangle 0,0 ${image_border_width},${image_border_height} $image_border_radius,$image_border_radius" \
+                    int_rr.png
+                convert                 \
+                    int_rr.png          \
+                    int_image.png       \
+                    -gravity center     \
+                    -composite          \
+                    int_image.png
             fi
         elif [ "$1" == "-color" ]; then
             shift 1
