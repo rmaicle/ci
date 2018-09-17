@@ -1192,7 +1192,10 @@ while [ "$1" == "--image" ]; do
                 exit 1
             fi
             echo_debug "  Rotate: $rotate_angle"
-            mogrify -rotate $rotate_angle int_image.png
+            mogrify                         \
+                -background 'rgba(0,0,0,0)' \
+                -rotate $rotate_angle       \
+                int_image.png
         elif [ "$1" == "-size" ]; then
             shift 1
             image_dimension="${canvas_width}x${canvas_height}"
