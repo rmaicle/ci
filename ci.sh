@@ -315,11 +315,9 @@ function show_usage {
     echo "  font-comic-8                    GROBOLD"
     echo "  font-comic-9                    Helsinki"
     echo "  font-display                    Coda-ExtraBold"
-    echo "  font-display-1                  Playfair-Display"
-    echo "  font-display-1-bold             Playfair-Display-Bold"
-    echo "  font-display-1-black            Playfair-Display-Black"
-    echo "  font-display-2                  BebasNeueRegular"
-    echo "  font-display-2-bold             BebasNeueBold"
+    echo "  font-display-1                  Muli-Black"
+    echo "  font-display-2                  Chonburi"
+    echo "  font-display-3                  Bambi-Bold"
     echo "  font-dirty                      Dirty-Headline"
     echo "  font-dirty-1                    DCC-Ash"
     echo "  font-dirty-2                    DCC-SharpDistressBlack"
@@ -510,11 +508,9 @@ function get_font_family {
         comic-8)                    font_temp="GROBOLD" ;;
         comic-9)                    font_temp="Helsinki" ;;
         display)                    font_temp="Coda-ExtraBold" ;;
-        display-1)                  font_temp="Playfair-Display" ;;
-        display-1-bold)             font_temp="Playfair-Display-Bold" ;;
-        display-1-black)            font_temp="Playfair-Display-Black" ;;
-        display-2)                  font_temp="BebasNeueRegular" ;;
-        display-2-bold)             font_temp="BebasNeueBold" ;;
+        display-1)                  font_temp="Muli-Black" ;;
+        display-2)                  font_temp="Chonburi" ;;
+        display-3)                  font_temp="Bambi-Bold" ;;
         dirty)                      font_temp="Dirty-Headline" ;;
         dirty-1)                    font_temp="DCC-Ash" ;;
         dirty-2)                    font_temp="DCC-SharpDistressBlack" ;;
