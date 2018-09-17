@@ -1766,8 +1766,6 @@ while [ "$1" == "--text" ]; do
     echo_debug "  Shadow: $text_shadow_percent"
     echo_debug "  Shadow color: $text_shadow_color"
     echo_debug "  Shadow offset: $text_shadow_offset"
-    echo_debug "  -----"
-    echo_debug "  xy: +${pos_x}+${pos_y}"
 
     if [[ -n "$text_string" ]]; then
         if [[ $text_stroke_width -gt 0 && $text_shadow_percent -eq 0 ]]; then
