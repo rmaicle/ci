@@ -809,19 +809,22 @@ unset canvas_gradient_rotation
 canvas_gradient_color_string=""
 if [ "$1" == "--canvas" ]; then
     shift 1
-    if [[ ! "$1" == @("-default"|"-big"|"-bigger"|"-huge"|"-square"|"-square-big"|"-square-large") ]]; then
+    if [[ ! "$1" == @("default"|"big"|"bigger"|"large"|"huge"|"square"|"square-big"|"square-large"|"tall"|"taller"|"tower") ]]; then
         echo_err "Unknown canvas size constant."
         exit 1
     fi
     case "$1" in
-        -default)       canvas="$CANVAS_DEFAULT" ;;
-        -big)           canvas="$CANVAS_BIG" ;;
-        -bigger)        canvas="$CANVAS_BIGGER" ;;
-        -large)         canvas="$CANVAS_LARGE" ;;
-        -huge)          canvas="$CANVAS_HUGE" ;;
-        -square)        canvas="$CANVAS_SQUARE" ;;
-        -square-big)    canvas="$CANVAS_SQUARE_BIG" ;;
-        -square-large)  canvas="$CANVAS_SQUARE_LARGE" ;;
+        default)       canvas="$CANVAS_DEFAULT" ;;
+        big)           canvas="$CANVAS_BIG" ;;
+        bigger)        canvas="$CANVAS_BIGGER" ;;
+        large)         canvas="$CANVAS_LARGE" ;;
+        huge)          canvas="$CANVAS_HUGE" ;;
+        square)        canvas="$CANVAS_SQUARE" ;;
+        square-big)    canvas="$CANVAS_SQUARE_BIG" ;;
+        square-large)  canvas="$CANVAS_SQUARE_LARGE" ;;
+        tall)          canvas="$CANVAS_TALL" ;;
+        taller)        canvas="$CANVAS_TALLER" ;;
+        tower)         canvas="$CANVAS_TOWER" ;;
     esac
     shift 1
     [[ "$1" == "-c" ]] && { canvas_color="$2"; shift 2; }
