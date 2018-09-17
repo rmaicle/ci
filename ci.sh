@@ -1688,7 +1688,7 @@ while [ "$1" == "--text" ]; do
             -p 50                                   \
             -o int_guide.png
         composite                                                   \
-            int_guide                                               \
+            int_guide.png                                           \
             $OUTPUT_FILE                                            \
             -alpha set                                              \
             -gravity northwest                                      \
