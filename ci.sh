@@ -127,7 +127,6 @@ function show_usage {
     echo "                                          -ng replaces grayscale pixels with complementary color,"
     echo "    [-corner                            round image corner"
     echo "      [-r <radius>]                       corner radius in pixels"
-    echo "      [-g <gravity>]]                     gravity, default is all"
     echo "    [-cut                               cut image"
     echo "      [-circle                            circle"
     echo "        <-r>                                radius"
@@ -996,8 +995,6 @@ while [ "$1" == "--image" ]; do
             shift 1
             corner_radius=15 && \
                 [[ "$1" == "-r" ]] && { corner_radius=$2; shift 2; }
-            corner_gravity="all" && \
-                [[ "$1" == "-g" ]] && { corner_gravity=$2; shift 2; }
             round_corner        \
                 int_image.png   \
                 $corner_radius  \
