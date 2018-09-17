@@ -995,6 +995,7 @@ while [ "$1" == "--image" ]; do
             shift 1
             corner_radius=15 && \
                 [[ "$1" == "-r" ]] && { corner_radius=$2; shift 2; }
+            echo_debug "  Round corner: $corner_radius"
             round_corner        \
                 int_image.png   \
                 $corner_radius  \
