@@ -1749,6 +1749,16 @@ while [ "$1" == "--text" ]; do
         compute_next=1
     done
 
+    unset text_rotate_angle
+    if [ "$1" == "-rotate" ]; then
+        shift 1
+        [[ "$1" == "-a" ]] && { text_rotate_angle=$2; shift 2; }
+        if [ -z ${text_rotate_angle+x} ]; then
+            echo_err "Missing -rotate argument (angle)."
+            exit 1
+        fi
+    fi
+
     echo_debug "Text:"
     echo_debug "  Width (all): $text_width_all"
     echo_debug "  Position X (all): $text_position_x_all"
@@ -1769,6 +1779,7 @@ while [ "$1" == "--text" ]; do
     echo_debug "  Shadow: $text_shadow_percent"
     echo_debug "  Shadow color: $text_shadow_color"
     echo_debug "  Shadow offset: $text_shadow_offset"
+    echo_debug "  Rotate: $text_rotate_angle"
 
     if [[ -n "$text_string" ]]; then
         if [[ $text_stroke_width -gt 0 && $text_shadow_percent -eq 0 ]]; then
@@ -1841,6 +1852,13 @@ while [ "$1" == "--text" ]; do
             round_corner                \
                 int_text.png            \
                 $text_corner            \
+                int_text.png
+        fi
+
+        if [[ -n ${text_rotate_angle+x} ]]; then
+            mogrify                         \
+                -background 'rgba(0,0,0,0)' \
+                -rotate $text_rotate_angle  \
                 int_text.png
         fi
 
