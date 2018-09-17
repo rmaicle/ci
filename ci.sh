@@ -1102,7 +1102,7 @@ while [ "$1" == "--image" ]; do
             [[ "$1" == "-c1" ]] && { image_gradient_color_1="$2"; shift 2; }
             [[ "$1" == "-c2" ]] && { image_gradient_color_2="$2"; shift 2; }
 
-            unset image_gradient_rotation
+            image_gradient_rotation=0
             unset image_gradient_color_string
             [[ "$1" == "-r" ]] && { image_gradient_rotation=$2; shift 2; }
             [[ "$1" == "-cs" ]] && { image_gradient_color_string="$2"; shift 2; }
@@ -1112,16 +1112,11 @@ while [ "$1" == "--image" ]; do
                 exit 1
             fi
             if [[ "$image_gradient_gravity" == "custom" ]]; then
-                if [[ -z ${image_gradient_rotation+x} ]]; then
-                    echo_err "Missing argument (rotation)."
-                    exit 1
-                fi
                 if [[ -z ${image_gradient_color_string+x} ]]; then
                     echo_err "Missing argument (color string)."
                     exit 1
                 fi
             else
-                image_gradient_rotation=0
                 image_gradient_color_string=""
             fi
             image_width=`convert int_image.png -ping -format '%w' info:`
@@ -1149,6 +1144,16 @@ while [ "$1" == "--image" ]; do
                 -i int_image.png            \
                 -m int_gradient.png         \
                 -o int_image.png
+        elif [ "$1" == "-rotate" ]; then
+            shift 1
+            unset rotate_angle
+            [[ "$1" == "-a" ]] && { rotate_angle=$2; shift 2; }
+            if [ -z ${rotate_angle+x} ]; then
+                echo_err "Missing -rotate argument (angle)."
+                exit 1
+            fi
+            echo_debug "  Rotate: $rotate_angle"
+            mogrify -rotate $rotate_angle int_image.png
         elif [ "$1" == "-size" ]; then
             shift 1
             image_dimension="${canvas_width}x${canvas_height}"
@@ -1251,48 +1256,6 @@ while [ "$1" == "--image" ]; do
             break;
         fi
     done # while
-
-    if [ "$1" == "-border" ]; then
-        image_border_color="$2"
-        shift 2
-        image_border_width=3
-        [[ "$1" == "-w" ]] && { image_border_width=$2; shift 2; }
-        image_border_radius=0
-        [[ "$1" == "-r" ]] && { image_border_radius=$2; shift 2; }
-
-        echo_debug "  Border:"
-        echo_debug "    Color: $image_border_color"
-        echo_debug "    Width: $image_border_width"
-        echo_debug "    Radius: $image_border_radius"
-
-        if [ $image_border_radius -eq 0 ]; then
-            convert                                     \
-                int_image.png                           \
-                -shave 1x1                              \
-                -bordercolor "$image_border_color"      \
-                -border $image_border_width             \
-                int_image.png
-        else
-
-            image_border_width=`convert int_image.png -ping -format '%w' info:`
-            image_border_height=`convert int_image.png -ping -format '%h' info:`
-
-            image_border_width=$((image_border_width + image_border_radius))
-            image_border_height=$((image_border_height + image_border_radius))
-
-            convert \
-                -size ${image_border_width}x${image_border_height} \
-                xc:none -fill $image_border_color \
-                -draw "roundrectangle 0,0 ${image_border_width},${image_border_height} $image_border_radius,$image_border_radius" \
-                int_rr.png
-            convert \
-                int_rr.png \
-                int_image.png                \
-                -gravity center \
-                -composite \
-                int_image.png
-        fi
-    fi
 
     convert                         \
         $OUTPUT_FILE                \
@@ -1925,6 +1888,10 @@ if [ "$1" == "--author" ]; then
 fi # --author
 
 done
+
+if [ "$1" == "--output" ]; then
+    cp -f $OUTPUT_FILE "$2"
+fi
 
 if [ "$1" == "--add-info" ]; then
     shift 1
