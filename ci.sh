@@ -233,7 +233,6 @@ function show_usage {
     echo "    [-i <inter-line spacing>]           inter-line spacing"
     echo "    [-w <width>]                        text width"
     echo "    [-r <radius>]                       rounded corner radius"
-    #echo "    [-rg <gravity>]                     gravity, default is all"
     echo "    [-px <x position>]                  x position for this text entry only"
     echo "    [-py <y position>]                  y position for this text entry only"
     echo "    [-pg <gravity>]                     position for this text entry only"
@@ -1649,7 +1648,6 @@ text_gravity="northwest"
 text_interline_spacing=0
 text_width="$text_width_all"
 text_corner=0
-text_corner_gravity="all"
 compute_next=0
 text_stroke_width=0
 text_stroke_color="black"
@@ -1703,7 +1701,7 @@ while [ "$1" == "--text" ]; do
     fi
 
     text_width="$text_width_all"
-    while [ $# -gt 0 ] && [[ "-t -f -s -c -bc -i -g -w -r -rg -px -py -pg -ox -oy -sw -sc -sf -sh -shc -sho" == *"$1"* ]]; do
+    while [ $# -gt 0 ] && [[ "-t -f -s -c -bc -i -g -w -r -px -py -pg -ox -oy -sw -sc -sf -sh -shc -sho" == *"$1"* ]]; do
         [[ "$1" == "-t" ]] && { text_string="$2"; shift 2; }
         if [ "$1" == "-f" ]; then
             get_font_family "$2"
@@ -1720,7 +1718,6 @@ while [ "$1" == "--text" ]; do
             shift 2
         fi
         [[ "$1" == "-r" ]] && { text_corner="$2"; shift 2; }
-        [[ "$1" == "-rg" ]] && { text_corner_gravity="$2"; shift 2; }
         # Always reset absolute position to defaults
         text_position_x=0 && \
             [[ "$1" == "-px" ]] && { text_position_x="$2"; shift 2; }
