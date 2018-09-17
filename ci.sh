@@ -18,6 +18,9 @@ declare -i -r CANVAS_HUGE=5
 declare -i -r CANVAS_SQUARE=6
 declare -i -r CANVAS_SQUARE_BIG=7
 declare -i -r CANVAS_SQUARE_LARGE=8
+declare -i -r CANVAS_TALL=9
+declare -i -r CANVAS_TALLER=10
+declare -i -r CANVAS_TOWER=11
 
 declare -r FONT_DEFAULT="Roboto-Condensed"
 
@@ -58,6 +61,18 @@ function show_usage {
     get_canvas_height "$CANVAS_SQUARE_LARGE"
     local -r dimension_square_large="${width_temp}x${height_temp}"
 
+    get_canvas_width "$CANVAS_SQUARE_TALL"
+    get_canvas_height "$CANVAS_SQUARE_TALL"
+    local -r dimension_tall="${width_temp}x${height_temp}"
+
+    get_canvas_width "$CANVAS_SQUARE_TALLER"
+    get_canvas_height "$CANVAS_SQUARE_TALLER"
+    local -r dimension_taller="${width_temp}x${height_temp}"
+
+    get_canvas_width "$CANVAS_SQUARE_TOWER"
+    get_canvas_height "$CANVAS_SQUARE_TOWER"
+    local -r dimension_tower="${width_temp}x${height_temp}"
+
     echo "ci - Compose Image script version 0.6"
     echo "Copyright (C) 2016 Ricky Maicle rmaicle@gmail.com"
     echo "This is free software; see the source for copying conditions."
@@ -71,14 +86,17 @@ function show_usage {
     echo "  --debug                             Debug mode"
     echo "  --canvas                            Define working canvas"
     echo "    [size]                              pre-defined dimensions:"
-    echo "                                          -default      ${dimension_default}"
-    echo "                                          -big          ${dimension_big}"
-    echo "                                          -bigger       ${dimension_bigger}"
-    echo "                                          -large        ${dimension_large}"
-    echo "                                          -huge         ${dimension_huge}"
-    echo "                                          -square       ${dimension_square}"
-    echo "                                          -square-big   ${dimension_square_big}"
-    echo "                                          -square-large ${dimension_square_large}"
+    echo "                                          default      ${dimension_default}"
+    echo "                                          big          ${dimension_big}"
+    echo "                                          bigger       ${dimension_bigger}"
+    echo "                                          large        ${dimension_large}"
+    echo "                                          huge         ${dimension_huge}"
+    echo "                                          square       ${dimension_square}"
+    echo "                                          square-big   ${dimension_square_big}"
+    echo "                                          square-large ${dimension_square_large}"
+    echo "                                          tall         ${dimension_tall_large}"
+    echo "                                          taller       ${dimension_taller_large}"
+    echo "                                          tower        ${dimension_tower_large}"
     echo "    [-c <color>]                        canvas color or first gradient color"
     echo "    [-c2 <color>]                       canvas second gradient color"
     #echo "    [-c3 <color>]                       canvas third gradient color"
@@ -361,6 +379,9 @@ function get_canvas_width {
     declare -r WIDTH_SQUARE=680
     declare -r WIDTH_SQUARE_BIG=800
     declare -r WIDTH_SQUARE_LARGE=1040
+    declare -r WIDTH_TALL=540
+    declare -r WIDTH_TALLER=720
+    declare -r WIDTH_TOWER=900
 
     [[ $# -eq 0 ]] \
         && { echo_err "get_canvas_width parameter not found."; return 1; }
@@ -373,6 +394,9 @@ function get_canvas_width {
         $CANVAS_SQUARE)         width_temp=$WIDTH_SQUARE ;;
         $CANVAS_SQUARE_BIG)     width_temp=$WIDTH_SQUARE_BIG ;;
         $CANVAS_SQUARE_LARGE)   width_temp=$WIDTH_SQUARE_LARGE ;;
+        $CANVAS_TALL)           width_temp=$WIDTH_TALL ;;
+        $CANVAS_TALLER)         width_temp=$WIDTH_TALLER ;;
+        $CANVAS_TOWER)          width_temp=$WIDTH_TOWER ;;
         *)                      width_temp=0 ;;
     esac
     return 0
@@ -390,6 +414,9 @@ function get_canvas_height {
     declare -r HEIGHT_SQUARE=680
     declare -r HEIGHT_SQUARE_BIG=800
     declare -r HEIGHT_SQUARE_LARGE=1040
+    declare -r HEIGHT_TALL=720
+    declare -r HEIGHT_TALLER=960
+    declare -r HEIGHT_TOWER=1200
 
     [[ $# -eq 0 ]] \
         && { echo_err "get_canvas_height parameter not found."; return 1; }
@@ -402,6 +429,9 @@ function get_canvas_height {
         $CANVAS_SQUARE)         height_temp=$HEIGHT_SQUARE ;;
         $CANVAS_SQUARE_BIG)     height_temp=$HEIGHT_SQUARE_BIG ;;
         $CANVAS_SQUARE_LARGE)   height_temp=$HEIGHT_SQUARE_LARGE ;;
+        $CANVAS_TALL)           height_temp=$HEIGHT_TALL ;;
+        $CANVAS_TALLER)         height_temp=$HEIGHT_TALLER ;;
+        $CANVAS_TOWER)          height_temp=$HEIGHT_TOWER ;;
         *)                      height_temp=0 ;;
     esac
     return 0
