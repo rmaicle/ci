@@ -1504,7 +1504,7 @@ if [ "$1" == "--bottombar" ]; then
     shift 1
     bb_height=50
     bb_color="black"
-    bb_opaqueness=50
+    bb_opaqueness=100
     bb_color_2=""
     bb_gradient_gravity=""
     unset bb_gradient_rotation
