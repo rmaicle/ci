@@ -252,98 +252,139 @@ function show_usage {
     echo "  --add-info                          Add Exif information"
     echo "  "
     echo "Font Family:"
-    echo "  font-default                    Roboto"
-    echo "  font-default-light              Roboto-Light"
-    echo "  font-default-medium             Roboto-Medium"
-    echo "  font-default-bold               Roboto-Bold"
-    echo "  font-default-black              Roboto-Black"
-    echo "  font-default-thin               Roboto-Thin"
-    echo "  font-default-condensed          Roboto-Condensed"
-    echo "  font-default-condensed-light    Roboto-Condensed-Light"
-    echo "  font-default-condensed-bold     Roboto-Condensed-Bold"
-    echo "  font-sans                       Open-Sans-Regular"
-    echo "  font-sans-light                 Open-Sans-Light"
-    echo "  font-sans-semibold              Open-Sans-SemiBold"
-    echo "  font-sans-bold                  Open-Sans-Bold"
-    echo "  font-sans-extrabold             Open-Sans-ExtraBold"
-    echo "  font-sans-condensed-light       Open-Sans-Condensed-Light"
-    echo "  font-sans-condensed-bold        Open-Sans-Condensed-Bold"
-    echo "  font-sans-1                     Archivo-Narrow-Regular"
-    echo "  font-sans-1-medium              Archivo-Narrow-Medium"
-    echo "  font-sans-1-semibold            Archivo-Narrow-Semibold"
-    echo "  font-sans-1-bold                Archivo-Narrow-Bold"
-    echo "  font-sans-2                     Poppins-Regular"
-    echo "  font-sans-2-thin                Poppins-Thin"
-    echo "  font-sans-2-light               Poppins-Light"
-    echo "  font-sans-2-extralight          Poppins-ExtraLight"
-    echo "  font-sans-2-medium              Poppins-Medium"
-    echo "  font-sans-2-semibold            Poppins-SemiBold"
-    echo "  font-sans-2-bold                Poppins-Bold"
-    echo "  font-sans-2-extrabold           Poppins-ExtraBold"
-    echo "  font-sans-2-black               Poppins-Black"
-    echo "  font-sans-3                     Share-Regular"
-    echo "  font-sans-3-bold                Share-Bold"
-    echo "  font-serif                      Merriweather-Regular"
-    echo "  font-serif-light                Merriweather-Light"
-    echo "  font-serif-bold                 Merriweather-Bold"
-    echo "  font-serif-black                Merriweather-Black"
-    echo "  font-serif-1                    Cormorant-Garamond-Regular"
-    echo "  font-serif-1-light              Cormorant-Garamond-Light"
-    echo "  font-serif-1-medium             Cormorant-Garamond-Medium"
-    echo "  font-serif-1-semibold           Cormorant-Garamond-Semibold"
-    echo "  font-serif-1-bold               Cormorant-Garamond-Bold"
-    echo "  font-serif-2                    GTSectraFine-Regular"
-    echo "  font-serif-2-medium             GTSectraFine-Medium"
-    echo "  font-serif-2-bold               GTSectraFine-Bold"
-    echo "  font-serif-2-black              GTSectraFine-Black"
-    echo "  font-serif-3                    Calluna-Regular"
-    echo "  font-serif-3-bold               Calluna-Bold"
-    echo "  font-mono                       RM-Courier-Regular"
-    echo "  font-mono-vt323                 VT323-Regular"
-    echo "  font-mono-fixedsys              Fixedsys-Excelsior"
-    echo "  font-mono-ocr                   OCR-A-Extended"
-    echo "  font-typewriter                 F25Executive"
-    echo "  font-typewriter-thin            ELEGANT-TYPEWRITER"
-    echo "  font-typewriter-1               Underwood-Champion"
-    echo "  font-typewriter-2               Sears-Tower"
-    echo "  font-typewriter-3               Rough_Typewriter"
-    echo "  font-comic                      DigitalStrip"
-    echo "  font-comic-1                    SmackAttack-BB"
-    echo "  font-comic-2                    Year-supply-of-fairy-cakes"
-    echo "  font-comic-3                    Komika-Title---Axis"
-    echo "  font-comic-4                    BadaBoom-BB"
-    echo "  font-comic-5                    Bangers"
-    echo "  font-comic-6                    Yikes!"
-    echo "  font-comic-7                    Mouse-Memoirs"
-    echo "  font-comic-8                    GROBOLD"
-    echo "  font-comic-9                    Helsinki"
-    echo "  font-display                    Coda-ExtraBold"
-    echo "  font-display-1                  Muli-Black"
-    echo "  font-display-2                  Chonburi"
-    echo "  font-display-3                  Bambi-Bold"
-    echo "  font-dirty                      Dirty-Headline"
-    echo "  font-dirty-1                    DCC-Ash"
-    echo "  font-dirty-2                    DCC-SharpDistressBlack"
-    echo "  font-dirty-3                    Dark-Underground"
-    echo "  font-dirty-4                    Iron-&-Brine"
-    echo "  font-dirty-5                    A-Love-of-Thunder"
-    echo "  font-brush                      LemonTuesday"
-    echo "  font-brush-1                    Edo-SZ"
-    echo "  font-brush-2                    ProtestPaint-BB"
-    echo "  font-brush-2-italic             ProtestPaint-BB-Italic"
-    echo "  font-brush-3                    SketchaLot"
-    echo "  font-horror                     YouMurdererBB"
-    echo "  font-horror-1                   FaceYourFears"
-    echo "  font-horror-2                   Something-Strange"
-    echo "  font-old                        OldNewspaperTypes"
-    echo "  font-old-1                      1543HumaneJenson-Normal"
-    echo "  font-old-1-bold                 1543HumaneJenson-Bold"
-    echo "  font-acme                       Acme"
-    echo "  font-averia                     Averia-Libre-Regular"
-    echo "  font-averia-bold                Averia-Libre-Bold"
-    echo "  font-scratch                    Scratch"
-    echo "  font-something                  Something-in-the-air"
-    echo "  font-<font name>                use \`convert -list font\` to check font names"
+    echo "  font-default                            Roboto"
+    echo "  font-default-light                      Roboto-Light"
+    echo "  font-default-medium                     Roboto-Medium"
+    echo "  font-default-bold                       Roboto-Bold"
+    echo "  font-default-black                      Roboto-Black"
+    echo "  font-default-thin                       Roboto-Thin"
+    echo "  font-default-condensed                  Roboto-Condensed"
+    echo "  font-default-condensed-light            Roboto-Condensed-Light"
+    echo "  font-default-condensed-bold             Roboto-Condensed-Bold"
+    echo "  font-sans                               Open-Sans-Regular"
+    echo "  font-sans-light                         Open-Sans-Light"
+    echo "  font-sans-semibold                      Open-Sans-SemiBold"
+    echo "  font-sans-bold                          Open-Sans-Bold"
+    echo "  font-sans-extrabold                     Open-Sans-ExtraBold"
+    echo "  font-sans-condensed-light               Open-Sans-Condensed-Light"
+    echo "  font-sans-condensed-bold                Open-Sans-Condensed-Bold"
+    echo "  font-sans-1                             Encode-Sans-Regular"
+    echo "  font-sans-1-thin                        Encode-Sans-Thin"
+    echo "  font-sans-1-light                       Encode-Sans-Light"
+    echo "  font-sans-1-extralight                  Encode-Sans-ExtraLight"
+    echo "  font-sans-1-medium                      Encode-Sans-Medium"
+    echo "  font-sans-1-semibold                    Encode-Sans-Semibold"
+    echo "  font-sans-1-bold                        Encode-Sans-Bold"
+    echo "  font-sans-1-extabold                    Encode-Sans-ExtraBold"
+    echo "  font-sans-1-black                       Encode-Sans-Black"
+    echo "  font-sans-1-condensed                   Encode-Sans-Condensed-Regular"
+    echo "  font-sans-1-condensed-thin              Encode-Sans-Condensed-Thin"
+    echo "  font-sans-1-condensed-light             Encode-Sans-Condensed-Light"
+    echo "  font-sans-1-condensed-extralight        Encode-Sans-Condensed-ExtraLight"
+    echo "  font-sans-1-condensed-medium            Encode-Sans-Condensed-Medium"
+    echo "  font-sans-1-condensed-semibold          Encode-Sans-Condensed-Semibold"
+    echo "  font-sans-1-condensed-bold              Encode-Sans-Condensed-Bold"
+    echo "  font-sans-1-condensed-extabold          Encode-Sans-Condensed-ExtraBold"
+    echo "  font-sans-1-condensed-black             Encode-Sans-Condensed-Black"
+    echo "  font-sans-1-semicondensed               Encode-Sans-SemiCondensed-Regular"
+    echo "  font-sans-1-semicondensed-thin          Encode-Sans-SemiCondensed-Thin"
+    echo "  font-sans-1-semicondensed-light         Encode-Sans-SemiCondensed-Light"
+    echo "  font-sans-1-semicondensed-extralight    Encode-Sans-SemiCondensed-ExtraLight"
+    echo "  font-sans-1-semicondensed-medium        Encode-Sans-SemiCondensed-Medium"
+    echo "  font-sans-1-semicondensed-semibold      Encode-Sans-SemiCondensed-Semibold"
+    echo "  font-sans-1-semicondensed-bold          Encode-Sans-SemiCondensed-Bold"
+    echo "  font-sans-1-semicondensed-extabold      Encode-Sans-SemiCondensed-ExtraBold"
+    echo "  font-sans-1-semicondensed-black         Encode-Sans-SemiCondensed-Black"
+    echo "  font-sans-1-expanded                    Encode-Sans-Expanded-Regular"
+    echo "  font-sans-1-expanded-thin               Encode-Sans-Expanded-Thin"
+    echo "  font-sans-1-expanded-light              Encode-Sans-Expanded-Light"
+    echo "  font-sans-1-expanded-extralight         Encode-Sans-Expanded-ExtraLight"
+    echo "  font-sans-1-expanded-medium             Encode-Sans-Expanded-Medium"
+    echo "  font-sans-1-expanded-semibold           Encode-Sans-Expanded-Semibold"
+    echo "  font-sans-1-expanded-bold               Encode-Sans-Expanded-Bold"
+    echo "  font-sans-1-expanded-extabold           Encode-Sans-Expanded-ExtraBold"
+    echo "  font-sans-1-expanded-black              Encode-Sans-Expanded-Black"
+    echo "  font-sans-1-semiexpanded                Encode-Sans-SemiExpanded-Regular"
+    echo "  font-sans-1-semiexpanded-thin           Encode-Sans-SemiExpanded-Thin"
+    echo "  font-sans-1-semiexpanded-light          Encode-Sans-SemiExpanded-Light"
+    echo "  font-sans-1-semiexpanded-extralight     Encode-Sans-SemiExpanded-ExtraLight"
+    echo "  font-sans-1-semiexpanded-medium         Encode-Sans-SemiExpanded-Medium"
+    echo "  font-sans-1-semiexpanded-semibold       Encode-Sans-SemiExpanded-Semibold"
+    echo "  font-sans-1-semiexpanded-bold           Encode-Sans-SemiExpanded-Bold"
+    echo "  font-sans-1-semiexpanded-extabold       Encode-Sans-SemiExpanded-ExtraBold"
+    echo "  font-sans-1-semiexpanded-black          Encode-Sans-SemiExpanded-Black"
+    echo "  font-sans-2                             Poppins-Regular"
+    echo "  font-sans-2-thin                        Poppins-Thin"
+    echo "  font-sans-2-light                       Poppins-Light"
+    echo "  font-sans-2-extralight                  Poppins-ExtraLight"
+    echo "  font-sans-2-medium                      Poppins-Medium"
+    echo "  font-sans-2-semibold                    Poppins-SemiBold"
+    echo "  font-sans-2-bold                        Poppins-Bold"
+    echo "  font-sans-2-extrabold                   Poppins-ExtraBold"
+    echo "  font-sans-2-black                       Poppins-Black"
+    echo "  font-sans-3                             Share-Regular"
+    echo "  font-sans-3-bold                        Share-Bold"
+    echo "  font-serif                              Merriweather-Regular"
+    echo "  font-serif-light                        Merriweather-Light"
+    echo "  font-serif-bold                         Merriweather-Bold"
+    echo "  font-serif-black                        Merriweather-Black"
+    echo "  font-serif-1                            Cormorant-Garamond-Regular"
+    echo "  font-serif-1-light                      Cormorant-Garamond-Light"
+    echo "  font-serif-1-medium                     Cormorant-Garamond-Medium"
+    echo "  font-serif-1-semibold                   Cormorant-Garamond-Semibold"
+    echo "  font-serif-1-bold                       Cormorant-Garamond-Bold"
+    echo "  font-serif-2                            GTSectraFine-Regular"
+    echo "  font-serif-2-medium                     GTSectraFine-Medium"
+    echo "  font-serif-2-bold                       GTSectraFine-Bold"
+    echo "  font-serif-2-black                      GTSectraFine-Black"
+    echo "  font-serif-3                            Calluna-Regular"
+    echo "  font-serif-3-bold                       Calluna-Bold"
+    echo "  font-mono                               RM-Courier-Regular"
+    echo "  font-mono-vt323                         VT323-Regular"
+    echo "  font-mono-fixedsys                      Fixedsys-Excelsior"
+    echo "  font-mono-ocr                           OCR-A-Extended"
+    echo "  font-typewriter                         F25Executive"
+    echo "  font-typewriter-thin                    ELEGANT-TYPEWRITER"
+    echo "  font-typewriter-1                       Underwood-Champion"
+    echo "  font-typewriter-2                       Sears-Tower"
+    echo "  font-typewriter-3                       Rough_Typewriter"
+    echo "  font-comic                              DigitalStrip"
+    echo "  font-comic-1                            SmackAttack-BB"
+    echo "  font-comic-2                            Year-supply-of-fairy-cakes"
+    echo "  font-comic-3                            Komika-Title---Axis"
+    echo "  font-comic-4                            BadaBoom-BB"
+    echo "  font-comic-5                            Bangers"
+    echo "  font-comic-6                            Yikes!"
+    echo "  font-comic-7                            Mouse-Memoirs"
+    echo "  font-comic-8                            GROBOLD"
+    echo "  font-comic-9                            Helsinki"
+    echo "  font-display                            Coda-ExtraBold"
+    echo "  font-display-1                          Muli-Black"
+    echo "  font-display-2                          Chonburi"
+    echo "  font-display-3                          Bambi-Bold"
+    echo "  font-dirty                              Dirty-Headline"
+    echo "  font-dirty-1                            DCC-Ash"
+    echo "  font-dirty-2                            DCC-SharpDistressBlack"
+    echo "  font-dirty-3                            Dark-Underground"
+    echo "  font-dirty-4                            Iron-&-Brine"
+    echo "  font-dirty-5                            A-Love-of-Thunder"
+    echo "  font-brush                              LemonTuesday"
+    echo "  font-brush-1                            Edo-SZ"
+    echo "  font-brush-2                            ProtestPaint-BB"
+    echo "  font-brush-2-italic                     ProtestPaint-BB-Italic"
+    echo "  font-brush-3                            SketchaLot"
+    echo "  font-horror                             YouMurdererBB"
+    echo "  font-horror-1                           FaceYourFears"
+    echo "  font-horror-2                           Something-Strange"
+    echo "  font-old                                OldNewspaperTypes"
+    echo "  font-old-1                              1543HumaneJenson-Normal"
+    echo "  font-old-1-bold                         1543HumaneJenson-Bold"
+    echo "  font-acme                               Acme"
+    echo "  font-averia                             Averia-Libre-Regular"
+    echo "  font-averia-bold                        Averia-Libre-Bold"
+    echo "  font-scratch                            Scratch"
+    echo "  font-something                          Something-in-the-air"
+    echo "  font-<font name>                        use \`convert -list font\` to check font names"
 }
 
 
@@ -449,98 +490,139 @@ function get_font_family {
         || font="${font:5}"
 
     case "$font" in
-        default)                    font_temp="Roboto" ;;
-        default-light)              font_temp="Roboto-Light" ;;
-        default-medium)             font_temp="Roboto-Medium" ;;
-        default-bold)               font_temp="Roboto-Bold" ;;
-        default-black)              font_temp="Roboto-Black" ;;
-        default-thin)               font_temp="Roboto-Thin" ;;
-        default-condensed)          font_temp="Roboto-Condensed" ;;
-        default-condensed-light)    font_temp="Roboto-Condensed-Light" ;;
-        default-condensed-bold)     font_temp="Roboto-Condensed-Bold" ;;
-        sans)                       font_temp="Open-Sans-Regular" ;;
-        sans-light)                 font_temp="Open-Sans-Light" ;;
-        sans-semibold)              font_temp="Open-Sans-SemiBold" ;;
-        sans-bold)                  font_temp="Open-Sans-Bold" ;;
-        sans-extrabold)             font_temp="Open-Sans-ExtraBold" ;;
-        sans-condensed-light)       font_temp="Open-Sans-Condensed-Light" ;;
-        sans-condensed-bold)        font_temp="Open-Sans-Condensed-Bold" ;;
-        sans-1)                     font_temp="Archivo-Narrow-Regular" ;;
-        sans-1-medium)              font_temp="Archivo-Narrow-Medium" ;;
-        sans-1-semibold)            font_temp="Archivo-Narrow-Semibold" ;;
-        sans-1-bold)                font_temp="Archivo-Narrow-Bold" ;;
-        sans-2)                     font_temp="Poppins-Regular" ;;
-        sans-2-thin)                font_temp="Poppins-Thin" ;;
-        sans-2-light)               font_temp="Poppins-Light" ;;
-        sans-2-extralight)          font_temp="Poppins-ExtraLight" ;;
-        sans-2-medium)              font_temp="Poppins-Medium" ;;
-        sans-2-semibold)            font_temp="Poppins-SemiBold" ;;
-        sans-2-bold)                font_temp="Poppins-Bold" ;;
-        sans-2-extrabold)           font_temp="Poppins-ExtraBold" ;;
-        sans-2-black)               font_temp="Poppins-Black" ;;
-        sans-3)                     font_temp="Share-Regular" ;;
-        sans-3-bold)                font_temp="Share-Bold" ;;
-        serif)                      font_temp="Merriweather-Regular" ;;
-        serif-light)                font_temp="Merriweather-Light" ;;
-        serif-bold)                 font_temp="Merriweather-Bold" ;;
-        serif-black)                font_temp="Merriweather-Black" ;;
-        serif-1)                    font_temp="Cormorant-Garamond-Regular" ;;
-        serif-1-light)              font_temp="Cormorant-Garamond-Light" ;;
-        serif-1-medium)             font_temp="Cormorant-Garamond-Medium" ;;
-        serif-1-semibold)           font_temp="Cormorant-Garamond-Semibold" ;;
-        serif-1-bold)               font_temp="Cormorant-Garamond-Bold" ;;
-        serif-2)                    font_temp="GTSectraFine-Regular" ;;
-        serif-2-medium)             font_temp="GTSectraFine-Medium" ;;
-        serif-2-bold)               font_temp="GTSectraFine-Bold" ;;
-        serif-2-black)              font_temp="GTSectraFine-Black" ;;
-        serif-3)                    font_temp="Calluna-Regular" ;;
-        serif-3-bold)               font_temp="Calluna-Bold" ;;
-        mono)                       font_temp="RM-Courier-Regular" ;;
-        mono-vt323)                 font_temp="VT323-Regular" ;;
-        mono-fixedsys)              font_temp="Fixedsys-Excelsior-3.01" ;;
-        mono-ocr)                   font_temp="OCR-A-Extended" ;;
-        typewriter)                 font_temp="F25Executive" ;;
-        typewriter-thin)            font_temp="ELEGANT-TYPEWRITER" ;;
-        typewriter-1)               font_temp="Underwood-Champion" ;;
-        typewriter-2)               font_temp="Sears-Tower" ;;
-        typewriter-3)               font_temp="Rough_Typewriter" ;;
-        comic)                      font_temp="DigitalStrip" ;;
-        comic-1)                    font_temp="SmackAttack-BB" ;;
-        comic-2)                    font_temp="Year-supply-of-fairy-cakes" ;;
-        comic-3)                    font_temp="Komika-Title---Axis" ;;
-        comic-4)                    font_temp="BadaBoom-BB" ;;
-        comic-5)                    font_temp="Bangers" ;;
-        comic-6)                    font_temp="Yikes!" ;;
-        comic-7)                    font_temp="Mouse-Memoirs" ;;
-        comic-8)                    font_temp="GROBOLD" ;;
-        comic-9)                    font_temp="Helsinki" ;;
-        display)                    font_temp="Coda-ExtraBold" ;;
-        display-1)                  font_temp="Muli-Black" ;;
-        display-2)                  font_temp="Chonburi" ;;
-        display-3)                  font_temp="Bambi-Bold" ;;
-        dirty)                      font_temp="Dirty-Headline" ;;
-        dirty-1)                    font_temp="DCC-Ash" ;;
-        dirty-2)                    font_temp="DCC-SharpDistressBlack" ;;
-        dirty-3)                    font_temp="Dark-Underground" ;;
-        dirty-4)                    font_temp="Iron-&-Brine" ;;
-        dirty-5)                    font_temp="A-Love-of-Thunder" ;;
-        brush)                      font_temp="LemonTuesday" ;;
-        brush-1)                    font_temp="Edo-SZ" ;;
-        brush-2)                    font_temp="ProtestPaint-BB" ;;
-        brush-2-italic)             font_temp="ProtestPaint-BB-Italic" ;;
-        brush-3)                    font_temp="SketchaLot" ;;
-        horror)                     font_temp="YouMurdererBB" ;;
-        horror-1)                   font_temp="FaceYourFears" ;;
-        horror-2)                   font_temp="Something-Strange" ;;
-        old)                        font_temp="OldNewspaperTypes" ;;
-        old-1)                      font_temp="1543HumaneJenson-Normal" ;;
-        old-1-bold)                 font_temp="1543HumaneJenson-Bold" ;;
-        acme)                       font_temp="Acme" ;;
-        averia)                     font_temp="Averia-Libre-Regular" ;;
-        averia-bold)                font_temp="Averia-Libre-Bold" ;;
-        scratch)                    font_temp="Scratch" ;;
-        something)                  font_temp="Something-in-the-air" ;;
-        *)                          font_temp="$font"
+        default)                            font_temp="Roboto" ;;
+        default-light)                      font_temp="Roboto-Light" ;;
+        default-medium)                     font_temp="Roboto-Medium" ;;
+        default-bold)                       font_temp="Roboto-Bold" ;;
+        default-black)                      font_temp="Roboto-Black" ;;
+        default-thin)                       font_temp="Roboto-Thin" ;;
+        default-condensed)                  font_temp="Roboto-Condensed" ;;
+        default-condensed-light)            font_temp="Roboto-Condensed-Light" ;;
+        default-condensed-bold)             font_temp="Roboto-Condensed-Bold" ;;
+        sans)                               font_temp="Open-Sans-Regular" ;;
+        sans-light)                         font_temp="Open-Sans-Light" ;;
+        sans-semibold)                      font_temp="Open-Sans-SemiBold" ;;
+        sans-bold)                          font_temp="Open-Sans-Bold" ;;
+        sans-extrabold)                     font_temp="Open-Sans-ExtraBold" ;;
+        sans-condensed-light)               font_temp="Open-Sans-Condensed-Light" ;;
+        sans-condensed-bold)                font_temp="Open-Sans-Condensed-Bold" ;;
+        sans-1)                             font_temp="Encode-Sans-Regular" ;;
+        sans-1-thin)                        font_temp="Encode-Sans-Thin" ;;
+        sans-1-light)                       font_temp="Encode-Sans-Light" ;;
+        sans-1-extralight)                  font_temp="Encode-Sans-ExtraLight" ;;
+        sans-1-medium)                      font_temp="Encode-Sans-Medium" ;;
+        sans-1-semibold)                    font_temp="Encode-Sans-Semibold" ;;
+        sans-1-bold)                        font_temp="Encode-Sans-Bold" ;;
+        sans-1-extrabold)                   font_temp="Encode-Sans-ExtraBold" ;;
+        sans-1-black)                       font_temp="Encode-Sans-Black" ;;
+        sans-1-condensed)                   font_temp="Encode-Sans-Condensed-Regular" ;;
+        sans-1-condensed-thin)              font_temp="Encode-Sans-Condensed-Thin" ;;
+        sans-1-condensed-light)             font_temp="Encode-Sans-Condensed-Light" ;;
+        sans-1-condensed-extralight)        font_temp="Encode-Sans-Condensed-ExtraLight" ;;
+        sans-1-condensed-medium)            font_temp="Encode-Sans-Condensed-Medium" ;;
+        sans-1-condensed-semibold)          font_temp="Encode-Sans-Condensed-Semibold" ;;
+        sans-1-condensed-bold)              font_temp="Encode-Sans-Condensed-Bold" ;;
+        sans-1-condensed-extrabold)         font_temp="Encode-Sans-Condensed-ExtraBold" ;;
+        sans-1-condensed-black)             font_temp="Encode-Sans-Condensed-Black" ;;
+        sans-1-semicondensed)               font_temp="Encode-Sans-SemiCondensed-Regular" ;;
+        sans-1-semicondensed-thin)          font_temp="Encode-Sans-SemiCondensed-Thin" ;;
+        sans-1-semicondensed-light)         font_temp="Encode-Sans-SemiCondensed-Light" ;;
+        sans-1-semicondensed-extralight)    font_temp="Encode-Sans-SemiCondensed-ExtraLight" ;;
+        sans-1-semicondensed-medium)        font_temp="Encode-Sans-SemiCondensed-Medium" ;;
+        sans-1-semicondensed-semibold)      font_temp="Encode-Sans-SemiCondensed-Semibold" ;;
+        sans-1-semicondensed-bold)          font_temp="Encode-Sans-SemiCondensed-Bold" ;;
+        sans-1-semicondensed-extrabold)     font_temp="Encode-Sans-SemiCondensed-ExtraBold" ;;
+        sans-1-semicondensed-black)         font_temp="Encode-Sans-SemiCondensed-Black" ;;
+        sans-1-expanded)                    font_temp="Encode-Sans-Expanded-Regular" ;;
+        sans-1-expanded-thin)               font_temp="Encode-Sans-Expanded-Thin" ;;
+        sans-1-expanded-light)              font_temp="Encode-Sans-Expanded-Light" ;;
+        sans-1-expanded-extralight)         font_temp="Encode-Sans-Expanded-ExtraLight" ;;
+        sans-1-expanded-medium)             font_temp="Encode-Sans-Expanded-Medium" ;;
+        sans-1-expanded-semibold)           font_temp="Encode-Sans-Expanded-Semibold" ;;
+        sans-1-expanded-bold)               font_temp="Encode-Sans-Expanded-Bold" ;;
+        sans-1-expanded-extrabold)          font_temp="Encode-Sans-Expanded-ExtraBold" ;;
+        sans-1-expanded-black)              font_temp="Encode-Sans-Expanded-Black" ;;
+        sans-1-semiexpanded)                font_temp="Encode-Sans-SemiExpanded-Regular" ;;
+        sans-1-semiexpanded-thin)           font_temp="Encode-Sans-SemiExpanded-Thin" ;;
+        sans-1-semiexpanded-light)          font_temp="Encode-Sans-SemiExpanded-Light" ;;
+        sans-1-semiexpanded-extralight)     font_temp="Encode-Sans-SemiExpanded-ExtraLight" ;;
+        sans-1-semiexpanded-medium)         font_temp="Encode-Sans-SemiExpanded-Medium" ;;
+        sans-1-semiexpanded-semibold)       font_temp="Encode-Sans-SemiExpanded-Semibold" ;;
+        sans-1-semiexpanded-bold)           font_temp="Encode-Sans-SemiExpanded-Bold" ;;
+        sans-1-semiexpanded-extrabold)      font_temp="Encode-Sans-SemiExpanded-ExtraBold" ;;
+        sans-1-semiexpanded-black)          font_temp="Encode-Sans-SemiExpanded-Black" ;;
+        sans-2)                             font_temp="Poppins-Regular" ;;
+        sans-2-thin)                        font_temp="Poppins-Thin" ;;
+        sans-2-light)                       font_temp="Poppins-Light" ;;
+        sans-2-extralight)                  font_temp="Poppins-ExtraLight" ;;
+        sans-2-medium)                      font_temp="Poppins-Medium" ;;
+        sans-2-semibold)                    font_temp="Poppins-SemiBold" ;;
+        sans-2-bold)                        font_temp="Poppins-Bold" ;;
+        sans-2-extrabold)                   font_temp="Poppins-ExtraBold" ;;
+        sans-2-black)                       font_temp="Poppins-Black" ;;
+        sans-3)                             font_temp="Share-Regular" ;;
+        sans-3-bold)                        font_temp="Share-Bold" ;;
+        serif)                              font_temp="Merriweather-Regular" ;;
+        serif-light)                        font_temp="Merriweather-Light" ;;
+        serif-bold)                         font_temp="Merriweather-Bold" ;;
+        serif-black)                        font_temp="Merriweather-Black" ;;
+        serif-1)                            font_temp="Cormorant-Garamond-Regular" ;;
+        serif-1-light)                      font_temp="Cormorant-Garamond-Light" ;;
+        serif-1-medium)                     font_temp="Cormorant-Garamond-Medium" ;;
+        serif-1-semibold)                   font_temp="Cormorant-Garamond-Semibold" ;;
+        serif-1-bold)                       font_temp="Cormorant-Garamond-Bold" ;;
+        serif-2)                            font_temp="GTSectraFine-Regular" ;;
+        serif-2-medium)                     font_temp="GTSectraFine-Medium" ;;
+        serif-2-bold)                       font_temp="GTSectraFine-Bold" ;;
+        serif-2-black)                      font_temp="GTSectraFine-Black" ;;
+        serif-3)                            font_temp="Calluna-Regular" ;;
+        serif-3-bold)                       font_temp="Calluna-Bold" ;;
+        mono)                               font_temp="RM-Courier-Regular" ;;
+        mono-vt323)                         font_temp="VT323-Regular" ;;
+        mono-fixedsys)                      font_temp="Fixedsys-Excelsior-3.01" ;;
+        mono-ocr)                           font_temp="OCR-A-Extended" ;;
+        typewriter)                         font_temp="F25Executive" ;;
+        typewriter-thin)                    font_temp="ELEGANT-TYPEWRITER" ;;
+        typewriter-1)                       font_temp="Underwood-Champion" ;;
+        typewriter-2)                       font_temp="Sears-Tower" ;;
+        typewriter-3)                       font_temp="Rough_Typewriter" ;;
+        comic)                              font_temp="DigitalStrip" ;;
+        comic-1)                            font_temp="SmackAttack-BB" ;;
+        comic-2)                            font_temp="Year-supply-of-fairy-cakes" ;;
+        comic-3)                            font_temp="Komika-Title---Axis" ;;
+        comic-4)                            font_temp="BadaBoom-BB" ;;
+        comic-5)                            font_temp="Bangers" ;;
+        comic-6)                            font_temp="Yikes!" ;;
+        comic-7)                            font_temp="Mouse-Memoirs" ;;
+        comic-8)                            font_temp="GROBOLD" ;;
+        comic-9)                            font_temp="Helsinki" ;;
+        display)                            font_temp="Coda-ExtraBold" ;;
+        display-1)                          font_temp="Muli-Black" ;;
+        display-2)                          font_temp="Chonburi" ;;
+        display-3)                          font_temp="Bambi-Bold" ;;
+        dirty)                              font_temp="Dirty-Headline" ;;
+        dirty-1)                            font_temp="DCC-Ash" ;;
+        dirty-2)                            font_temp="DCC-SharpDistressBlack" ;;
+        dirty-3)                            font_temp="Dark-Underground" ;;
+        dirty-4)                            font_temp="Iron-&-Brine" ;;
+        dirty-5)                            font_temp="A-Love-of-Thunder" ;;
+        brush)                              font_temp="LemonTuesday" ;;
+        brush-1)                            font_temp="Edo-SZ" ;;
+        brush-2)                            font_temp="ProtestPaint-BB" ;;
+        brush-2-italic)                     font_temp="ProtestPaint-BB-Italic" ;;
+        brush-3)                            font_temp="SketchaLot" ;;
+        horror)                             font_temp="YouMurdererBB" ;;
+        horror-1)                           font_temp="FaceYourFears" ;;
+        horror-2)                           font_temp="Something-Strange" ;;
+        old)                                font_temp="OldNewspaperTypes" ;;
+        old-1)                              font_temp="1543HumaneJenson-Normal" ;;
+        old-1-bold)                         font_temp="1543HumaneJenson-Bold" ;;
+        acme)                               font_temp="Acme" ;;
+        averia)                             font_temp="Averia-Libre-Regular" ;;
+        averia-bold)                        font_temp="Averia-Libre-Bold" ;;
+        scratch)                            font_temp="Scratch" ;;
+        something)                          font_temp="Something-in-the-air" ;;
+        *)                                  font_temp="$font"
     esac
     return 0
 }
