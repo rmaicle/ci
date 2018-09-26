@@ -851,6 +851,11 @@ if [ "$1" == "--canvas" ]; then
                 exit 1
             fi
         fi
+    else
+        # These variables need to be set so we do not have issues
+        # when passed to the gradient function
+        canvas_gradient_rotation=0
+        canvas_gradient_color_string=""
     fi
 else
     canvas="$CANVAS_DEFAULT"
