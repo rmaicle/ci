@@ -232,6 +232,7 @@ function show_usage {
     echo "    [-bc <color>]                       background color"
     echo "    [-g <gravity>]                      gravity"
     echo "    [-k <kerning>]                      inter-character spacing"
+    echo "    [-iw <inter-word spacing>]          inter-word spacing"
     echo "    [-i <inter-line spacing>]           inter-line spacing"
     echo "    [-w <width>]                        text width"
     echo "    [-px <x position>]                  x position for this text entry only"
@@ -1673,6 +1674,7 @@ text_color="black"
 text_background_color="none"
 text_gravity="northwest"
 text_kerning=0
+text_interword_spacing=0
 text_interline_spacing=0
 text_width="$text_width_all"
 compute_next=0
@@ -1728,7 +1730,7 @@ while [ "$1" == "--text" ]; do
     fi
 
     text_width="$text_width_all"
-    while [ $# -gt 0 ] && [[ "-t -f -s -c -bc -k -i -g -w -px -py -pg -ox -oy -sw -sc -sf -sh -shc -sho" == *"$1"* ]]; do
+    while [ $# -gt 0 ] && [[ "-t -f -s -c -bc -k -iw -i -g -w -px -py -pg -ox -oy -sw -sc -sf -sh -shc -sho" == *"$1"* ]]; do
         [[ "$1" == "-t" ]] && { text_string="$2"; shift 2; }
         if [ "$1" == "-f" ]; then
             get_font_family "$2"
@@ -1739,6 +1741,7 @@ while [ "$1" == "--text" ]; do
         [[ "$1" == "-c" ]] && { text_color="$2"; shift 2; }
         [[ "$1" == "-bc" ]] && { text_background_color="$2"; shift 2; }
         [[ "$1" == "-k" ]] && { text_kerning=$2; shift 2; }
+        [[ "$1" == "-iw" ]] && { text_interword_spacing=$2; shift 2; }
         [[ "$1" == "-i" ]] && { text_interline_spacing="$2"; shift 2; }
         [[ "$1" == "-g" ]] && { text_gravity="$2"; shift 2; }
         if [ "$1" == "-w" ]; then
@@ -1805,6 +1808,7 @@ while [ "$1" == "--text" ]; do
     echo_debug "  Color: $text_color"
     echo_debug "  Background color: $text_background_color"
     echo_debug "  Kerning: $text_kerning"
+    echo_debug "  Inter-word spacing: $text_interword_spacing"
     echo_debug "  Gravity: $text_gravity"
     echo_debug "  Inter-line spacing: $text_interline_spacing"
     echo_debug "  Width: $text_width"
@@ -1829,6 +1833,7 @@ while [ "$1" == "--text" ]; do
                 -pointsize $text_size                               \
                 -gravity $text_gravity                              \
                 -kerning $text_kerning                              \
+                -interword-spacing $text_interword_spacing          \
                 -interline-spacing $text_interline_spacing          \
                 -fill $text_color                                   \
                 -bordercolor $text_background_color                 \
@@ -1855,6 +1860,7 @@ while [ "$1" == "--text" ]; do
                 -pointsize "$text_size"                                 \
                 -gravity "$text_gravity"                                \
                 -kerning $text_kerning                                  \
+                -interword-spacing $text_interword_spacing              \
                 -interline-spacing "$text_interline_spacing"            \
                 -fill "$text_color"                                     \
                 -bordercolor $text_background_color                     \
@@ -1888,6 +1894,7 @@ while [ "$1" == "--text" ]; do
                 -pointsize "$text_size"                             \
                 -gravity "$text_gravity"                            \
                 -kerning $text_kerning                              \
+                -interword-spacing $text_interword_spacing          \
                 -interline-spacing "$text_interline_spacing"        \
                 -fill "$text_color"                                 \
                 caption:"$text_string"                              \
