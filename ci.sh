@@ -1717,7 +1717,7 @@ while [ "$1" == "--text" ]; do
     fi
 
     text_width="$text_width_all"
-    while [ $# -gt 0 ] && [[ "-t -f -s -c -bc -i -g -w -r -px -py -pg -ox -oy -sw -sc -sf -sh -shc -sho" == *"$1"* ]]; do
+    while [ $# -gt 0 ] && [[ "-t -f -s -c -bc -i -g -w -px -py -pg -ox -oy -sw -sc -sf -sh -shc -sho" == *"$1"* ]]; do
         [[ "$1" == "-t" ]] && { text_string="$2"; shift 2; }
         if [ "$1" == "-f" ]; then
             get_font_family "$2"
@@ -1761,6 +1761,18 @@ while [ "$1" == "--text" ]; do
         compute_next=1
     done
 
+    unset text_transparent_color
+    if [ "$1" == "-transparent" ]; then
+        shift 1
+        [[ "$1" == "-c" ]] && { text_transparent_color="$2"; shift 2; }
+        text_transparent_fuzz=0
+        [[ "$1" == "-f" ]] && { text_transparent_fuzz=$2; shift 2; }
+        if [ -z ${text_transparent_color+x} ]; then
+            echo_err "Missing -transparent argument (color)."
+            exit 1
+        fi
+    fi
+
     unset text_rotate_angle
     if [ "$1" == "-rotate" ]; then
         shift 1
@@ -1792,24 +1804,28 @@ while [ "$1" == "--text" ]; do
     echo_debug "  Shadow color: $text_shadow_color"
     echo_debug "  Shadow offset: $text_shadow_offset"
     echo_debug "  Rotate: $text_rotate_angle"
+    echo_debug "  Transparent: $text_transparent_color"
+    echo_debug "  Fuzz: $text_transparent_fuzz"
 
     if [[ -n "$text_string" ]]; then
         if [[ $text_stroke_width -gt 0 && $text_shadow_percent -eq 0 ]]; then
             convert                                                 \
                 -background $text_background_color                  \
                 -size ${text_width}x                                \
-                -font "$text_font"                                  \
-                -pointsize "$text_size"                             \
-                -gravity "$text_gravity"                            \
-                -interline-spacing "$text_interline_spacing"        \
-                -fill "$text_color"                                 \
+                -font $text_font                                    \
+                -pointsize $text_size                               \
+                -gravity $text_gravity                              \
+                -interline-spacing $text_interline_spacing          \
+                -fill $text_color                                   \
+                -bordercolor $text_background_color                 \
+                -border $text_stroke_width                          \
                 caption:"$text_string"                              \
                 \( +clone                                           \
-                    -background "$text_stroke_color"                \
+                    -background $text_stroke_color                  \
                     -shadow 100x${text_stroke_width}+0+0            \
-                     -channel A                                     \
-                     -level 0%,${text_stroke_fade}%                 \
-                     +channel \)                                    \
+                    -channel A                                      \
+                    -level 0%,${text_stroke_fade}%                  \
+                    +channel \)                                     \
                 +swap                                               \
                 +repage                                             \
                 -gravity center                                     \
@@ -1826,6 +1842,8 @@ while [ "$1" == "--text" ]; do
                 -gravity "$text_gravity"                                \
                 -interline-spacing "$text_interline_spacing"            \
                 -fill "$text_color"                                     \
+                -bordercolor $text_background_color                     \
+                -border $text_stroke_width                              \
                 caption:"$text_string"                                  \
                 \( +clone                                               \
                     -background "$text_shadow_color"                    \
@@ -1842,9 +1860,9 @@ while [ "$1" == "--text" ]; do
         fi
 
         if [[ $text_stroke_width -gt 0 && $text_shadow_percent -gt 0 ]]; then
-            echo "-------------------------------------------------"
+            echo "--------------------------------------------------"
             echo "Error: Text stroke with shadow is not implemented."
-            echo "-------------------------------------------------"
+            echo "--------------------------------------------------"
         fi
 
         if [[ $text_stroke_width -eq 0 && $text_shadow_percent -eq 0 ]]; then
@@ -1867,15 +1885,23 @@ while [ "$1" == "--text" ]; do
                 int_text.png
         fi
 
+        if [[ -n ${text_transparent_color+x} ]]; then
+            mogrify                                     \
+                -median 2                               \
+                -fuzz ${text_transparent_fuzz}%         \
+                -transparent $text_transparent_color    \
+                int_text.png
+        fi
+
         if [ $debug -gt 0 ]; then
             text_count=$((text_count + 1))
             cp -f int_text.png "int_text_${text_count}.png"
         fi
 
         if [[ $text_position_x -gt 0 || $text_position_y -gt 0 ]]; then
-            convert \
-                int_text.png \
-                -trim \
+            convert                                                 \
+                int_text.png                                        \
+                -trim                                               \
                 int_text.png
             convert                                                 \
                 $OUTPUT_FILE                                        \
