@@ -144,6 +144,7 @@ function show_usage {
     echo "      <custom                             custom rotation and color string"
     echo "         <-r <rotation>>                    rotation (0-360), 0=south"
     echo "         <-cs <color string>>>]             color string (ex. \"red yellow 33 blue 66 red\")"
+    echo "    [-rotate -a <angle>]                rotate image"
     echo "    [-size                              resize image to dimension"
     echo "      <-s <size>>                         dimension"
     echo "      [-a <adjustment>]]                  size adjustment"
