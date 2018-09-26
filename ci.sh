@@ -328,17 +328,22 @@ function show_usage {
     echo "  font-serif-light                        Merriweather-Light"
     echo "  font-serif-bold                         Merriweather-Bold"
     echo "  font-serif-black                        Merriweather-Black"
-    echo "  font-serif-1                            Cormorant-Garamond-Regular"
-    echo "  font-serif-1-light                      Cormorant-Garamond-Light"
-    echo "  font-serif-1-medium                     Cormorant-Garamond-Medium"
-    echo "  font-serif-1-semibold                   Cormorant-Garamond-Semibold"
-    echo "  font-serif-1-bold                       Cormorant-Garamond-Bold"
-    echo "  font-serif-2                            GTSectraFine-Regular"
-    echo "  font-serif-2-medium                     GTSectraFine-Medium"
-    echo "  font-serif-2-bold                       GTSectraFine-Bold"
-    echo "  font-serif-2-black                      GTSectraFine-Black"
-    echo "  font-serif-3                            Calluna-Regular"
-    echo "  font-serif-3-bold                       Calluna-Bold"
+    echo "  font-serif-1                            Cormorant-Regular"
+    echo "  font-serif-1-light                      Cormorant-Light"
+    echo "  font-serif-1-medium                     Cormorant-Medium"
+    echo "  font-serif-1-semibold                   Cormorant-Semibold"
+    echo "  font-serif-1-bold                       Cormorant-Bold"
+    echo "  font-serif-2                            Cormorant-Garamond-Regular"
+    echo "  font-serif-2-light                      Cormorant-Garamond-Light"
+    echo "  font-serif-2-medium                     Cormorant-Garamond-Medium"
+    echo "  font-serif-2-semibold                   Cormorant-Garamond-Semibold"
+    echo "  font-serif-2-bold                       Cormorant-Garamond-Bold"
+    echo "  font-serif-3                            GTSectraFine-Regular"
+    echo "  font-serif-3-medium                     GTSectraFine-Medium"
+    echo "  font-serif-3-bold                       GTSectraFine-Bold"
+    echo "  font-serif-3-black                      GTSectraFine-Black"
+    echo "  font-serif-4                            Calluna-Regular"
+    echo "  font-serif-4-bold                       Calluna-Bold"
     echo "  font-mono                               RM-Courier-Regular"
     echo "  font-mono-vt323                         VT323-Regular"
     echo "  font-mono-fixedsys                      Fixedsys-Excelsior"
@@ -566,17 +571,22 @@ function get_font_family {
         serif-light)                        font_temp="Merriweather-Light" ;;
         serif-bold)                         font_temp="Merriweather-Bold" ;;
         serif-black)                        font_temp="Merriweather-Black" ;;
-        serif-1)                            font_temp="Cormorant-Garamond-Regular" ;;
-        serif-1-light)                      font_temp="Cormorant-Garamond-Light" ;;
-        serif-1-medium)                     font_temp="Cormorant-Garamond-Medium" ;;
-        serif-1-semibold)                   font_temp="Cormorant-Garamond-Semibold" ;;
-        serif-1-bold)                       font_temp="Cormorant-Garamond-Bold" ;;
-        serif-2)                            font_temp="GTSectraFine-Regular" ;;
-        serif-2-medium)                     font_temp="GTSectraFine-Medium" ;;
-        serif-2-bold)                       font_temp="GTSectraFine-Bold" ;;
-        serif-2-black)                      font_temp="GTSectraFine-Black" ;;
-        serif-3)                            font_temp="Calluna-Regular" ;;
-        serif-3-bold)                       font_temp="Calluna-Bold" ;;
+        serif-1)                            font_temp="Cormorant-Regular" ;;
+        serif-1-light)                      font_temp="Cormorant-Light" ;;
+        serif-1-medium)                     font_temp="Cormorant-Medium" ;;
+        serif-1-semibold)                   font_temp="Cormorant-Semibold" ;;
+        serif-1-bold)                       font_temp="Cormorant-Bold" ;;
+        serif-2)                            font_temp="Cormorant-Garamond-Regular" ;;
+        serif-2-light)                      font_temp="Cormorant-Garamond-Light" ;;
+        serif-2-medium)                     font_temp="Cormorant-Garamond-Medium" ;;
+        serif-2-semibold)                   font_temp="Cormorant-Garamond-Semibold" ;;
+        serif-2-bold)                       font_temp="Cormorant-Garamond-Bold" ;;
+        serif-3)                            font_temp="GTSectraFine-Regular" ;;
+        serif-3-medium)                     font_temp="GTSectraFine-Medium" ;;
+        serif-3-bold)                       font_temp="GTSectraFine-Bold" ;;
+        serif-3-black)                      font_temp="GTSectraFine-Black" ;;
+        serif-4)                            font_temp="Calluna-Regular" ;;
+        serif-4-bold)                       font_temp="Calluna-Bold" ;;
         mono)                               font_temp="RM-Courier-Regular" ;;
         mono-vt323)                         font_temp="VT323-Regular" ;;
         mono-fixedsys)                      font_temp="Fixedsys-Excelsior-3.01" ;;
