@@ -232,7 +232,6 @@ function show_usage {
     echo "    [-g <gravity>]                      gravity"
     echo "    [-i <inter-line spacing>]           inter-line spacing"
     echo "    [-w <width>]                        text width"
-    echo "    [-r <radius>]                       rounded corner radius"
     echo "    [-px <x position>]                  x position for this text entry only"
     echo "    [-py <y position>]                  y position for this text entry only"
     echo "    [-pg <gravity>]                     position for this text entry only"
@@ -1650,7 +1649,6 @@ text_background_color="none"
 text_gravity="northwest"
 text_interline_spacing=0
 text_width="$text_width_all"
-text_corner=0
 compute_next=0
 text_stroke_width=0
 text_stroke_color="black"
@@ -1720,7 +1718,6 @@ while [ "$1" == "--text" ]; do
             text_width="$2"
             shift 2
         fi
-        [[ "$1" == "-r" ]] && { text_corner="$2"; shift 2; }
         # Always reset absolute position to defaults
         text_position_x=0 && \
             [[ "$1" == "-px" ]] && { text_position_x="$2"; shift 2; }
@@ -1845,13 +1842,6 @@ while [ "$1" == "--text" ]; do
                 -interline-spacing "$text_interline_spacing"        \
                 -fill "$text_color"                                 \
                 caption:"$text_string"                              \
-                int_text.png
-        fi
-
-        if [ $text_corner -gt 0 ]; then
-            round_corner                \
-                int_text.png            \
-                $text_corner            \
                 int_text.png
         fi
 
