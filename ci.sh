@@ -265,17 +265,21 @@ function show_usage {
     echo "  font-sans-extrabold             Open-Sans-ExtraBold"
     echo "  font-sans-condensed-light       Open-Sans-Condensed-Light"
     echo "  font-sans-condensed-bold        Open-Sans-Condensed-Bold"
-    echo "  font-sans-1                     Poppins-Regular"
-    echo "  font-sans-1-thin                Poppins-Thin"
-    echo "  font-sans-1-light               Poppins-Light"
-    echo "  font-sans-1-extralight          Poppins-ExtraLight"
-    echo "  font-sans-1-medium              Poppins-Medium"
-    echo "  font-sans-1-semibold            Poppins-SemiBold"
-    echo "  font-sans-1-bold                Poppins-Bold"
-    echo "  font-sans-1-extrabold           Poppins-ExtraBold"
-    echo "  font-sans-1-black               Poppins-Black"
-    echo "  font-sans-2                     Share-Regular"
-    echo "  font-sans-2-bold                Share-Bold"
+    echo "  font-sans-1                     Archivo-Narrow-Regular"
+    echo "  font-sans-1-medium              Archivo-Narrow-Medium"
+    echo "  font-sans-1-semibold            Archivo-Narrow-Semibold"
+    echo "  font-sans-1-bold                Archivo-Narrow-Bold"
+    echo "  font-sans-2                     Poppins-Regular"
+    echo "  font-sans-2-thin                Poppins-Thin"
+    echo "  font-sans-2-light               Poppins-Light"
+    echo "  font-sans-2-extralight          Poppins-ExtraLight"
+    echo "  font-sans-2-medium              Poppins-Medium"
+    echo "  font-sans-2-semibold            Poppins-SemiBold"
+    echo "  font-sans-2-bold                Poppins-Bold"
+    echo "  font-sans-2-extrabold           Poppins-ExtraBold"
+    echo "  font-sans-2-black               Poppins-Black"
+    echo "  font-sans-3                     Share-Regular"
+    echo "  font-sans-3-bold                Share-Bold"
     echo "  font-serif                      Merriweather-Regular"
     echo "  font-serif-light                Merriweather-Light"
     echo "  font-serif-bold                 Merriweather-Bold"
@@ -458,17 +462,21 @@ function get_font_family {
         sans-extrabold)             font_temp="Open-Sans-ExtraBold" ;;
         sans-condensed-light)       font_temp="Open-Sans-Condensed-Light" ;;
         sans-condensed-bold)        font_temp="Open-Sans-Condensed-Bold" ;;
-        sans-1)                     font_temp="Poppins-Regular" ;;
-        sans-1-thin)                font_temp="Poppins-Thin" ;;
-        sans-1-light)               font_temp="Poppins-Light" ;;
-        sans-1-extralight)          font_temp="Poppins-ExtraLight" ;;
-        sans-1-medium)              font_temp="Poppins-Medium" ;;
-        sans-1-semibold)            font_temp="Poppins-SemiBold" ;;
-        sans-1-bold)                font_temp="Poppins-Bold" ;;
-        sans-1-extrabold)           font_temp="Poppins-ExtraBold" ;;
-        sans-1-black)               font_temp="Poppins-Black" ;;
-        sans-2)                     font_temp="Share-Regular" ;;
-        sans-2-bold)                font_temp="Share-Bold" ;;
+        sans-1)                     font_temp="Archivo-Narrow-Regular" ;;
+        sans-1-medium)              font_temp="Archivo-Narrow-Medium" ;;
+        sans-1-semibold)            font_temp="Archivo-Narrow-Semibold" ;;
+        sans-1-bold)                font_temp="Archivo-Narrow-Bold" ;;
+        sans-2)                     font_temp="Poppins-Regular" ;;
+        sans-2-thin)                font_temp="Poppins-Thin" ;;
+        sans-2-light)               font_temp="Poppins-Light" ;;
+        sans-2-extralight)          font_temp="Poppins-ExtraLight" ;;
+        sans-2-medium)              font_temp="Poppins-Medium" ;;
+        sans-2-semibold)            font_temp="Poppins-SemiBold" ;;
+        sans-2-bold)                font_temp="Poppins-Bold" ;;
+        sans-2-extrabold)           font_temp="Poppins-ExtraBold" ;;
+        sans-2-black)               font_temp="Poppins-Black" ;;
+        sans-3)                     font_temp="Share-Regular" ;;
+        sans-3-bold)                font_temp="Share-Bold" ;;
         serif)                      font_temp="Merriweather-Regular" ;;
         serif-light)                font_temp="Merriweather-Light" ;;
         serif-bold)                 font_temp="Merriweather-Bold" ;;
