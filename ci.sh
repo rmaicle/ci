@@ -924,7 +924,7 @@ while [ "$1" == "--image" ]; do
 
     cp -f "$image_file" int_image.png
 
-    while [[ "$1" == @("-blur"|"-border"|"-color"|"-corner"|"-cut"|"-flip"|"-gradient"|"-rotate"|"-size"|"-tint"|"-vignette") ]]; do
+    while [[ "$1" == @("-blur"|"-border"|"-color"|"-corner"|"-cut"|"-flip"|"-gradient"|"-rotate"|"-size"|"-tint"|"-transparent"|"-vignette") ]]; do
         if [ "$1" == "-blur" ]; then
             shift 1
             if [ "$1" == "-simple" ]; then
@@ -1279,6 +1279,16 @@ while [ "$1" == "--image" ]; do
                     int_image.png       \
                     int_image.png
             fi
+        elif [ "$1" == "-transparent" ]; then
+            shift 1
+            unset transparent_color
+            [[ "$1" == "-c" ]] && { transparent_color="$2"; shift 2; }
+            transparent_fuzz=0
+            [[ "$1" == "-f" ]] && { transparent_fuzz=$2; shift 2; }
+            mogrify                                 \
+                -fuzz ${transparent_fuzz}%          \
+                -transparent $transparent_color     \
+                int_image.png
         elif [ "$1" == "-vignette" ]; then
             shift 1
             vignette_background="black" && \
