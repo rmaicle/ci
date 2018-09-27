@@ -250,6 +250,8 @@ function show_usage {
     echo "    -a <name>                            author name"
     echo "    -d <description>                     description text"
     echo "  --add-info                          Add Exif information"
+    echo "                                        query Exif information like:"
+    echo "                                          exiftool <file>"
     echo "  "
     echo "Font Family:"
     echo "  font-default                            Roboto"
