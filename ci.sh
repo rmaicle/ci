@@ -173,10 +173,10 @@ function show_usage {
     echo "  --rectangle                         Define rectangular area"
     echo "    [-w <width>]                        width in pixels, defaults to canvas width"
     echo "    [-h <height>]                       height in pixels, defaults to canvas height"
-    echo "    [-c <color>]                        fill color or first gradient color"
-    echo "    [-p <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
     echo "    [-g <gravity>]                      gravity"
-    echo "    [-p <position>]                     position, defaults to +0+0"
+    echo "    [-p <position>]                     position relative to gravity, defaults to +0+0"
+    echo "    [-c <color>]                        fill color or first gradient color"
+    echo "    [-q <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
     echo "    [-c2 <color>]                       second gradient color"
     echo "    [-gg                                gradient gravity"
     echo "      <gravity |                          constants"
@@ -189,10 +189,10 @@ function show_usage {
     echo "    [-o <filename>]                     output image filename"
     echo "  --hbar                              Define a horizontal bar"
     echo "    [-h <height>]                       height in pixels"
-    echo "    [-c <color>]                        fill color or first color of gradient"
-    echo "    [-p <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
     echo "    [-g <gravity>]                      gravity"
-    echo "    [-y <y position>]                   y position from top"
+    echo "    [-p <y position>]                   y position relative to gravity"
+    echo "    [-c <color>]                        fill color or first color of gradient"
+    echo "    [-q <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
     echo "    [-c2 <color>]                       second color of gradient"
     echo "    [-gg                                gradient gravity"
     echo "      <gravity |                          constants"
@@ -204,7 +204,7 @@ function show_usage {
     echo "  --bottombar                         Create the fixed-sized bottom bar"
     echo "    [-h <height>]                       height in pixels, default is 50"
     echo "    [-c <color>]                        fill color"
-    echo "    [-p <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
+    echo "    [-q <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
     echo "    [-c2 <color>]                       second color of gradient"
     echo "    [-gg                                gradient gravity"
     echo "      <gravity |                          constants"
@@ -215,7 +215,7 @@ function show_usage {
     echo "         <-gcs <color string>>>]            color string (ex. \"red yellow 33 blue 66 red\")"
     echo "  --logo                              Define logo properties"
     echo "    [-c <color>]                        color"
-    echo "    [-s <size>]                         size in pixels, defaults to 30x30"
+    echo "    [-s <size>]                         size in pixels, default is 30x30"
     echo "    [-ox <x position>]                  x position, defaults to 11"
     echo "    [-oy <y position>]                  y position, defaults to 9"
     echo "    [-g <gravity>]                      gravity, defaults to southeast"
@@ -223,6 +223,7 @@ function show_usage {
     echo "  --text                              Define text properties"
     echo "    [-W <width>]                        Global text area width"
     echo "    [-Wo <width>]                       Offset, value is subtracted from W"
+    echo "    [-Ho <height>]                      Offset, value is subtracted from H"
     echo "    [-Px <x position>]                  Global x position"
     echo "    [-Py <y position>]                  Global y position"
     echo "    [-t <text>]                         text"
@@ -656,7 +657,7 @@ function create_rectangle {
 
     [[ "$1" == "-s" ]]  && { arg_size="$2"; shift 2; }
     [[ "$1" == "-c" ]]  && { arg_color="$2"; shift 2; }
-    [[ "$1" == "-p" ]]  && { arg_opaqueness="$2"; shift 2; }
+    [[ "$1" == "-q" ]]  && { arg_opaqueness=$2; shift 2; }
     [[ "$1" == "-o" ]]  && { arg_output="$2"; shift 2; }
 
     convert                                 \
@@ -1443,20 +1444,22 @@ while [ "$1" == "--rectangle" ]; do
     rect_round_corner_radius=0
     destination_file="$OUTPUT_FILE"
 
-    [[ "$1" == "-w" ]] && { rect_width="$2"; shift 2; }
-    [[ "$1" == "-h" ]] && { rect_height="$2"; shift 2; }
-    [[ "$1" == "-c" ]] && { rect_color="$2"; shift 2; }
-    [[ "$1" == "-p" ]] && { rect_opaqueness="$2"; shift 2; }
-    [[ "$1" == "-g" ]] && { rect_gravity="$2"; shift 2; }
-    [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
-    [[ "$1" == "-c2" ]] && { rect_color_2="$2"; shift 2; }
-    [[ "$1" == "-gg" ]] && { rect_gradient_gravity="$2"; shift 2; }
-    [[ "$1" == "-gr" ]] && { rect_gradient_rotation=$2; shift 2; }
-    [[ "$1" == "-gcs" ]] && { rect_gradient_color_string=$2; shift 2; }
-    [[ "$1" == "-r" ]] && { rect_round_corner_radius="$2"; shift 2; }
-    [[ "$1" == "-o" ]] && { destination_file="$2"; shift 2; }
+    while [[ "$1" == @("-w"|"-h"|"-g"|"-p"|"-c"|"-q"|"-c2"|"-gg"|"-gr"|"-gcs"|"-r"|"-o") ]]; do
+        [[ "$1" == "-w" ]] && { rect_width="$2"; shift 2; }
+        [[ "$1" == "-h" ]] && { rect_height="$2"; shift 2; }
+        [[ "$1" == "-g" ]] && { rect_gravity="$2"; shift 2; }
+        [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
+        [[ "$1" == "-c" ]] && { rect_color="$2"; shift 2; }
+        [[ "$1" == "-q" ]] && { rect_opaqueness=$2; shift 2; }
+        [[ "$1" == "-c2" ]] && { rect_color_2="$2"; shift 2; }
+        [[ "$1" == "-gg" ]] && { rect_gradient_gravity="$2"; shift 2; }
+        [[ "$1" == "-gr" ]] && { rect_gradient_rotation=$2; shift 2; }
+        [[ "$1" == "-gcs" ]] && { rect_gradient_color_string=$2; shift 2; }
+        [[ "$1" == "-r" ]] && { rect_round_corner_radius="$2"; shift 2; }
+        [[ "$1" == "-o" ]] && { destination_file="$2"; shift 2; }
+    done
 
-    if [[ -n ${rect_gradient_color_string+x} ]]; then
+    if [[ -n ${rect_gradient_gravity+x} ]]; then
         if [[ ! "$rect_gradient_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
             echo_err "Unknown gravity ($rect_gradient_gravity)."
             exit 1
@@ -1507,7 +1510,7 @@ while [ "$1" == "--rectangle" ]; do
         create_rectangle                        \
             -s "${rect_width}x${rect_height}"   \
             -c $rect_color                      \
-            -p $rect_opaqueness                 \
+            -q $rect_opaqueness                 \
             -o int_rect.png
 
         if [ $rect_round_corner_radius -gt 0 ]; then
@@ -1543,15 +1546,17 @@ while [ "$1" == "--hbar" ]; do
     unset hbar_gradient_rotation
     unset hbar_gradient_color_string
 
-    [[ "$1" == "-h" ]] && { hbar_height=$2; shift 2; }
-    [[ "$1" == "-c" ]] && { hbar_color="$2"; shift 2; }
-    [[ "$1" == "-p" ]] && { hbar_opaqueness=$2; shift 2; }
-    [[ "$1" == "-g" ]] && { hbar_gravity="$2"; shift 2; }
-    [[ "$1" == "-y" ]] && { hbar_position=+0+"$2"; shift 2; }
-    [[ "$1" == "-c2" ]] && { hbar_color_2="$2"; shift 2; }
-    [[ "$1" == "-gg" ]] && { hbar_gradient_gravity="$2"; shift 2; }
-    [[ "$1" == "-gr" ]] && { hbar_gradient_rotation=$2; shift 2; }
-    [[ "$1" == "-gcs" ]] && { hbar_gradient_color_string=$2; shift 2; }
+    while [[ "$1" == @("-h"|"-g"|"-p"|"-c"|"-q"|"-c2"|"-gg"|"-gr"|"-gcs") ]]; do
+        [[ "$1" == "-h" ]] && { hbar_height=$2; shift 2; }
+        [[ "$1" == "-g" ]] && { hbar_gravity="$2"; shift 2; }
+        [[ "$1" == "-p" ]] && { hbar_position=+0+"$2"; shift 2; }
+        [[ "$1" == "-c" ]] && { hbar_color="$2"; shift 2; }
+        [[ "$1" == "-q" ]] && { hbar_opaqueness=$2; shift 2; }
+        [[ "$1" == "-c2" ]] && { hbar_color_2="$2"; shift 2; }
+        [[ "$1" == "-gg" ]] && { hbar_gradient_gravity="$2"; shift 2; }
+        [[ "$1" == "-gr" ]] && { hbar_gradient_rotation=$2; shift 2; }
+        [[ "$1" == "-gcs" ]] && { hbar_gradient_color_string=$2; shift 2; }
+    done
 
     if [[ -n ${hbar_gradient_color_string+x} ]]; then
         if [[ ! "$hbar_gradient_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
@@ -1602,7 +1607,7 @@ while [ "$1" == "--hbar" ]; do
         create_rectangle                        \
             -s "${canvas_width}x${hbar_height}" \
             -c $hbar_color                      \
-            -p $hbar_opaqueness                 \
+            -q $hbar_opaqueness                 \
             -o int_hbar.png
     fi
 
@@ -1629,13 +1634,15 @@ if [ "$1" == "--bottombar" ]; then
     unset bb_gradient_rotation
     unset bb_gradient_color_string
 
-    [[ "$1" == "-h" ]] && { bb_height=$2; shift 2; }
-    [[ "$1" == "-c" ]] && { bb_color="$2"; shift 2; }
-    [[ "$1" == "-p" ]] && { bb_opaqueness=$2; shift 2; }
-    [[ "$1" == "-c2" ]] && { bb_color_2="$2"; shift 2; }
-    [[ "$1" == "-gg" ]] && { bb_gradient_gravity=$2; shift 2; }
-    [[ "$1" == "-gr" ]] && { bb_gradient_rotation=$2; shift 2; }
-    [[ "$1" == "-gcs" ]] && { bb_gradient_color_string=$2; shift 2; }
+    while [[ "$1" == @("-h"|"-c"|"-q"|"-c2"|"-gg"|"-gr"|"-gcs") ]]; do
+        [[ "$1" == "-h" ]] && { bb_height=$2; shift 2; }
+        [[ "$1" == "-c" ]] && { bb_color="$2"; shift 2; }
+        [[ "$1" == "-q" ]] && { bb_opaqueness=$2; shift 2; }
+        [[ "$1" == "-c2" ]] && { bb_color_2="$2"; shift 2; }
+        [[ "$1" == "-gg" ]] && { bb_gradient_gravity=$2; shift 2; }
+        [[ "$1" == "-gr" ]] && { bb_gradient_rotation=$2; shift 2; }
+        [[ "$1" == "-gcs" ]] && { bb_gradient_color_string=$2; shift 2; }
+    done
 
     if [[ -n ${bb_gradient_color_string+x} ]]; then
         if [[ ! "$bb_gradient_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
@@ -1684,7 +1691,7 @@ if [ "$1" == "--bottombar" ]; then
         create_rectangle                        \
             -s "${canvas_width}x${bb_height}"   \
             -c $bb_color                        \
-            -p $bb_opaqueness                   \
+            -q $bb_opaqueness                   \
             -o int_bb.png
     fi
 
