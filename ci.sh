@@ -214,6 +214,7 @@ function show_usage {
     echo "         <-gr <rotation>>                   rotation (0-360), 0=south"
     echo "         <-gcs <color string>>>]            color string (ex. \"red yellow 33 blue 66 red\")"
     echo "  --logo                              Define logo properties"
+    echo "    [-f <file>]                         image file to use"
     echo "    [-c <color>]                        color"
     echo "    [-s <size>]                         size in pixels, default is 30x30"
     echo "    [-ox <x position>]                  x position, defaults to 11"
@@ -1712,6 +1713,13 @@ fi # --bottombar
 
 if [ "$1" == "--logo" ]; then
     shift 1
+    image_logo="logo/logo_fist2_white.png" && \
+        [[ "$1" == "-f" ]] && { image_logo="$2"; shift 2; }
+    if [[ ! -f "$image_logo" ]]; then
+        echo_err "Cannot find logo file '$image_logo'"
+        exit 1
+    fi
+
     logo_color="black" && \
         [[ "$1" == "-c" ]] && { logo_color="$2"; shift 2; }
     logo_dimension="30x30" && \
@@ -1728,10 +1736,10 @@ if [ "$1" == "--logo" ]; then
     logo_offset=+${logo_offset_x}+${logo_offset_y}
 
     echo_debug "Logo:"
+    echo_debug "  File: $image_logo"
     echo_debug "  Color: $logo_color"
     echo_debug "  Label: $logo_label"
 
-    image_logo="logo/logo_fist2_white.png"
     convert                                         \
         "$image_logo"                               \
         -fill "$logo_color"                         \
