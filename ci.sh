@@ -142,7 +142,7 @@ function show_usage {
     echo "       -c1 <color>                        first gradient color"
     echo "       -c2 <color>> |                     second gradient color"
     echo "      <custom                             custom rotation and color string"
-    echo "         <-r <rotation>>                    rotation (0-360), 0=south"
+    echo "         <-r <rotation>>                    rotation (0-360), 0=south, default is 0"
     echo "         <-cs <color string>>>]             color string (ex. \"red yellow 33 blue 66 red\")"
     echo "    [-rotate -a <angle>]                rotate image"
     echo "    [-size                              resize image to dimension"
