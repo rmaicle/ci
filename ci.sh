@@ -660,6 +660,12 @@ function create_rectangle {
     [[ "$1" == "-q" ]]  && { arg_opaqueness=$2; shift 2; }
     [[ "$1" == "-o" ]]  && { arg_output="$2"; shift 2; }
 
+    echo_debug "Create Rectangle:"
+    echo_debug "  Size: ${arg_size}"
+    echo_debug "  Color: ${arg_color}"
+    echo_debug "  Opaqueness: ${arg_opaqueness}"
+    echo_debug "  Output: ${arg_output}"
+
     convert                                 \
         -size $arg_size                     \
         xc:$arg_color                       \
