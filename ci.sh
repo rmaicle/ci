@@ -1824,7 +1824,7 @@ while [ "$1" == "--text" ]; do
         create_rectangle                            \
             -s "${text_width_all}x${canvas_height}" \
             -c $guide_color                         \
-            -p 50                                   \
+            -q 50                                   \
             -o int_guide.png
         composite                                                   \
             int_guide.png                                           \
