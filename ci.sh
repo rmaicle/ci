@@ -995,7 +995,7 @@ if [ $debug -eq 1 ]; then
 fi
 
 while [ $# -gt 0 ] && \
-      [[ "$1" == @("--image"|"--rectangle"|"--logo"|"--text"|"--author") ]]; do
+      [[ "$1" == @("--image"|"--rectangle"|"--poly"|"--logo"|"--text"|"--author") ]]; do
 
 while [ "$1" == "--image" ]; do
     shift 1
@@ -1564,6 +1564,44 @@ while [ "$1" == "--rectangle" ]; do
         rm -f int_rect.png
     fi
 done # --rectangle
+
+while [ "$1" == "--poly" ]; do
+    shift 1
+
+    poly_northwest_x=0
+    poly_southwest_x=0
+    poly_northeast_x=$canvas_width
+    poly_southeast_x=$canvas_width
+    [[ "$1" == "-c" ]] && { poly_color="$2"; shift 2; }
+    [[ "$1" == "-q" ]] && { poly_opaqueness=$2; shift 2; }
+    [[ "$1" == "-nw" ]] && { poly_northwest_x=$2; shift 2; }
+    [[ "$1" == "-sw" ]] && { poly_southwest_x=$2; shift 2; }
+    [[ "$1" == "-ne" ]] && { poly_northeast_x=$2; shift 2; }
+    [[ "$1" == "-se" ]] && { poly_southeast_x=$2; shift 2; }
+
+    echo_debug "  Polygon (4-sides):"
+    echo_debug "    Dimension: ${canvas_width}x${canvas_height}"
+    echo_debug "    Color: $poly_color"
+    echo_debug "    Opaqueness: $poly_opaqueness"
+    echo_debug "    NorthWest X: $poly_northwest_x"
+    echo_debug "    SouthWest X: $poly_southwest_x"
+    echo_debug "    NorthEast X: $poly_northeast_x"
+    echo_debug "    SouthEast X: $poly_southeast_x"
+
+    convert                                     \
+        -size ${canvas_width}x${canvas_height}  \
+        xc:none                                 \
+        -alpha set                              \
+        -channel A                              \
+        -fill $poly_color                       \
+        -draw "polygon $poly_northwest_x,0 $poly_southwest_x,$canvas_height $poly_southeast_x,$canvas_height $poly_northeast_x,0" \
+        png:-                                   \
+    | composite                                 \
+        -dissolve ${poly_opaqueness}x100        \
+        -                                       \
+        $OUTPUT_FILE                            \
+        $OUTPUT_FILE
+done # --poly
 
 if [ "$1" == "--logo" ]; then
     shift 1
