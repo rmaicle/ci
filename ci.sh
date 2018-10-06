@@ -136,6 +136,11 @@ function show_usage {
     echo "      [-side                              side"
     echo "        <gravity>                           where to cut"
     echo "        <pixels>]]                          number of pixels to cut"
+    echo "      [-poly                              right/left diagonal"
+    echo "        <-nw <x position>>                   northwest x position"
+    echo "        <-sw <x position>>]                  southwest x position"
+    echo "        <-ne <x position>>                   northeast x position"
+    echo "        <-se <x position>>]                  southeast x position"
     echo "    [-flip]                             flip image horizontally"
     echo "    [-gradient                          transparent gradient"
     echo "      <[gravity | northwest | eastwest]   constants"
@@ -1242,6 +1247,41 @@ while [ "$1" == "--image" ]; do
                         echo_debug "    New height: $cut_image_height"
                     fi
                 done
+            elif [ "$1" == "-poly" ]; then
+                shift 1
+
+                image_width=`convert int_image.png -ping -format '%w' info:`
+                image_height=`convert int_image.png -ping -format '%h' info:`
+
+                cut_northwest_x=0
+                cut_southwest_x=0
+                cut_northeast_x=$image_width
+                cut_southeast_x=$image_width
+                [[ "$1" == "-nw" ]] && { cut_northwest_x=$2; shift 2; }
+                [[ "$1" == "-sw" ]] && { cut_southwest_x=$2; shift 2; }
+                [[ "$1" == "-ne" ]] && { cut_northeast_x=$2; shift 2; }
+                [[ "$1" == "-se" ]] && { cut_southeast_x=$2; shift 2; }
+
+                echo_debug "  Cut (left diagonal):"
+                echo_debug "    Dimension: ${image_width}x${image_height}"
+                echo_debug "    NorthWest X: $cut_northwest_x"
+                echo_debug "    SouthWest X: $cut_southwest_x"
+                echo_debug "    NorthEast X: $cut_northeast_x"
+                echo_debug "    SouthEast X: $cut_southeast_x"
+
+                # polygon starts at the top left
+                convert                                     \
+                    -size ${image_width}x${image_height}    \
+                    xc:black                                \
+                    -fill white                             \
+                    -draw "polygon $cut_northwest_x,0 $cut_southwest_x,$image_height $cut_southeast_x,$image_height $cut_northeast_x,0" \
+                    png:-                                   \
+                | convert                                   \
+                    int_image.png                           \
+                    -                                       \
+                    -alpha off                              \
+                    -compose copyopacity                    \
+                    -composite int_image.png
             fi
         elif [ "$1" == "-flip" ]; then
             shift 1
