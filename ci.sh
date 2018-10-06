@@ -117,7 +117,7 @@ function show_usage {
     echo "      <-s <sigma>>]                       sigma, default is 4"
     echo "    [-border                            draw border"
     echo "        <color>                           color"
-    echo "        <[-w <pixels>] |                   width in pixels, default is 3,"
+    echo "        <[-w <pixels>] |                   width in pixels, default is 3"
     echo "        [-r <pixels>]>]                    radius in pixels for rounded corner"
     echo "    [-color                             change color"
     echo "      -f <color>                          source color"
