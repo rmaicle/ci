@@ -245,7 +245,7 @@ function show_usage {
     echo "    [-sc <color>]                       stroke color"
     echo "    [-sf <percentage>]                  stroke fade percentage, default is 1"
     echo "    [-sh <percentage>]                  shadow percentage"
-    echo "    [-shc <color>]                      shadow color"
+    echo "    [-shc <color>]                      shadow color, default is black"
     echo "    [-sho <pixels>]                     shadow offset in pixels, default is 3"
     echo "  --author                            Define author text"
     echo "    -a <name>                            author name"
