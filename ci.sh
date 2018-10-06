@@ -1491,10 +1491,10 @@ while [ "$1" == "--rectangle" ]; do
 
     echo_debug "Rectangle:"
     echo_debug "  Dimension: ${rect_width}x${rect_height}"
-    echo_debug "  Color: $rect_color"
-    echo_debug "  Opaqueness: $rect_opaqueness"
     echo_debug "  Gravity: $rect_gravity"
     echo_debug "  Position: $rect_position"
+    echo_debug "  Color: $rect_color"
+    echo_debug "  Opaqueness: $rect_opaqueness"
     echo_debug "  Color: $rect_color_2"
     echo_debug "  Gradient gravity: $rect_gradient_gravity"
     echo_debug "  Gradient rotation: $rect_gradient_rotation"
