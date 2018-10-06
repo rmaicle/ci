@@ -1778,7 +1778,8 @@ fi # --logo
 guide_show=0
 guide_color=black
 
-text_width_all="$canvas_width"
+text_width_all=$canvas_width
+text_height_all=$canvas_height
 text_position_x_all=0
 text_position_y_all=0
 next_y_pos=0
@@ -1791,7 +1792,7 @@ text_gravity="northwest"
 text_kerning=0
 text_interword_spacing=0
 text_interline_spacing=0
-text_width="$text_width_all"
+text_width=$text_width_all
 compute_next=0
 text_stroke_width=0
 text_stroke_color="black"
@@ -1810,8 +1811,13 @@ fi
 while [ "$1" == "--text" ]; do
     shift 1
     text_string=""
-    [[ "$1" == "-W" ]] && { text_width_all="$2"; shift 2; }
-    [[ "$1" == "-Wo" ]] && { text_width_all=$((text_width_all - ${2})); shift 2; }
+    [[ "$1" == "-W" ]] && { text_width_all=$2; shift 2; }
+    [[ "$1" == "-Wo" ]] && { text_width_all=$(($canvas_width - ${2})); shift 2; }
+    if [ "$1" == "-Ho" ]; then
+        text_position_y_all=$((text_height_all - ${2}))
+        pos_y=$text_position_y_all
+        shift 2
+    fi
     if [ "$1" == "-Px" ]; then
         text_position_x_all="$2"
         pos_x="$2"
