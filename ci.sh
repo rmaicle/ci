@@ -1043,7 +1043,7 @@ if [ $debug -eq 1 ]; then
 fi
 
 while [ $# -gt 0 ] && \
-      [[ "$1" == @("--image"|"--rectangle"|"--poly"|"--logo"|"--text"|"--author") ]]; do
+      [[ "$1" == @("--image"|"--rectangle"|"--poly"|"--circle"|"--logo"|"--text"|"--author") ]]; do
 
 while [ "$1" == "--image" ]; do
     shift 1
@@ -1650,6 +1650,62 @@ while [ "$1" == "--poly" ]; do
         $OUTPUT_FILE                            \
         $OUTPUT_FILE
 done # --poly
+
+while [ "$1" == "--circle" ]; do
+    shift 1
+
+    circle_x=0
+    circle_y=0
+    circle_radius=0
+    circle_diameter=0
+    circle_color="black"
+    circle_stroke_width=0
+    circle_stroke_color="none"
+    circle_opaqueness=50
+    [[ "$1" == "-x" ]] && { circle_x=$2; shift 2; }
+    [[ "$1" == "-y" ]] && { circle_y=$2; shift 2; }
+    [[ "$1" == "-r" ]] && { circle_radius=$2; shift 2; }
+    [[ "$1" == "-d" ]] && { circle_diameter=$2; shift 2; }
+    [[ "$1" == "-c" ]] && { circle_color="$2"; shift 2; }
+    [[ "$1" == "-sw" ]] && { circle_stroke_width=$2; shift 2; }
+    [[ "$1" == "-sc" ]] && { circle_stroke_color="$2"; shift 2; }
+    [[ "$1" == "-q" ]] && { circle_opaqueness=$2; shift 2; }
+
+    if [ $circle_diameter -gt 0 ]; then
+        circle_radius=$((circle_diameter / 2))
+    fi
+
+    circle_image_width=$((circle_radius + circle_radius + 5))
+    center=$((circle_radius + 2))
+    dest_y=$((circle_y - circle_radius))
+
+    echo_debug "  Circle:"
+    echo_debug "    Position: ${circle_x},${circle_y}"
+    echo_debug "    Radius: $circle_radius"
+    echo_debug "    Diameter: $circle_diameter"
+    echo_debug "    Color: $circle_color"
+    echo_debug "    Stroke width: $circle_stroke_width"
+    echo_debug "    Stroke color: $circle_stroke_color"
+    echo_debug "    Opaqueness: $circle_opaqueness"
+
+    convert                                                 \
+        -size ${circle_image_width}x${circle_image_width}   \
+        xc:none                                             \
+        `#-alpha set`                                       \
+        `#-channel A`                                       \
+        -stroke $circle_stroke_color                        \
+        -fill $circle_color                                 \
+        -strokewidth $circle_stroke_width                   \
+        -draw "ellipse $center,$center $circle_radius,$circle_radius 0,360" \
+        png:-                                               \
+    | composite                                             \
+        -dissolve ${circle_opaqueness}x100                  \
+        -                                                   \
+        $OUTPUT_FILE                                        \
+        -gravity northwest                                  \
+        -geometry +${circle_x}+${dest_y}                    \
+        $OUTPUT_FILE
+done # --circle
 
 if [ "$1" == "--logo" ]; then
     shift 1
