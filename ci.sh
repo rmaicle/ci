@@ -471,6 +471,43 @@ function get_canvas_height {
 
 
 
+# Return the corresponding logo width or height of the specified canvas
+function get_logo_dimension {
+    declare -r WH_DEFAULT=15
+    declare -r WH_BIG=20
+    declare -r WH_BIGGER=25
+    declare -r WH_LARGE=30
+    declare -r WH_HUGE=35
+    declare -r WH_SQUARE=15
+    declare -r WH_SQUARE_BIG=20
+    declare -r WH_SQUARE_BIGGER=25
+    declare -r WH_SQUARE_LARGE=30
+    declare -r WH_TALL=30
+    declare -r WH_TALLER=35
+    declare -r WH_TOWER=40
+
+    [[ $# -eq 0 ]] \
+        && { echo_err "get_logo_dimension parameter not found."; return 1; }
+    case "$1" in
+        $CANVAS_DEFAULT)        dim_temp=$WH_DEFAULT ;;
+        $CANVAS_BIG)            dim_temp=$WH_BIG ;;
+        $CANVAS_BIGGER)         dim_temp=$WH_BIGGER ;;
+        $CANVAS_LARGE)          dim_temp=$WH_LARGE ;;
+        $CANVAS_HUGE)           dim_temp=$WH_HUGE ;;
+        $CANVAS_SQUARE)         dim_temp=$WH_SQUARE ;;
+        $CANVAS_SQUARE_BIG)     dim_temp=$WH_SQUARE_BIG ;;
+        $CANVAS_SQUARE_BIGGER)  dim_temp=$WH_SQUARE_BIGGER ;;
+        $CANVAS_SQUARE_LARGE)   dim_temp=$WH_SQUARE_LARGE ;;
+        $CANVAS_TALL)           dim_temp=$WH_TALL ;;
+        $CANVAS_TALLER)         dim_temp=$WH_TALLER ;;
+        $CANVAS_TOWER)          dim_temp=$WH_TOWER ;;
+        *)                      dim_temp=0 ;;
+    esac
+    return 0
+}
+
+
+
 function get_font_family {
     [[ $# -eq 0 ]] \
         && { echo_err "get_font parameter not found."; return 1; }
@@ -1614,7 +1651,8 @@ if [ "$1" == "--logo" ]; then
 
     logo_color="black" && \
         [[ "$1" == "-c" ]] && { logo_color="$2"; shift 2; }
-    logo_dimension="30x30" && \
+    get_logo_dimension $canvas
+    logo_dimension="${dim_temp}x${dim_temp}" && \
         [[ "$1" == "-s" ]] && { logo_dimension="$2"; shift 2; }
     logo_offset_x=11 && \
         [[ "$1" == "-ox" ]] && { logo_offset_x=$2; shift 2; }
