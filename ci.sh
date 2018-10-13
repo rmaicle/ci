@@ -1641,14 +1641,16 @@ while [ "$1" == "--circle" ]; do
     circle_stroke_color="none"
     circle_opaqueness=50
 
-    [[ "$1" == "-x" ]] && { circle_x=$2; shift 2; }
-    [[ "$1" == "-y" ]] && { circle_y=$2; shift 2; }
-    [[ "$1" == "-r" ]] && { circle_radius=$2; shift 2; }
-    [[ "$1" == "-d" ]] && { circle_diameter=$2; shift 2; }
-    [[ "$1" == "-c" ]] && { circle_color="$2"; shift 2; }
-    [[ "$1" == "-sw" ]] && { circle_stroke_width=$2; shift 2; }
-    [[ "$1" == "-sc" ]] && { circle_stroke_color="$2"; shift 2; }
-    [[ "$1" == "-q" ]] && { circle_opaqueness=$2; shift 2; }
+    while [[ "$1" == @("-x"|"-y"|"-r"|"-d"|"-c"|"-q"|"-sw"|"-sc") ]]; do
+        [[ "$1" == "-x" ]] && { circle_x=$2; shift 2; }
+        [[ "$1" == "-y" ]] && { circle_y=$2; shift 2; }
+        [[ "$1" == "-r" ]] && { circle_radius=$2; shift 2; }
+        [[ "$1" == "-d" ]] && { circle_diameter=$2; shift 2; }
+        [[ "$1" == "-c" ]] && { circle_color="$2"; shift 2; }
+        [[ "$1" == "-q" ]] && { circle_opaqueness=$2; shift 2; }
+        [[ "$1" == "-sw" ]] && { circle_stroke_width=$2; shift 2; }
+        [[ "$1" == "-sc" ]] && { circle_stroke_color="$2"; shift 2; }
+    done
 
     if [ $circle_diameter -gt 0 ]; then
         circle_radius=$((circle_diameter / 2))
