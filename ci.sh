@@ -1597,12 +1597,14 @@ while [ "$1" == "--poly" ]; do
     poly_northeast_x=$canvas_width
     poly_southeast_x=$canvas_width
 
-    [[ "$1" == "-c" ]] && { poly_color="$2"; shift 2; }
-    [[ "$1" == "-q" ]] && { poly_opaqueness=$2; shift 2; }
-    [[ "$1" == "-nw" ]] && { poly_northwest_x=$2; shift 2; }
-    [[ "$1" == "-sw" ]] && { poly_southwest_x=$2; shift 2; }
-    [[ "$1" == "-ne" ]] && { poly_northeast_x=$2; shift 2; }
-    [[ "$1" == "-se" ]] && { poly_southeast_x=$2; shift 2; }
+    while [[ "$1" == @("-c"|"-q"|"-nw"|"-sw"|"ne"|"se") ]]; do
+        [[ "$1" == "-c" ]] && { poly_color="$2"; shift 2; }
+        [[ "$1" == "-q" ]] && { poly_opaqueness=$2; shift 2; }
+        [[ "$1" == "-nw" ]] && { poly_northwest_x=$2; shift 2; }
+        [[ "$1" == "-sw" ]] && { poly_southwest_x=$2; shift 2; }
+        [[ "$1" == "-ne" ]] && { poly_northeast_x=$2; shift 2; }
+        [[ "$1" == "-se" ]] && { poly_southeast_x=$2; shift 2; }
+    done
 
     echo_debug "  Polygon (4-sides):"
     echo_debug "    Dimension: ${canvas_width}x${canvas_height}"
