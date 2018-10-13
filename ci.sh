@@ -149,12 +149,15 @@ function show_usage {
     echo "        <-se <x position>>]                  southeast x position"
     echo "    [-flip]                             flip image horizontally"
     echo "    [-gradient                          transparent gradient"
-    echo "      <[gravity | northwest | eastwest]   constants"
-    echo "       -c1 <color>                        first gradient color"
-    echo "       -c2 <color>> |                     second gradient color"
-    echo "      <custom                             custom rotation and color string"
-    echo "         <-r <rotation>>                    rotation (0-360), 0=south, default is 0"
-    echo "         <-cs <color string>>>]             color string (ex. \"red yellow 33 blue 66 red\")"
+    #echo "      [-d <dimension>]                    width and height in pixels, defaults to canvas width and height"
+    echo "      [-w <width>]                        width in pixels, defaults to canvas width"
+    echo "      [-h <height>]                       height in pixels, defaults to canvas height"
+    echo "      <-r <rotation>>                     rotation (0-360), 0=south, default is 0"
+    echo "                                            or to-top, to-right, to-bottom, to-left, to-topright,"
+    echo "                                            to-bottomright, to-bottomleft or to-topleft"
+    echo "      <[-c1 <color>]                      first gradient color"
+    echo "       [-c2 <color>]                      second gradient color"
+    echo "       [-cs <color string>]>              color string (ex. \"red yellow 33 blue 66 red\")"
     echo "    [-rotate -a <angle>]                rotate image"
     echo "    [-size                              resize image to dimension"
     echo "      <-s <size>>                         dimension"
@@ -191,14 +194,11 @@ function show_usage {
     echo "    [-c <color>]                        fill color or first gradient color"
     echo "    [-q <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
     echo "    [-c2 <color>]                       second gradient color"
-    echo "    [-gg                                gradient gravity"
-    echo "      <gravity |                          constants"
-    echo "       northsouth |                       north and south"
-    echo "       eastwest |                         east and west"
-    echo "       custom                             custom rotation and color string"
-    echo "         <-gr <rotation>>                   rotation (0-360), 0=south"
-    echo "         <-gcs <color string>>>]            color string (ex. \"red yellow 33 blue 66 red\")"
-    echo "    [-r <pixels>]                         rounded corner diameter"
+    echo "    [-gr <rotation>]                    rotation (0-360), 0=south, default is 0"
+    echo "                                          or to-top, to-right, to-bottom, to-left, to-topright,"
+    echo "                                          to-bottomright, to-bottomleft or to-topleft"
+    echo "    [-gcs <color string>]               color string (ex. \"red yellow 33 blue 66 red\")"
+    echo "    [-r <pixels>]                       rounded corner diameter"
     echo "    [-o <filename>]                     output image filename"
     echo "  --logo                              Define logo properties"
     echo "    [-f <file>]                         image file to use"
@@ -709,25 +709,21 @@ function create_rectangle {
 # Create a gradient image
 #
 # Arguments:
+#   dimension
 #   width
 #   height
-#   dimension
-#   gravity
-#     rotation
-#     color string
+#   rotation
 #   color1
 #   color2
-#   color3
+#   color string
 #   output file
 function create_gradient {
     local arg_width=0
     local arg_height=0
-    local arg_gravity=""
     local arg_rotation=0
-    local arg_color_string=""
     local arg_color_1=""
     local arg_color_2=""
-    local arg_color_3=""
+    local arg_color_string=""
     local arg_output=""
 
     local dimension=""
@@ -735,24 +731,25 @@ function create_gradient {
     [[ "$1" == "-d" ]]  && { dimension="$2"; shift 2; }
     [[ "$1" == "-dw" ]] && { arg_width=$2; shift 2; }
     [[ "$1" == "-dh" ]] && { arg_height=$2; shift 2; }
-    [[ "$1" == "-g" ]]  && { arg_gravity=$2; shift 2; }
     unset arg_rotation
     [[ "$1" == "-r" ]] && { arg_rotation=$2; shift 2; }
-    unset arg_color_string
-    [[ "$1" == "-cs" ]] && { arg_color_string="$2"; shift 2; }
+    unset arg_color_1
+    unset arg_color_2
     [[ "$1" == "-c1" ]] && { arg_color_1="$2"; shift 2; }
     [[ "$1" == "-c2" ]] && { arg_color_2="$2"; shift 2; }
+    unset arg_color_string
+    [[ "$1" == "-cs" ]] && { arg_color_string="$2"; shift 2; }
     [[ "$1" == "-o" ]]  && { arg_output="$2"; shift 2; }
 
-    if [[ ! "$arg_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
-        echo "Error: Unknown gravity ($arg_gravity)."
-    fi
-    if [[ "$arg_gravity" == "custom" ]]; then
-        if [[ -z ${arg_rotation+x} ]]; then
-            echo "Error: Missing argument (rotation)."
-        fi
-        if [[ -z ${arg_color_string+x} ]]; then
-            echo "Error: Missing argument (color string)."
+    if [[ -z ${arg_color_string+x} ]]; then
+        arg_color_string="$arg_color_1 $arg_color_2"
+        if [[ "$arg_rotation" == @("northsouth"|"eastwest") ]]; then
+            if [ "$arg_rotation" == "northsouth" ]; then
+                arg_rotation=0
+            elif [ "$arg_rotation" == "eastwest" ]; then
+                arg_rotation=90
+            fi
+            arg_color_string="$arg_color_1 $arg_color_2 50 $arg_color_1"
         fi
     fi
 
@@ -760,43 +757,11 @@ function create_gradient {
     echo_debug "  Dimension: ${dimension}"
     echo_debug "  Width: ${arg_width}"
     echo_debug "  Height: ${arg_height}"
-    echo_debug "  Gravity: ${arg_gravity}"
     echo_debug "  Rotation: ${arg_rotation}"
-    echo_debug "  Color string: ${arg_color_string}"
     echo_debug "  Color: $arg_color_1"
     echo_debug "  Color: $arg_color_2"
+    echo_debug "  Color string: ${arg_color_string}"
     echo_debug "  Output file: $arg_output"
-
-    if [[ "$arg_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest") ]]; then
-        if [ "$arg_gravity" == "north" ]; then
-            arg_rotation=180
-        elif [ "$arg_gravity" == "south" ]; then
-            arg_rotation=0
-        elif [ "$arg_gravity" == "east" ]; then
-            arg_rotation=270
-        elif [ "$arg_gravity" == "west" ]; then
-            arg_rotation=90
-        elif [ "$arg_gravity" == "northwest" ]; then
-            arg_rotation=135
-        elif [ "$arg_gravity" == "northeast" ]; then
-            arg_rotation=225
-        elif [ "$arg_gravity" == "southwest" ]; then
-            arg_rotation=45
-        elif [ "$arg_gravity" == "southeast" ]; then
-            arg_rotation=315
-        elif [ "$arg_gravity" == "northsouth" ]; then
-            arg_rotation=0
-        elif [ "$arg_gravity" == "eastwest" ]; then
-            arg_rotation=90
-        else
-            arg_rotation=0
-        fi
-
-        arg_color_string="$arg_color_1 $arg_color_2"
-        if [[ "$arg_gravity" == @("northsouth"|"eastwest") ]]; then
-            arg_color_string="$arg_color_1 $arg_color_2 50 $arg_color_1"
-        fi
-    fi
 
     ./multigradient             \
         -w $arg_width           \
@@ -1315,55 +1280,51 @@ while [ "$1" == "--image" ]; do
                 -flop                               \
                 int_image.png
         elif [ "$1" == "-gradient" ]; then
-            image_gradient_gravity="$2"
-            shift 2
+            shift 1
+            image_gradient_width=`convert int_image.png -ping -format '%w' info:`
+            image_gradient_height=`convert int_image.png -ping -format '%h' info:`
+            [[ "$1" == "-w" ]] && { image_gradient_width=$2; shift 2; }
+            [[ "$1" == "-h" ]] && { image_gradient_height=$2; shift 2; }
+            image_gradient_rotation=0
+            [[ "$1" == "-r" ]] && { image_gradient_rotation=$2; shift 2; }
             image_gradient_color_1="black"
             image_gradient_color_2="white"
             [[ "$1" == "-c1" ]] && { image_gradient_color_1="$2"; shift 2; }
             [[ "$1" == "-c2" ]] && { image_gradient_color_2="$2"; shift 2; }
-
-            image_gradient_rotation=0
             unset image_gradient_color_string
-            [[ "$1" == "-r" ]] && { image_gradient_rotation=$2; shift 2; }
             [[ "$1" == "-cs" ]] && { image_gradient_color_string="$2"; shift 2; }
-
-            if [[ ! "$image_gradient_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
-                echo_err "Unknown gravity ($image_gradient_gravity)."
-                exit 1
-            fi
-            if [[ "$image_gradient_gravity" == "custom" ]]; then
-                if [[ -z ${image_gradient_color_string+x} ]]; then
-                    echo_err "Missing argument (color string)."
-                    exit 1
-                fi
-            else
-                image_gradient_color_string=""
-            fi
-            image_width=`convert int_image.png -ping -format '%w' info:`
-            image_height=`convert int_image.png -ping -format '%h' info:`
+            image_gradient_mask=0
+            [[ "$1" == "-m" ]] && { image_gradient_mask=1; shift 1; }
 
             echo_debug "  Gradient"
-            echo_debug "    Width: $image_width"
-            echo_debug "    Height: $image_height"
-            echo_debug "    Gravity: $image_gradient_gravity"
+            echo_debug "    Width: $image_gradient_width"
+            echo_debug "    Height: $image_gradient_height"
+            echo_debug "    Rotation: $image_gradient_rotation"
             echo_debug "    Color: $image_gradient_color_1"
             echo_debug "    Color: $image_gradient_color_2"
-            echo_debug "    Rotation: $image_gradient_rotation"
             echo_debug "    Color string: $image_gradient_color_string"
 
             create_gradient                         \
-                -dw $image_width                    \
-                -dh $image_height                   \
-                -g  $image_gradient_gravity         \
+                -dw $image_gradient_width           \
+                -dh $image_gradient_height          \
                 -r  $image_gradient_rotation        \
-                -cs "$image_gradient_color_string"  \
                 -c1 $image_gradient_color_1         \
                 -c2 $image_gradient_color_2         \
+                -cs "$image_gradient_color_string"  \
                 -o  int_gradient.png
-            apply_mask                      \
-                -i int_image.png            \
-                -m int_gradient.png         \
-                -o int_image.png
+
+            if [ $image_gradient_mask -eq 1 ]; then
+                apply_mask                      \
+                    -i int_image.png            \
+                    -m int_gradient.png         \
+                    -o int_image.png
+            else
+                convert                         \
+                    int_image.png               \
+                    int_gradient.png            \
+                    -composite                  \
+                    int_image.png
+            fi
         elif [ "$1" == "-rotate" ]; then
             shift 1
             unset rotate_angle
@@ -1508,7 +1469,6 @@ while [ "$1" == "--rectangle" ]; do
     rect_gravity="northwest"
     rect_position="+0+0"
     rect_color_2=""
-    unset rect_gradient_gravity
     unset rect_gradient_rotation
     unset rect_gradient_color_string
     rect_round_corner_radius=0
@@ -1523,7 +1483,7 @@ while [ "$1" == "--rectangle" ]; do
         shift 1
     fi
 
-    while [[ "$1" == @("-w"|"-h"|"-g"|"-p"|"-c"|"-q"|"-c2"|"-gg"|"-gr"|"-gcs"|"-r"|"-o") ]]; do
+    while [[ "$1" == @("-w"|"-h"|"-g"|"-p"|"-c"|"-q"|"-c2"|"-gr"|"-gcs"|"-r"|"-o") ]]; do
         [[ "$1" == "-w" ]] && { rect_width=$2; shift 2; }
         [[ "$1" == "-h" ]] && { rect_height=$2; shift 2; }
         [[ "$1" == "-g" ]] && { rect_gravity="$2"; shift 2; }
@@ -1531,36 +1491,11 @@ while [ "$1" == "--rectangle" ]; do
         [[ "$1" == "-c" ]] && { rect_color="$2"; shift 2; }
         [[ "$1" == "-q" ]] && { rect_opaqueness=$2; shift 2; }
         [[ "$1" == "-c2" ]] && { rect_color_2="$2"; shift 2; }
-        [[ "$1" == "-gg" ]] && { rect_gradient_gravity="$2"; shift 2; }
         [[ "$1" == "-gr" ]] && { rect_gradient_rotation=$2; shift 2; }
         [[ "$1" == "-gcs" ]] && { rect_gradient_color_string="$2"; shift 2; }
         [[ "$1" == "-r" ]] && { rect_round_corner_radius=$2; shift 2; }
         [[ "$1" == "-o" ]] && { destination_file="$2"; shift 2; }
     done
-
-    if [[ -n ${rect_gradient_gravity+x} ]]; then
-        if [[ ! "$rect_gradient_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
-            echo_err "Unknown gravity ($rect_gradient_gravity)."
-            exit 1
-        fi
-        if [[ "$rect_gradient_gravity" == "custom" ]]; then
-            if [[ -z ${rect_gradient_rotation+x} ]]; then
-                echo_err "Missing argument (rotation)."
-                exit 1
-            fi
-            if [[ -z ${rect_gradient_color_string+x} ]]; then
-                echo_err "Missing argument (color string)."
-                exit 1
-            fi
-        else
-            rect_gradient_rotation=0
-            rect_gradient_color_string=""
-            if [[ -z ${rect_color_2} ]]; then
-                echo_err "Second gradient color not specified."
-                exit 1
-            fi
-        fi
-    fi
 
     echo_debug "Rectangle:"
     echo_debug "  Dimension: ${rect_width}x${rect_height}"
@@ -1569,21 +1504,19 @@ while [ "$1" == "--rectangle" ]; do
     echo_debug "  Color: $rect_color"
     echo_debug "  Opaqueness: $rect_opaqueness"
     echo_debug "  Color: $rect_color_2"
-    echo_debug "  Gradient gravity: $rect_gradient_gravity"
     echo_debug "  Gradient rotation: $rect_gradient_rotation"
     echo_debug "  Gradient color string: $rect_gradient_color_string"
     echo_debug "  Rounded corner radius: $rect_round_corner_radius"
     echo_debug "  Output file: $destination_file"
 
-    if [ -n "$rect_color_2" ]; then
+    if [ -n "${rect_gradient_rotation+x}" ]; then
         create_gradient                         \
             -dw $rect_width                     \
             -dh $rect_height                    \
-            -g  $rect_gradient_gravity          \
             -r  $rect_gradient_rotation         \
-            -cs "$rect_gradient_color_string"   \
             -c1 $rect_color                     \
             -c2 $rect_color_2                   \
+            -cs "$rect_gradient_color_string"   \
             -o  int_rect.png
     else
         create_rectangle                        \
@@ -1719,12 +1652,12 @@ if [ "$1" == "--logo" ]; then
     logo_color="black" && \
         [[ "$1" == "-c" ]] && { logo_color="$2"; shift 2; }
     get_logo_dimension $canvas
-    logo_dimension="${dim_temp}x${dim_temp}" && \
-        [[ "$1" == "-s" ]] && { logo_dimension="$2"; shift 2; }
-    logo_offset_x=11 && \
-        [[ "$1" == "-ox" ]] && { logo_offset_x=$2; shift 2; }
-    logo_offset_y=9 && \
-        [[ "$1" == "-oy" ]] && { logo_offset_y=$2; shift 2; }
+    logo_dimension="${dim_temp}x${dim_temp}"
+    logo_offset_x=$dim_temp
+    logo_offset_y=$dim_temp
+    [[ "$1" == "-s" ]] && { logo_dimension="$2"; shift 2; }
+    [[ "$1" == "-ox" ]] && { logo_offset_x=$2; shift 2; }
+    [[ "$1" == "-oy" ]] && { logo_offset_y=$2; shift 2; }
     logo_gravity="southeast" && \
         [[ "$1" == "-g" ]] && { logo_gravity="$2"; shift 2; }
     logo_label="" && \
@@ -1734,6 +1667,7 @@ if [ "$1" == "--logo" ]; then
 
     echo_debug "Logo:"
     echo_debug "  File: $image_logo"
+    echo_debug "  Size: $logo_dimension"
     echo_debug "  Color: $logo_color"
     echo_debug "  Label: $logo_label"
 
@@ -1825,6 +1759,7 @@ while [ "$1" == "--text" ]; do
         pos_y="$2"
         shift 2
     fi
+    guide_show=0
     if [[ "$1" == "-guide" ]]; then
         guide_color="$2"
         shift 2
