@@ -185,20 +185,22 @@ function show_usage {
     echo "                                            larger values decrease the radius and"
     echo "                                            smaller values increase the radii"
     echo "  --rectangle                         Define rectangular area"
-    echo "    [-horizontal]                       horizontal, full width"
-    echo "    [-bottom]                           horizontal at bottom, full width"
+    echo "    [-horizontal <height>]              full width with specified height"
+    echo "    [-bottom <height>]                  full width with specified height with south gravity"
     echo "    [-w <width>]                        width in pixels, defaults to canvas width"
     echo "    [-h <height>]                       height in pixels, defaults to canvas height"
+    echo "    [-c <color>]                        fill color or first gradient color"
+    echo "    [-r <pixels>]                       rounded corner diameter"
+    echo "    [-q <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
     echo "    [-g <gravity>]                      gravity"
     echo "    [-p <position>]                     position relative to gravity, defaults to +0+0"
-    echo "    [-c <color>]                        fill color or first gradient color"
-    echo "    [-q <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
-    echo "    [-c2 <color>]                       second gradient color"
-    echo "    [-gr <rotation>]                    rotation (0-360), 0=south, default is 0"
-    echo "                                          or to-top, to-right, to-bottom, to-left, to-topright,"
-    echo "                                          to-bottomright, to-bottomleft or to-topleft"
-    echo "    [-gcs <color string>]               color string (ex. \"red yellow 33 blue 66 red\")"
-    echo "    [-r <pixels>]                       rounded corner diameter"
+    echo "    [-gradient                          gradient color"
+    echo "      [-c1 <color> -c2 <color>]           first and second gradient color"
+    echo "      [-cs <color string>]                color string (ex. \"red yellow 33 blue 66 red\")"
+    echo "      [-gr <rotation>]]                   rotation (0-360), 0=south, default is 0"
+    echo "                                            or to-top, to-right, to-bottom, to-left, to-topright,"
+    echo "                                            to-bottomright, to-bottomleft or to-topleft"
+    #echo "    [-gcs <color string>]               color string (ex. \"red yellow 33 blue 66 red\")"
     echo "    [-o <filename>]                     output image filename"
     echo "  --logo                              Define logo properties"
     echo "    [-f <file>]                         image file to use"
@@ -863,8 +865,8 @@ function round_corner {
         $arg_image                  \
         \( +clone -alpha extract    \
             -draw "fill black polygon 0,0 0,$arg_corner $arg_corner,0 fill white circle $arg_corner,$arg_corner $arg_corner,0" \
-            \( +clone -flip \) -compose Multiply -composite \
-            \( +clone -flop \) -compose Multiply -composite \
+            \( +clone -flip \) -compose multiply -composite \
+            \( +clone -flop \) -compose multiply -composite \
         \)                                                  \
         -alpha off                                          \
         -compose CopyOpacity                                \
@@ -1465,80 +1467,107 @@ while [ "$1" == "--rectangle" ]; do
     rect_width=$canvas_width
     rect_height=$canvas_height
     rect_color="black"
+    rect_round_corner_pixels=0
+
     rect_opaqueness=100
     rect_gravity="northwest"
     rect_position="+0+0"
-    rect_color_2=""
-    unset rect_gradient_rotation
-    unset rect_gradient_color_string
-    rect_round_corner_radius=0
+
     destination_file="$OUTPUT_FILE"
 
     if [[ "$1" == @("-horizontal"|"-bottom") ]]; then
-        rect_height=50
-        rect_opaqueness=50
+        rect_height=0
+        rect_opaqueness=1000
         if [ "$1" == "-bottom" ]; then
             rect_gravity="south"
         fi
-        shift 1
+        rect_height=$2
+        shift 2
     fi
 
-    while [[ "$1" == @("-w"|"-h"|"-g"|"-p"|"-c"|"-q"|"-c2"|"-gr"|"-gcs"|"-r"|"-o") ]]; do
+    while [[ "$1" == @("-w"|"-h"|"-c"|"-r") ]]; do
         [[ "$1" == "-w" ]] && { rect_width=$2; shift 2; }
         [[ "$1" == "-h" ]] && { rect_height=$2; shift 2; }
-        [[ "$1" == "-g" ]] && { rect_gravity="$2"; shift 2; }
-        [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
         [[ "$1" == "-c" ]] && { rect_color="$2"; shift 2; }
-        [[ "$1" == "-q" ]] && { rect_opaqueness=$2; shift 2; }
-        [[ "$1" == "-c2" ]] && { rect_color_2="$2"; shift 2; }
-        [[ "$1" == "-gr" ]] && { rect_gradient_rotation=$2; shift 2; }
-        [[ "$1" == "-gcs" ]] && { rect_gradient_color_string="$2"; shift 2; }
-        [[ "$1" == "-r" ]] && { rect_round_corner_radius=$2; shift 2; }
-        [[ "$1" == "-o" ]] && { destination_file="$2"; shift 2; }
+        [[ "$1" == "-r" ]] && { rect_round_corner_pixels=$2; shift 2; }
     done
 
     echo_debug "Rectangle:"
     echo_debug "  Dimension: ${rect_width}x${rect_height}"
-    echo_debug "  Gravity: $rect_gravity"
-    echo_debug "  Position: $rect_position"
     echo_debug "  Color: $rect_color"
     echo_debug "  Opaqueness: $rect_opaqueness"
-    echo_debug "  Color: $rect_color_2"
-    echo_debug "  Gradient rotation: $rect_gradient_rotation"
-    echo_debug "  Gradient color string: $rect_gradient_color_string"
-    echo_debug "  Rounded corner radius: $rect_round_corner_radius"
-    echo_debug "  Output file: $destination_file"
+    echo_debug "  Rounded corner pixels: $rect_round_corner_pixels"
 
-    if [ -n "${rect_gradient_rotation+x}" ]; then
-        create_gradient                         \
-            -dw $rect_width                     \
-            -dh $rect_height                    \
-            -r  $rect_gradient_rotation         \
-            -c1 $rect_color                     \
-            -c2 $rect_color_2                   \
-            -cs "$rect_gradient_color_string"   \
-            -o  int_rect.png
-    else
+    if [ -n "$rect_color" ]; then
         create_rectangle                        \
             -s "${rect_width}x${rect_height}"   \
             -c $rect_color                      \
             -q $rect_opaqueness                 \
             -o int_rect.png
+    fi
 
-        if [ $rect_round_corner_radius -gt 0 ]; then
-            round_corner                        \
-                int_rect.png                    \
-                $rect_round_corner_radius       \
-                int_rect.png
+    if [[ "$1" == @("-gradient") ]]; then
+        rect_gradient_color_1=""
+        rect_gradient_color_2=""
+        unset rect_gradient_color_string
+        unset rect_gradient_rotation
+        while [[ "$1" == @("-gradient") ]]; do
+            shift 1
+            [[ "$1" == "-c1" ]] && { rect_gradient_color_1="$2"; shift 2; }
+            [[ "$1" == "-c2" ]] && { rect_gradient_color_2="$2"; shift 2; }
+            [[ "$1" == "-cs" ]] && { rect_gradient_color_string="$2"; shift 2; }
+            [[ "$1" == "-gr" ]] && { rect_gradient_rotation=$2; shift 2; }
+        done
+
+        echo_debug "  Gradient:"
+        echo_debug "    Color: $rect_gradient_color_1"
+        echo_debug "    Color: $rect_gradient_color_2"
+        echo_debug "    Color string: $rect_gradient_color_string"
+        echo_debug "    Rotation: $rect_gradient_rotation"
+
+        if [[ -z ${rect_gradient_color_string+x} ]]; then
+            create_gradient                         \
+                -dw $rect_width                     \
+                -dh $rect_height                    \
+                -r  $rect_gradient_rotation         \
+                -c1 $rect_gradient_color_1          \
+                -c2 $rect_gradient_color_2          \
+                -o  int_rect.png
+        else
+            create_gradient                         \
+                -dw $rect_width                     \
+                -dh $rect_height                    \
+                -r  $rect_gradient_rotation         \
+                -c1 $rect_gradient_color_1          \
+                -c2 $rect_gradient_color_2          \
+                -cs "$rect_gradient_color_string"   \
+                -o  int_rect.png
         fi
     fi
 
-    composite                       \
-        int_rect.png                \
-        $OUTPUT_FILE                \
-        -alpha set                  \
-        -gravity $rect_gravity      \
-        -geometry $rect_position    \
+    if [ $rect_round_corner_pixels -gt 0 ]; then
+        round_corner                        \
+            int_rect.png                    \
+            $rect_round_corner_pixels       \
+            int_rect.png
+    fi
+
+    [[ "$1" == "-q" ]] && { rect_opaqueness=$2; shift 2; }
+    [[ "$1" == "-g" ]] && { rect_gravity="$2"; shift 2; }
+    [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
+    [[ "$1" == "-o" ]] && { destination_file="$2"; shift 2; }
+
+    echo_debug "  Gravity: $rect_gravity"
+    echo_debug "  Position: $rect_position"
+    echo_debug "  Output file: $destination_file"
+
+    composite                               \
+        -dissolve ${rect_opaqueness}x100    \
+        int_rect.png                        \
+        $OUTPUT_FILE                        \
+        -alpha set                          \
+        -gravity $rect_gravity              \
+        -geometry $rect_position            \
         $destination_file
 
     if [ $debug -eq 0 ]; then
@@ -1548,11 +1577,11 @@ done # --rectangle
 
 while [ "$1" == "--poly" ]; do
     shift 1
-
     poly_northwest_x=0
     poly_southwest_x=0
     poly_northeast_x=$canvas_width
     poly_southeast_x=$canvas_width
+
     [[ "$1" == "-c" ]] && { poly_color="$2"; shift 2; }
     [[ "$1" == "-q" ]] && { poly_opaqueness=$2; shift 2; }
     [[ "$1" == "-nw" ]] && { poly_northwest_x=$2; shift 2; }
@@ -1586,7 +1615,6 @@ done # --poly
 
 while [ "$1" == "--circle" ]; do
     shift 1
-
     circle_x=0
     circle_y=0
     circle_radius=0
@@ -1595,6 +1623,7 @@ while [ "$1" == "--circle" ]; do
     circle_stroke_width=0
     circle_stroke_color="none"
     circle_opaqueness=50
+
     [[ "$1" == "-x" ]] && { circle_x=$2; shift 2; }
     [[ "$1" == "-y" ]] && { circle_y=$2; shift 2; }
     [[ "$1" == "-r" ]] && { circle_radius=$2; shift 2; }
