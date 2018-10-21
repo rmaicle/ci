@@ -1459,6 +1459,65 @@ while [ "$1" == "--image" ]; do
 
 done # --image
 
+if [ "$1" == "--gradient" ]; then
+    shift 1
+    image_gradient_rotation=0
+    [[ "$1" == "-r" ]] && { image_gradient_rotation=$2; shift 2; }
+    image_gradient_color_1="black"
+    image_gradient_color_2="white"
+    [[ "$1" == "-gc" ]] && { image_gradient_color_1="$2"; image_gradient_color_2="$3"; shift 3; }
+    unset image_gradient_color_string
+    [[ "$1" == "-cs" ]] && { image_gradient_color_string="$2"; shift 2; }
+    image_gradient_opaqueness=50
+    [[ "$1" == "-q" ]] && { image_gradient_opaqueness=$2; shift 2; }
+    image_gradient_mask=0
+    [[ "$1" == "-m" ]] && { image_gradient_mask=1; shift 1; }
+
+    echo_debug "Gradient"
+    echo_debug "  Rotation: $image_gradient_rotation"
+    echo_debug "  2 Color: $image_gradient_color_1 $image_gradient_color_2"
+    echo_debug "  Color string: $image_gradient_color_string"
+    echo_debug "  Opaqueness: $image_gradient_opaqueness"
+    echo_debug "  Mask: $image_gradient_mask"
+
+    create_gradient                         \
+        -dw $canvas_width                   \
+        -dh $canvas_height                  \
+        -r  $image_gradient_rotation        \
+        -c1 $image_gradient_color_1         \
+        -c2 $image_gradient_color_2         \
+        -cs "$image_gradient_color_string"  \
+        -o  int_gradient.png
+
+    if [ $image_gradient_mask -eq 1 ]; then
+        apply_mask                                  \
+            -i $OUTPUT_FILE                         \
+            -m int_gradient.png                     \
+            -o int_mask.png
+
+        convert                                     \
+            -size ${canvas_width}x${canvas_height}  \
+            xc:$image_background_color              \
+            png:-                                   \
+        | composite                                 \
+            int_mask.png                            \
+            -                                       \
+            -alpha set                              \
+            $OUTPUT_FILE
+
+        rm -f int_mask.png
+    else
+        composite                                       \
+            -dissolve ${image_gradient_opaqueness}x100  \
+            int_gradient.png                            \
+            $OUTPUT_FILE                                \
+            -alpha set                                  \
+            $OUTPUT_FILE
+    fi
+
+    rm -f int_gradient.png
+fi # --gradient
+
 while [ "$1" == "--rectangle" ]; do
     shift 1
     rect_gravity="northwest"
