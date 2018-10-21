@@ -1246,11 +1246,13 @@ while [ "$1" == "--image" ]; do
                             -chop $chop_argument    \
                             int_image.png
 
-                        cut_image_width=`convert int_image.png -ping -format '%w' info:`
-                        cut_image_height=`convert int_image.png -ping -format '%h' info:`
+                        if [ $debug -eq 1 ]; then
+                            image_width=`convert int_image.png -ping -format '%w' info:`
+                            image_height=`convert int_image.png -ping -format '%h' info:`
 
-                        echo_debug "    New width: $cut_image_width"
-                        echo_debug "    New height: $cut_image_height"
+                            echo_debug "    New width: $image_width"
+                            echo_debug "    New height: $image_height"
+                        fi
                     fi
                 done
             elif [ "$1" == "-poly" ]; then
