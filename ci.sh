@@ -754,11 +754,11 @@ function create_gradient {
     unset arg_color_2
     [[ "$1" == "-c1" ]] && { arg_color_1="$2"; shift 2; }
     [[ "$1" == "-c2" ]] && { arg_color_2="$2"; shift 2; }
-    unset arg_color_string
+    arg_color_string=""
     [[ "$1" == "-cs" ]] && { arg_color_string="$2"; shift 2; }
     [[ "$1" == "-o" ]]  && { arg_output="$2"; shift 2; }
 
-    if [[ -z ${arg_color_string+x} ]]; then
+    if [[ -z ${arg_color_string} ]]; then
         arg_color_string="$arg_color_1 $arg_color_2"
         if [[ "$arg_rotation" == @("northsouth"|"eastwest") ]]; then
             if [ "$arg_rotation" == "northsouth" ]; then
