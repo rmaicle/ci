@@ -803,7 +803,7 @@ function apply_mask {
     local arg_mask=""
     local arg_output=""
 
-    [[ "$1" == "-i" ]]  && { arg_image="$2"; shift 2; }
+    [[ "$1" == "-i" ]] && { arg_image="$2"; shift 2; }
     [[ "$1" == "-m" ]] && { arg_mask=$2; shift 2; }
     [[ "$1" == "-o" ]] && { arg_output=$2; shift 2; }
 
