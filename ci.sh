@@ -921,11 +921,11 @@ if [ "$1" == "--debug" ]; then
 fi
 
 canvas_color="black"
-canvas_color_2=""
-canvas_color_3=""
-unset canvas_gravity
-unset canvas_gradient_rotation
-unset canvas_gradient_color_string
+canvas_gradient_color_1=""
+canvas_gradient_color_2=""
+canvas_gradient_color_string=""
+canvas_gradient_rotation=0
+
 if [ "$1" == "--canvas" ]; then
     shift 1
     if [[ ! "$1" == @("default"|"big"|"bigger"|"large"|"huge"|"square"|"square-big"|"square-bigger"|"square-large"|"tall"|"taller"|"tower") ]]; then
@@ -948,39 +948,9 @@ if [ "$1" == "--canvas" ]; then
     esac
     shift 1
     [[ "$1" == "-c" ]] && { canvas_color="$2"; shift 2; }
-    [[ "$1" == "-c2" ]] && { canvas_color_2="$2"; shift 2; }
-    [[ "$1" == "-g" ]] && { canvas_gravity="$2"; shift 2; }
-    [[ "$1" == "-r" ]] && { canvas_gradient_rotation="$2"; shift 2; }
+    [[ "$1" == "-gc" ]] && { canvas_gradient_color_1="$2"; canvas_gradient_color_2="$3"; shift 3; }
     [[ "$1" == "-cs" ]] && { canvas_gradient_color_string="$2"; shift 2; }
-
-    if [[ -n ${canvas_gradient_color_string+x} ]]; then
-        if [[ ! "$canvas_gravity" == @("north"|"south"|"east"|"west"|"northwest"|"northeast"|"southwest"|"southeast"|"northsouth"|"eastwest"|"custom") ]]; then
-            echo_err "Unknown gravity ($canvas_gravity)."
-            exit 1
-        fi
-        if [[ "$canvas_gravity" == "custom" ]]; then
-            if [[ -z ${canvas_gradient_rotation+x} ]]; then
-                echo_err "Missing argument (rotation)."
-                exit 1
-            fi
-            if [[ -z ${canvas_gradient_color_string+x} ]]; then
-                echo_err "Missing argument (color string)."
-                exit 1
-            fi
-        else
-            canvas_gradient_rotation=0
-            canvas_gradient_color_string=""
-            if [[ -z "$canvas_color_2" ]]; then
-                echo_err "Canvas second gradient color not specified."
-                exit 1
-            fi
-        fi
-    else
-        # These variables need to be set so we do not have issues
-        # when passed to the gradient function
-        canvas_gradient_rotation=0
-        canvas_gradient_color_string=""
-    fi
+    [[ "$1" == "-gr" ]] && { canvas_gradient_rotation=$2; shift 2; }
 else
     canvas="$CANVAS_DEFAULT"
 fi # --canvas
@@ -993,24 +963,22 @@ canvas_height="$height_temp"
 
 echo_debug "Canvas"
 echo_debug "  Size: $canvas"
-echo_debug "  Color: $canvas_color"
-echo_debug "  Color: $canvas_color_2"
-echo_debug "  Gravity: $canvas_gravity"
-echo_debug "  Gradient rotation: $canvas_gradient_rotation"
-echo_debug "  Gradient color string: $canvas_gradient_color_string"
+echo_debug "  Dimension: ${canvas_width}x${canvas_height}"
 echo_debug "  Width: $canvas_width"
 echo_debug "  Height: $canvas_height"
-echo_debug "  Dimension: ${canvas_width}x${canvas_height}"
+echo_debug "  Color: $canvas_color"
+echo_debug "  Gradient color: $canvas_gradient_color_1 $canvas_gradient_color_2"
+echo_debug "  Gradient color string: $canvas_gradient_color_string"
+echo_debug "  Gradient rotation: $canvas_gradient_rotation"
 
-if [ -n "$canvas_gravity" ]; then
+if [[ -n "$canvas_gradient_color_1" || -n "$canvas_gradient_color_string" ]]; then
     create_gradient                         \
         -dw $canvas_width                   \
         -dh $canvas_height                  \
-        -g  $canvas_gravity                 \
         -r  $canvas_gradient_rotation       \
+        -c1 $canvas_gradient_color_1        \
+        -c2 $canvas_gradient_color_2        \
         -cs "$canvas_gradient_color_string" \
-        -c1 $canvas_color                   \
-        -c2 $canvas_color_2                 \
         -o $OUTPUT_FILE
 else
     convert                                     \
