@@ -1276,10 +1276,12 @@ while [ "$1" == "--image" ]; do
             [[ "$1" == "-r" ]] && { image_gradient_rotation=$2; shift 2; }
             image_gradient_color_1="black"
             image_gradient_color_2="white"
-            [[ "$1" == "-c1" ]] && { image_gradient_color_1="$2"; shift 2; }
-            [[ "$1" == "-c2" ]] && { image_gradient_color_2="$2"; shift 2; }
-            unset image_gradient_color_string
+            [[ "$1" == "-gc" ]] && \
+                { image_gradient_color_1="$2"; image_gradient_color_2="$3"; shift 3; }
+            image_gradient_color_string=""
             [[ "$1" == "-cs" ]] && { image_gradient_color_string="$2"; shift 2; }
+            image_gradient_opaqueness=50
+            [[ "$1" == "-q" ]] && { image_gradient_opaqueness=$2; shift 2; }
             image_gradient_mask=0
             [[ "$1" == "-m" ]] && { image_gradient_mask=1; shift 1; }
 
@@ -1287,9 +1289,10 @@ while [ "$1" == "--image" ]; do
             echo_debug "    Width: $image_gradient_width"
             echo_debug "    Height: $image_gradient_height"
             echo_debug "    Rotation: $image_gradient_rotation"
-            echo_debug "    Color: $image_gradient_color_1"
-            echo_debug "    Color: $image_gradient_color_2"
+            echo_debug "    2 Color: $image_gradient_color_1 $image_gradient_color_2"
             echo_debug "    Color string: $image_gradient_color_string"
+            echo_debug "    Opaqueness: $image_gradient_opaqueness"
+            echo_debug "    Mask: $image_gradient_mask"
 
             create_gradient                         \
                 -dw $image_gradient_width           \
@@ -1306,10 +1309,13 @@ while [ "$1" == "--image" ]; do
                     -m int_gradient.png         \
                     -o int_image.png
             else
-                convert                         \
-                    int_image.png               \
-                    int_gradient.png            \
-                    -composite                  \
+                composite                                       \
+                    -dissolve ${image_gradient_opaqueness}x100  \
+                    int_gradient.png                            \
+                    int_image.png                               \
+                    -alpha set                                  \
+                    `#-gravity north`                              \
+                    `#-geometry +0+0`                              \
                     int_image.png
             fi
         elif [ "$1" == "-rotate" ]; then
@@ -1438,13 +1444,19 @@ while [ "$1" == "--image" ]; do
         fi
     done # while
 
-    convert                         \
-        $OUTPUT_FILE                \
-        int_image.png               \
-        -gravity "$image_gravity"   \
-        -geometry "$image_offset"   \
-        -composite                  \
-        $OUTPUT_FILE
+    if [ -z "$image_output_file" ]; then
+        image_output_file="$OUTPUT_FILE"
+    fi
+
+    composite                               \
+        -dissolve ${image_opaqueness}x100   \
+        int_image.png                       \
+        $OUTPUT_FILE                        \
+        -alpha set                          \
+        -gravity $image_gravity             \
+        -geometry $image_offset_position    \
+        $image_output_file
+
 done # --image
 
 while [ "$1" == "--rectangle" ]; do
