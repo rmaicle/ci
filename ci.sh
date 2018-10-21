@@ -1461,16 +1461,23 @@ done # --image
 
 while [ "$1" == "--rectangle" ]; do
     shift 1
-    rect_width=$canvas_width
-    rect_height=$canvas_height
-    rect_color="black"
-    rect_round_corner_pixels=0
-
-    rect_opaqueness=100
     rect_gravity="northwest"
     rect_position="+0+0"
 
-    destination_file="$OUTPUT_FILE"
+    rect_width=$canvas_width
+    rect_height=$canvas_height
+    rect_color="black"
+    rect_opaqueness=100
+    rect_round_corner_pixels=0
+
+    rect_destination_file="$OUTPUT_FILE"
+
+    [[ "$1" == "-g" ]] && { rect_gravity="$2"; shift 2; }
+    [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
+    [[ "$1" == "-r" ]] && { rect_round_corner_pixels=$2; shift 2; }
+
+    echo_debug "  Gravity: $rect_gravity"
+    echo_debug "  Position: $rect_position"
 
     if [[ "$1" == @("-horizontal"|"-bottom") ]]; then
         rect_height=0
@@ -1482,63 +1489,48 @@ while [ "$1" == "--rectangle" ]; do
         shift 2
     fi
 
-    while [[ "$1" == @("-w"|"-h"|"-c"|"-r") ]]; do
+    while [[ "$1" == @("-w"|"-h"|"-c"|"-q"|"-r") ]]; do
         [[ "$1" == "-w" ]] && { rect_width=$2; shift 2; }
         [[ "$1" == "-h" ]] && { rect_height=$2; shift 2; }
         [[ "$1" == "-c" ]] && { rect_color="$2"; shift 2; }
-        [[ "$1" == "-r" ]] && { rect_round_corner_pixels=$2; shift 2; }
+        [[ "$1" == "-q" ]] && { rect_opaqueness=$2; shift 2; }
     done
-
-    echo_debug "Rectangle:"
-    echo_debug "  Dimension: ${rect_width}x${rect_height}"
-    echo_debug "  Color: $rect_color"
-    echo_debug "  Opaqueness: $rect_opaqueness"
-    echo_debug "  Rounded corner pixels: $rect_round_corner_pixels"
-
-    if [ -n "$rect_color" ]; then
-        create_rectangle                        \
-            -s "${rect_width}x${rect_height}"   \
-            -c $rect_color                      \
-            -q $rect_opaqueness                 \
-            -o int_rect.png
-    fi
 
     if [[ "$1" == @("-gradient") ]]; then
         rect_gradient_color_1=""
         rect_gradient_color_2=""
-        unset rect_gradient_color_string
-        unset rect_gradient_rotation
+        rect_gradient_color_string=""
+        rect_gradient_rotation=0
         while [[ "$1" == @("-gradient") ]]; do
             shift 1
-            [[ "$1" == "-c1" ]] && { rect_gradient_color_1="$2"; shift 2; }
-            [[ "$1" == "-c2" ]] && { rect_gradient_color_2="$2"; shift 2; }
+            [[ "$1" == "-gc" ]] && \
+                { rect_gradient_color_1="$2"; rect_gradient_color_2="$3"; shift 3; }
             [[ "$1" == "-cs" ]] && { rect_gradient_color_string="$2"; shift 2; }
             [[ "$1" == "-gr" ]] && { rect_gradient_rotation=$2; shift 2; }
         done
 
         echo_debug "  Gradient:"
-        echo_debug "    Color: $rect_gradient_color_1"
-        echo_debug "    Color: $rect_gradient_color_2"
+        echo_debug "    2 Color: $rect_gradient_color_1 $rect_gradient_color_2"
         echo_debug "    Color string: $rect_gradient_color_string"
         echo_debug "    Rotation: $rect_gradient_rotation"
 
-        if [[ -z ${rect_gradient_color_string+x} ]]; then
-            create_gradient                         \
-                -dw $rect_width                     \
-                -dh $rect_height                    \
-                -r  $rect_gradient_rotation         \
-                -c1 $rect_gradient_color_1          \
-                -c2 $rect_gradient_color_2          \
-                -o  int_rect.png
+        create_gradient                         \
+            -dw $rect_width                     \
+            -dh $rect_height                    \
+            -r  $rect_gradient_rotation         \
+            -c1 $rect_gradient_color_1          \
+            -c2 $rect_gradient_color_2          \
+            -cs "$rect_gradient_color_string"   \
+            -o  int_rect.png
+    else
+        if [ -n "$rect_color" ]; then
+            create_rectangle                        \
+                -s "${rect_width}x${rect_height}"   \
+                -c $rect_color                      \
+                -q $rect_opaqueness                 \
+                -o int_rect.png
         else
-            create_gradient                         \
-                -dw $rect_width                     \
-                -dh $rect_height                    \
-                -r  $rect_gradient_rotation         \
-                -c1 $rect_gradient_color_1          \
-                -c2 $rect_gradient_color_2          \
-                -cs "$rect_gradient_color_string"   \
-                -o  int_rect.png
+            echo_err "No rectangle color specified."
         fi
     fi
 
@@ -1549,14 +1541,9 @@ while [ "$1" == "--rectangle" ]; do
             int_rect.png
     fi
 
-    [[ "$1" == "-q" ]] && { rect_opaqueness=$2; shift 2; }
-    [[ "$1" == "-g" ]] && { rect_gravity="$2"; shift 2; }
-    [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
-    [[ "$1" == "-o" ]] && { destination_file="$2"; shift 2; }
+    [[ "$1" == "-o" ]] && { rect_destination_file="$2"; shift 2; }
 
-    echo_debug "  Gravity: $rect_gravity"
-    echo_debug "  Position: $rect_position"
-    echo_debug "  Output file: $destination_file"
+    echo_debug "  Output file: $rect_destination_file"
 
     composite                               \
         -dissolve ${rect_opaqueness}x100    \
@@ -1565,7 +1552,7 @@ while [ "$1" == "--rectangle" ]; do
         -alpha set                          \
         -gravity $rect_gravity              \
         -geometry $rect_position            \
-        $destination_file
+        $rect_destination_file
 
     if [ $debug -eq 0 ]; then
         rm -f int_rect.png
