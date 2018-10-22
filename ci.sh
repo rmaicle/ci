@@ -190,6 +190,7 @@ function show_usage {
     echo "    [-bottom <height>]                  full width with specified height, gravity is south"
     echo "    [-w <width>]                        width in pixels, defaults to canvas width"
     echo "    [-h <height>]                       height in pixels, defaults to canvas height"
+    echo "    [-bc <color>]                       background color, default is black"
     echo "    <-c <color> <color> |               first and second gradient color, [color to none]"
     echo "     -cs <color string>>                color string (ex. \"red yellow 33 blue 66 red\")"
     echo "     [-r <rotation>]                    rotation (0-360), 0=south, default is 0"
@@ -1607,6 +1608,8 @@ if [ "$1" == "--gradient" ]; then
     echo_debug "  Width: $image_gradient_width"
     echo_debug "  Height: $image_gradient_height"
 
+    image_gradient_background_color="black"
+    [[ "$1" == "-bc" ]] && { image_gradient_background_color="$2"; shift 2; }
     image_gradient_color_1="black"
     image_gradient_color_2="white"
     [[ "$1" == "-c" ]] && { image_gradient_color_1="$2"; image_gradient_color_2="$3"; shift 3; }
@@ -1619,9 +1622,10 @@ if [ "$1" == "--gradient" ]; then
     image_gradient_mask=0
     [[ "$1" == "-m" ]] && { image_gradient_mask=1; shift 1; }
 
-    echo_debug "  Rotation: $image_gradient_rotation"
+    echo_debug "  Background color: $image_gradient_background_color"
     echo_debug "  2 Color: $image_gradient_color_1 $image_gradient_color_2"
     echo_debug "  Color string: $image_gradient_color_string"
+    echo_debug "  Rotation: $image_gradient_rotation"
     echo_debug "  Opaqueness: $image_gradient_opaqueness"
     echo_debug "  Mask: $image_gradient_mask"
 
@@ -1642,7 +1646,7 @@ if [ "$1" == "--gradient" ]; then
 
         convert                                                     \
             -size ${image_gradient_width}x${image_gradient_height}  \
-            xc:green                              \
+            xc:$image_gradient_background_color                     \
             png:-                                                   \
         | composite                                                 \
             int_mask.png                                            \
