@@ -1278,14 +1278,14 @@ while [ "$1" == "--image" ]; do
             image_gradient_height=`convert int_image.png -ping -format '%h' info:`
             [[ "$1" == "-w" ]] && { image_gradient_width=$2; shift 2; }
             [[ "$1" == "-h" ]] && { image_gradient_height=$2; shift 2; }
-            image_gradient_rotation=0
-            [[ "$1" == "-r" ]] && { image_gradient_rotation=$2; shift 2; }
             image_gradient_color_1="black"
             image_gradient_color_2="white"
-            [[ "$1" == "-gc" ]] && \
+            [[ "$1" == "-c" ]] && \
                 { image_gradient_color_1="$2"; image_gradient_color_2="$3"; shift 3; }
             image_gradient_color_string=""
             [[ "$1" == "-cs" ]] && { image_gradient_color_string="$2"; shift 2; }
+            image_gradient_rotation=0
+            [[ "$1" == "-r" ]] && { image_gradient_rotation=$2; shift 2; }
             image_gradient_opaqueness=50
             [[ "$1" == "-q" ]] && { image_gradient_opaqueness=$2; shift 2; }
             image_gradient_mask=0
@@ -1294,9 +1294,9 @@ while [ "$1" == "--image" ]; do
             echo_debug "  Gradient"
             echo_debug "    Width: $image_gradient_width"
             echo_debug "    Height: $image_gradient_height"
-            echo_debug "    Rotation: $image_gradient_rotation"
             echo_debug "    2 Color: $image_gradient_color_1 $image_gradient_color_2"
             echo_debug "    Color string: $image_gradient_color_string"
+            echo_debug "    Rotation: $image_gradient_rotation"
             echo_debug "    Opaqueness: $image_gradient_opaqueness"
             echo_debug "    Mask: $image_gradient_mask"
 
