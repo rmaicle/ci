@@ -775,8 +775,7 @@ function create_gradient {
     echo_debug "  Width: ${arg_width}"
     echo_debug "  Height: ${arg_height}"
     echo_debug "  Rotation: ${arg_rotation}"
-    echo_debug "  Color: $arg_color_1"
-    echo_debug "  Color: $arg_color_2"
+    echo_debug "  Color: $arg_color_1 $arg_color_2"
     echo_debug "  Color string: ${arg_color_string}"
     echo_debug "  Output file: $arg_output"
 
