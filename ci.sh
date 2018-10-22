@@ -1371,8 +1371,8 @@ while [ "$1" == "--image" ]; do
                     int_gradient.png                            \
                     int_image.png                               \
                     -alpha set                                  \
-                    `#-gravity north`                              \
-                    `#-geometry +0+0`                              \
+                    `#-gravity north`                           \
+                    `#-geometry +0+0`                           \
                     int_image.png
             fi
         elif [ "$1" == "-rotate" ]; then
