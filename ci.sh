@@ -1003,17 +1003,23 @@ while [ "$1" == "--image" ]; do
     fi
     image_file="$1"
     shift 1
-    image_gravity="northwest" && \
-        [[ "$1" == "-g" ]] && { image_gravity="$2"; shift 2; }
-    image_offset="+0+0" && \
-        [[ "$1" == "-o" ]] && { image_offset="$2"; shift 2; }
+    image_gravity="northwest"
+    [[ "$1" == "-g" ]] && { image_gravity="$2"; shift 2; }
+    image_offset_position="+0+0"
+    [[ "$1" == "-op" ]] && { image_offset_position="$2"; shift 2; }
+    image_opaqueness=100
+    [[ "$1" == "-q" ]] && { image_opaqueness="$2"; shift 2; }
+    image_output_file=""
+    [[ "$1" == "-o" ]] && { image_output_file="$2"; shift 2; }
 
     echo_debug "Image:"
     echo_debug "  File: $image_file"
     echo_debug "  Dimension (w/ adj.): $image_dimension"
     echo_debug "  Gravity: $image_gravity"
-    echo_debug "  Offset: $image_offset"
+    echo_debug "  Offset: $image_offset_position"
+    echo_debug "  Output file: $image_output_file"
 
+    # Make a copy of the image file into our directory
     cp -f "$image_file" int_image.png
 
     while [[ "$1" == @("-blur"|"-border"|"-color"|"-corner"|"-cut"|"-flip"|"-gradient"|"-rotate"|"-size"|"-tint"|"-transparent"|"-vignette") ]]; do
