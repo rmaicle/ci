@@ -1467,19 +1467,44 @@ done # --image
 
 if [ "$1" == "--gradient" ]; then
     shift 1
-    image_gradient_rotation=0
-    [[ "$1" == "-r" ]] && { image_gradient_rotation=$2; shift 2; }
+    image_gradient_gravity="northwest"
+    image_gradient_position="+0+0"
+
+    image_gradient_width=$canvas_width
+    image_gradient_height=$canvas_height
+
+    [[ "$1" == "-g" ]] && { image_gradient_gravity="$2"; shift 2; }
+    [[ "$1" == "-p" ]] && { image_gradient_position="$2"; shift 2; }
+
+    if [[ "$1" == @("-horizontal"|"-bottom") ]]; then
+        if [ "$1" == "-bottom" ]; then
+            image_gradient_gravity="south"
+        fi
+        image_gradient_height=$2
+        shift 2
+    fi
+
+    [[ "$1" == "-w" ]] && { image_gradient_width=$2; shift 2; }
+    [[ "$1" == "-h" ]] && { image_gradient_height=$2; shift 2; }
+
+    echo_debug "Gradient:"
+    echo_debug "  Gravity: $image_gradient_gravity"
+    echo_debug "  Position: $image_gradient_position"
+    echo_debug "  Width: $image_gradient_width"
+    echo_debug "  Height: $image_gradient_height"
+
     image_gradient_color_1="black"
     image_gradient_color_2="white"
-    [[ "$1" == "-gc" ]] && { image_gradient_color_1="$2"; image_gradient_color_2="$3"; shift 3; }
+    [[ "$1" == "-c" ]] && { image_gradient_color_1="$2"; image_gradient_color_2="$3"; shift 3; }
     unset image_gradient_color_string
     [[ "$1" == "-cs" ]] && { image_gradient_color_string="$2"; shift 2; }
+    image_gradient_rotation=0
+     [[ "$1" == "-r" ]] && { image_gradient_rotation=$2; shift 2; }
     image_gradient_opaqueness=50
     [[ "$1" == "-q" ]] && { image_gradient_opaqueness=$2; shift 2; }
     image_gradient_mask=0
     [[ "$1" == "-m" ]] && { image_gradient_mask=1; shift 1; }
 
-    echo_debug "Gradient"
     echo_debug "  Rotation: $image_gradient_rotation"
     echo_debug "  2 Color: $image_gradient_color_1 $image_gradient_color_2"
     echo_debug "  Color string: $image_gradient_color_string"
@@ -1487,8 +1512,8 @@ if [ "$1" == "--gradient" ]; then
     echo_debug "  Mask: $image_gradient_mask"
 
     create_gradient                         \
-        -dw $canvas_width                   \
-        -dh $canvas_height                  \
+        -dw $image_gradient_width           \
+        -dh $image_gradient_height          \
         -r  $image_gradient_rotation        \
         -c1 $image_gradient_color_1         \
         -c2 $image_gradient_color_2         \
@@ -1501,27 +1526,35 @@ if [ "$1" == "--gradient" ]; then
             -m int_gradient.png                     \
             -o int_mask.png
 
-        convert                                     \
-            -size ${canvas_width}x${canvas_height}  \
-            xc:$image_background_color              \
-            png:-                                   \
-        | composite                                 \
-            int_mask.png                            \
-            -                                       \
-            -alpha set                              \
+        convert                                                     \
+            -size ${image_gradient_width}x${image_gradient_height}  \
+            xc:green                              \
+            png:-                                                   \
+        | composite                                                 \
+            int_mask.png                                            \
+            -                                                       \
+            -alpha set                                              \
+            -gravity $image_gradient_gravity                        \
+            -geometry $image_gradient_position                      \
             $OUTPUT_FILE
 
-        rm -f int_mask.png
+        if [ $debug -eq 0 ]; then
+            rm -f int_mask.png
+        fi
     else
         composite                                       \
             -dissolve ${image_gradient_opaqueness}x100  \
             int_gradient.png                            \
             $OUTPUT_FILE                                \
             -alpha set                                  \
+            -gravity $image_gradient_gravity            \
+            -geometry $image_gradient_position          \
             $OUTPUT_FILE
     fi
 
-    rm -f int_gradient.png
+    if [ $debug -eq 0 ]; then
+        rm -f int_gradient.png
+    fi
 fi # --gradient
 
 while [ "$1" == "--rectangle" ]; do
@@ -1541,8 +1574,10 @@ while [ "$1" == "--rectangle" ]; do
     [[ "$1" == "-p" ]] && { rect_position="$2"; shift 2; }
     [[ "$1" == "-r" ]] && { rect_round_corner_pixels=$2; shift 2; }
 
+    echo_debug "Rectangle:"
     echo_debug "  Gravity: $rect_gravity"
     echo_debug "  Position: $rect_position"
+    echo_debug "  Corner: $rect_round_corner_pixels"
 
     if [[ "$1" == @("-horizontal"|"-bottom") ]]; then
         rect_height=0
@@ -1561,42 +1596,19 @@ while [ "$1" == "--rectangle" ]; do
         [[ "$1" == "-q" ]] && { rect_opaqueness=$2; shift 2; }
     done
 
-    if [[ "$1" == @("-gradient") ]]; then
-        rect_gradient_color_1=""
-        rect_gradient_color_2=""
-        rect_gradient_color_string=""
-        rect_gradient_rotation=0
-        while [[ "$1" == @("-gradient") ]]; do
-            shift 1
-            [[ "$1" == "-gc" ]] && \
-                { rect_gradient_color_1="$2"; rect_gradient_color_2="$3"; shift 3; }
-            [[ "$1" == "-cs" ]] && { rect_gradient_color_string="$2"; shift 2; }
-            [[ "$1" == "-gr" ]] && { rect_gradient_rotation=$2; shift 2; }
-        done
+    echo_debug "  Width: $rect_width"
+    echo_debug "  Height: $rect_height"
+    echo_debug "  Color: $rect_color"
+    echo_debug "  Opaqueness: $rect_opaqueness"
 
-        echo_debug "  Gradient:"
-        echo_debug "    2 Color: $rect_gradient_color_1 $rect_gradient_color_2"
-        echo_debug "    Color string: $rect_gradient_color_string"
-        echo_debug "    Rotation: $rect_gradient_rotation"
-
-        create_gradient                         \
-            -dw $rect_width                     \
-            -dh $rect_height                    \
-            -r  $rect_gradient_rotation         \
-            -c1 $rect_gradient_color_1          \
-            -c2 $rect_gradient_color_2          \
-            -cs "$rect_gradient_color_string"   \
-            -o  int_rect.png
+    if [ -n "$rect_color" ]; then
+        create_rectangle                        \
+            -s "${rect_width}x${rect_height}"   \
+            -c $rect_color                      \
+            -q $rect_opaqueness                 \
+            -o int_rect.png
     else
-        if [ -n "$rect_color" ]; then
-            create_rectangle                        \
-                -s "${rect_width}x${rect_height}"   \
-                -c $rect_color                      \
-                -q $rect_opaqueness                 \
-                -o int_rect.png
-        else
-            echo_err "No rectangle color specified."
-        fi
+        echo_err "No rectangle color specified."
     fi
 
     if [ $rect_round_corner_pixels -gt 0 ]; then
