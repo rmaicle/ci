@@ -866,6 +866,45 @@ function blur {
 
 
 
+# Resize the specified image
+#
+# Arguments:
+#   -i image file
+#   -o output image file
+#   -s size
+#   -a adjustment
+function resize_image {
+    local arg_input_file=""
+    local arg_output_file=""
+    local arg_size
+    local arg_adjustment=">"
+
+    [[ "$1" == "-i" ]] && { arg_input_file="$2"; shift 2; }
+    [[ "$1" == "-o" ]] && { arg_output_file="$2"; shift 2; }
+    [[ "$1" == "-s" ]] && { arg_size=$2; shift 2; }
+
+    if [[ "$1" == "-a"  && -n "$2" ]]; then
+        arg_adjustment="$2"
+        shift 2
+    fi
+
+    # Size/dimension adjustment is appended
+    image_dimension="${image_dimension}${arg_adjustment}"
+
+    echo_debug "Resize image:"
+    echo_debug "  Size: $arg_size"
+    echo_debug "  Adjustment: $arg_adjustment"
+    echo_debug "  Dimension: $image_dimension"
+
+    convert                         \
+        -background none            \
+        $arg_input_file             \
+        -resize "$image_dimension"  \
+        $arg_output_file
+}
+
+
+
 # Make a rounded corner image
 #
 # Arguments:
@@ -1341,17 +1380,14 @@ while [ "$1" == "--image" ]; do
             shift 1
             image_dimension="${canvas_width}x${canvas_height}"
             [[ "$1" == "-s" ]] && { image_dimension="$2"; shift 2; }
-            # Size/dimension adjustment is appended
-            [[ "$1" == "-a" ]] \
-                && { image_dimension="$image_dimension$2"; shift 2; } \
-                || image_dimension="${image_dimension}>"
+            image_adjustment=""
+            [[ "$1" == "-a" ]] && { image_adjustment="$2"; shift 2; }
 
-            echo_debug "  Size: $image_dimension"
-            convert                         \
-                -background none            \
-                int_image.png               \
-                -resize "$image_dimension"  \
-                int_image.png
+            resize_image            \
+                -i int_image.png    \
+                -o int_image.png    \
+                -s $image_dimension \
+                -a $image_adjustment
         elif [ "$1" == "-tint" ]; then
             shift 1
             tint_use_rgb=0
