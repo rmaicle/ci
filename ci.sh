@@ -1513,6 +1513,72 @@ while [ "$1" == "--image" ]; do
 
 done # --image
 
+if [ "$1" == "--tint" ]; then
+    shift 1
+    tint_use_rgb=0
+    tint_red=0.0
+    tint_green=0.0
+    tint_blue=0.0
+    tint_brightness=0
+    tint_contrast=0
+    tint_mode="a"
+    tint_color="black"
+    tint_amount=10
+    [[ "$1" == "-c" ]] && { tint_color="$2"; shift 2; }
+    [[ "$1" == "-a" ]] && { tint_amount="$2"; shift 2; }
+    if [[ "$1" == "-rgb" ]]; then
+        shift 1
+        tint_use_rgb=1
+        if [[ "$1" == "-default" ]]; then
+            tint_red=29.9
+            tint_green=58.7
+            tint_blue=11.4
+            shift 1
+        else
+            tint_red="$1";
+            tint_green="$2";
+            tint_blue="$3";
+            shift 3
+        fi
+    elif [[ "$1" == "-bc" ]]; then
+        shift 1
+        tint_brightness="$1"
+        tint_contrast="$2"
+        shift 2
+        [[ "$1" == "-m" ]] && { tint_mode="$2"; shift 2; }
+    fi
+
+    echo_debug "Tint:"
+    echo_debug "  Color: $tint_color"
+    echo_debug "  Amount: $tint_amount"
+    echo_debug "  Red: $tint_red"
+    echo_debug "  Green: $tint_green"
+    echo_debug "  Blue: $tint_blue"
+    echo_debug "  Brightness: $tint_brightness"
+    echo_debug "  Contrast: $tint_contrast"
+    echo_debug "  Mode: $tint_mode"
+
+    if [ $tint_use_rgb -eq 1 ]; then
+        ./graytoning            \
+            -r $tint_red        \
+            -g $tint_green      \
+            -b $tint_blue       \
+            -t $tint_color      \
+            -a $tint_amount     \
+            $OUTPUT_FILE        \
+            $OUTPUT_FILE
+    else
+        ./graytoning            \
+            -o $tint_brightness \
+            -c $tint_contrast   \
+            -t $tint_color      \
+            -m $tint_mode       \
+            -a $tint_amount     \
+            $OUTPUT_FILE        \
+            $OUTPUT_FILE
+    fi
+fi # --tint
+
 if [ "$1" == "--gradient" ]; then
     shift 1
     image_gradient_gravity="northwest"
