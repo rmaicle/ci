@@ -388,7 +388,6 @@ function show_usage {
     echo "  font-display                            Coda-ExtraBold"
     echo "  font-display-1                          Muli-Black"
     echo "  font-display-2                          Chonburi"
-    echo "  font-display-3                          Bambi-Bold"
     echo "  font-dirty                              Dirty-Headline"
     echo "  font-dirty-1                            DCC-Ash"
     echo "  font-dirty-2                            DCC-SharpDistressBlack"
@@ -672,7 +671,6 @@ function get_font_family {
         display)                            font_temp="Coda-ExtraBold" ;;
         display-1)                          font_temp="Muli-Black" ;;
         display-2)                          font_temp="Chonburi" ;;
-        display-3)                          font_temp="Bambi-Bold" ;;
         dirty)                              font_temp="Dirty-Headline" ;;
         dirty-1)                            font_temp="DCC-Ash" ;;
         dirty-2)                            font_temp="DCC-SharpDistressBlack" ;;
