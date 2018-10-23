@@ -394,14 +394,15 @@ function show_usage {
     echo "  font-dirty-3                            Dark-Underground"
     echo "  font-dirty-4                            Iron-&-Brine"
     echo "  font-dirty-5                            A-Love-of-Thunder"
-    echo "  font-brush                              LemonTuesday"
-    echo "  font-brush-1                            Edo-SZ"
+    echo "  font-dirty-6                            Boycott"
+    echo "  font-brush                              Edo-SZ"
+    echo "  font-brush-1                            Yenoh-Brush"
     echo "  font-brush-2                            ProtestPaint-BB"
     echo "  font-brush-2-italic                     ProtestPaint-BB-Italic"
-    echo "  font-brush-3                            SketchaLot"
     echo "  font-horror                             YouMurdererBB"
     echo "  font-horror-1                           FaceYourFears"
     echo "  font-horror-2                           Something-Strange"
+    echo "  font-horror-3                           Gallow-Tree-Free (Italic)"
     echo "  font-old                                OldNewspaperTypes"
     echo "  font-old-1                              1543HumaneJenson-Normal"
     echo "  font-old-1-bold                         1543HumaneJenson-Bold"
@@ -677,14 +678,15 @@ function get_font_family {
         dirty-3)                            font_temp="Dark-Underground" ;;
         dirty-4)                            font_temp="Iron-&-Brine" ;;
         dirty-5)                            font_temp="A-Love-of-Thunder" ;;
-        brush)                              font_temp="LemonTuesday" ;;
-        brush-1)                            font_temp="Edo-SZ" ;;
+        dirty-6)                            font_temp="Boycott" ;;
+        brush)                              font_temp="Edo-SZ" ;;
+        brush-1)                            font_temp="Yenoh-Brush" ;;
         brush-2)                            font_temp="ProtestPaint-BB" ;;
         brush-2-italic)                     font_temp="ProtestPaint-BB-Italic" ;;
-        brush-3)                            font_temp="SketchaLot" ;;
         horror)                             font_temp="YouMurdererBB" ;;
         horror-1)                           font_temp="FaceYourFears" ;;
         horror-2)                           font_temp="Something-Strange" ;;
+        horror-3)                           font_temp="Gallow-Tree-Free" ;;
         old)                                font_temp="OldNewspaperTypes" ;;
         old-1)                              font_temp="1543HumaneJenson-Normal" ;;
         old-1-bold)                         font_temp="1543HumaneJenson-Bold" ;;
