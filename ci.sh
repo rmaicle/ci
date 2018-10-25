@@ -1391,16 +1391,24 @@ while [ "$1" == "--image" ]; do
                 int_image.png
         elif [ "$1" == "-size" ]; then
             shift 1
-            image_dimension="${canvas_width}x${canvas_height}"
-            [[ "$1" == "-s" ]] && { image_dimension="$2"; shift 2; }
-            image_adjustment=""
-            [[ "$1" == "-a" ]] && { image_adjustment="$2"; shift 2; }
+            image_resize_dimension="${canvas_width}x${canvas_height}"
+            [[ "$1" == "-s" ]] && { image_resize_dimension="$2"; shift 2; }
+            image_resize_dimension_offset=0
+            [[ "$1" == "-o" ]] && { image_resize_dimension_offset=$2; shift 2; }
+            image_resize_adjustment=""
+            [[ "$1" == "-a" ]] && { image_resize_adjustment="$2"; shift 2; }
 
-            resize_image            \
-                -i int_image.png    \
-                -o int_image.png    \
-                -s $image_dimension \
-                -a $image_adjustment
+            if [ $image_resize_dimension_offset -ne 0 ]; then
+                image_resize_width=$((canvas_width + image_resize_dimension_offset))
+                image_resize_height=$((canvas_height + image_resize_dimension_offset))
+                image_resize_dimension="${image_resize_width}x${image_resize_height}"
+            fi
+
+            resize_image                    \
+                -i int_image.png            \
+                -o int_image.png            \
+                -s $image_resize_dimension  \
+                -a $image_resize_adjustment
         elif [ "$1" == "-tint" ]; then
             shift 1
             tint_use_rgb=0
