@@ -392,9 +392,9 @@ function show_usage {
     echo "  font-dirty-1                            DCC-Ash"
     echo "  font-dirty-2                            DCC-SharpDistressBlack"
     echo "  font-dirty-3                            Dark-Underground"
-    echo "  font-dirty-4                            Iron-&-Brine"
-    echo "  font-dirty-5                            A-Love-of-Thunder"
-    echo "  font-dirty-6                            Boycott"
+    echo "  font-dirty-4                            Boycott"
+    echo "  font-dirty-5                            Iron-&-Brine"
+    echo "  font-dirty-6                            A-Love-of-Thunder"
     echo "  font-brush                              Edo-SZ"
     echo "  font-brush-1                            Yenoh-Brush"
     echo "  font-brush-2                            ProtestPaint-BB"
@@ -676,9 +676,9 @@ function get_font_family {
         dirty-1)                            font_temp="DCC-Ash" ;;
         dirty-2)                            font_temp="DCC-SharpDistressBlack" ;;
         dirty-3)                            font_temp="Dark-Underground" ;;
-        dirty-4)                            font_temp="Iron-&-Brine" ;;
-        dirty-5)                            font_temp="A-Love-of-Thunder" ;;
-        dirty-6)                            font_temp="Boycott" ;;
+        dirty-4)                            font_temp="Boycott" ;;
+        dirty-5)                            font_temp="Iron-&-Brine" ;;
+        dirty-6)                            font_temp="A-Love-of-Thunder" ;;
         brush)                              font_temp="Edo-SZ" ;;
         brush-1)                            font_temp="Yenoh-Brush" ;;
         brush-2)                            font_temp="ProtestPaint-BB" ;;
