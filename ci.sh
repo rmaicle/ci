@@ -894,7 +894,7 @@ function resize_image {
 
     [[ "$1" == "-i" ]] && { arg_input_file="$2"; shift 2; }
     [[ "$1" == "-o" ]] && { arg_output_file="$2"; shift 2; }
-    [[ "$1" == "-s" ]] && { arg_size=$2; shift 2; }
+    [[ "$1" == "-s" ]] && { arg_size="$2"; shift 2; }
 
     if [[ "$1" == "-a"  && -n "$2" ]]; then
         arg_adjustment="$2"
@@ -902,7 +902,7 @@ function resize_image {
     fi
 
     # Size/dimension adjustment is appended
-    image_dimension="${image_dimension}${arg_adjustment}"
+    local image_dimension="${arg_size}${arg_adjustment}"
 
     echo_debug "Resize image:"
     echo_debug "  Size: $arg_size"
