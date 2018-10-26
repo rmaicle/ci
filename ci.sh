@@ -266,6 +266,7 @@ function show_usage {
     echo "    [-sh <percentage>]                  shadow percentage"
     echo "    [-shc <color>]                      shadow color, default is black"
     echo "    [-sho <pixels>]                     shadow offset in pixels, default is 3"
+    echo "    [-rotate <angle>]                   rotate text by the specified angle"
     echo "  --author                            Define author text"
     echo "    -a <name>                            author name"
     echo "    -d <description>                     description text"
@@ -2063,8 +2064,8 @@ while [ "$1" == "--text" ]; do
 
     unset text_rotate_angle
     if [ "$1" == "-rotate" ]; then
-        shift 1
-        [[ "$1" == "-a" ]] && { text_rotate_angle=$2; shift 2; }
+        text_rotate_angle=$2
+        shift 2
         if [ -z ${text_rotate_angle+x} ]; then
             echo_err "Missing -rotate argument (angle)."
             exit 1
