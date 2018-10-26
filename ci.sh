@@ -2003,7 +2003,7 @@ while [ "$1" == "--text" ]; do
         rm -f int_guide.png
     fi
 
-    text_width="$text_width_all"
+    text_width=$text_width_all
     while [ $# -gt 0 ] && [[ "-t -f -s -c -bc -k -iw -i -g -w -px -py -pg -ox -oy -sw -sc -sf -sh -shc -sho" == *"$1"* ]]; do
         [[ "$1" == "-t" ]] && { text_string="$2"; shift 2; }
         if [ "$1" == "-f" ]; then
@@ -2018,10 +2018,8 @@ while [ "$1" == "--text" ]; do
         [[ "$1" == "-iw" ]] && { text_interword_spacing=$2; shift 2; }
         [[ "$1" == "-i" ]] && { text_interline_spacing="$2"; shift 2; }
         [[ "$1" == "-g" ]] && { text_gravity="$2"; shift 2; }
-        if [ "$1" == "-w" ]; then
-            text_width="$2"
-            shift 2
-        fi
+        [[ "$1" == "-w" ]] && { text_width=$2; shift 2; }
+
         # Always reset absolute position to defaults
         text_position_x=0 && \
             [[ "$1" == "-px" ]] && { text_position_x="$2"; shift 2; }
