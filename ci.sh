@@ -1365,8 +1365,8 @@ while [ "$1" == "--image" ]; do
                 # polygon starts at the top left
                 convert                                     \
                     -size ${image_width}x${image_height}    \
-                    xc:black                                \
-                    -fill white                             \
+                    xc:white                                \
+                    -fill black                             \
                     -draw "polygon $cut_northwest_x,0 $cut_southwest_x,$image_height $cut_southeast_x,$image_height $cut_northeast_x,0" \
                     png:-                                   \
                 | convert                                   \
