@@ -1853,7 +1853,7 @@ done # --circle
 
 if [ "$1" == "--logo" ]; then
     shift 1
-    image_logo="logo/logo_fist2_white.png" && \
+    image_logo="logo/logo_fist_2018.png" && \
         [[ "$1" == "-f" ]] && { image_logo="$2"; shift 2; }
     if [[ ! -f "$image_logo" ]]; then
         echo_err "Cannot find logo file '$image_logo'"
