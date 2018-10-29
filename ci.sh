@@ -183,7 +183,7 @@ function show_usage {
     echo "      [-d <xy>]]                          xy radius, default is +10+10%"
     echo "                                            larger values decrease the radius and"
     echo "                                            smaller values increase the radii"
-    echo "  --gradient                          gradient color"
+    echo "  --gradient                          Gradient color"
     echo "    [-g <gravity>]                      gravity, default is northwest"
     echo "    [-p <position>]                     position relative to gravity, defaults to +0+0"
     echo "    [-horizontal <height>]              full width with specified height"
