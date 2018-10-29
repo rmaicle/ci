@@ -1864,8 +1864,8 @@ if [ "$1" == "--logo" ]; then
         [[ "$1" == "-c" ]] && { logo_color="$2"; shift 2; }
     get_logo_dimension $canvas
     logo_dimension="${dim_temp}x${dim_temp}"
-    logo_offset_x=$dim_temp
-    logo_offset_y=$dim_temp
+    logo_offset_x=$((dim_temp / 3))
+    logo_offset_y=$(( (dim_temp / 3) + 1 ))
     [[ "$1" == "-s" ]] && { logo_dimension="$2"; shift 2; }
     [[ "$1" == "-ox" ]] && { logo_offset_x=$2; shift 2; }
     [[ "$1" == "-oy" ]] && { logo_offset_y=$2; shift 2; }
