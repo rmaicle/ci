@@ -1092,7 +1092,7 @@ if [ $debug -eq 1 ]; then
 fi
 
 while [ $# -gt 0 ] && \
-      [[ "$1" == @("--image"|"--gradient"|"--rectangle"|"--poly"|"--circle"|"--logo"|"--text"|"--author") ]]; do
+      [[ "$1" == @("--image"|"--gradient"|"--rectangle"|"--poly"|"--circle"|"--text") ]]; do
 
 while [ "$1" == "--image" ]; do
     shift 1
@@ -1907,71 +1907,7 @@ while [ "$1" == "--circle" ]; do
         $OUTPUT_FILE
 done # --circle
 
-if [ "$1" == "--logo" ]; then
-    shift 1
-    image_logo="logo/logo_fist_2018.png" && \
-        [[ "$1" == "-f" ]] && { image_logo="$2"; shift 2; }
-    if [[ ! -f "$image_logo" ]]; then
-        echo_err "Cannot find logo file '$image_logo'"
-        exit 1
-    fi
 
-    logo_color="black" && \
-        [[ "$1" == "-c" ]] && { logo_color="$2"; shift 2; }
-    get_logo_dimension $canvas
-    logo_dimension="${dim_temp}x${dim_temp}"
-    logo_offset_x=$((dim_temp / 3))
-    logo_offset_y=$(( (dim_temp / 3) + 1 ))
-    [[ "$1" == "-s" ]] && { logo_dimension="$2"; shift 2; }
-    [[ "$1" == "-ox" ]] && { logo_offset_x=$2; shift 2; }
-    [[ "$1" == "-oy" ]] && { logo_offset_y=$2; shift 2; }
-    logo_gravity="southeast" && \
-        [[ "$1" == "-g" ]] && { logo_gravity="$2"; shift 2; }
-    logo_label="" && \
-        [[ "$1" == "-l" ]] && { logo_label="$2"; shift 2; }
-
-    logo_offset=+${logo_offset_x}+${logo_offset_y}
-
-    echo_debug "Logo:"
-    echo_debug "  File: $image_logo"
-    echo_debug "  Size: $logo_dimension"
-    echo_debug "  Color: $logo_color"
-    echo_debug "  Label: $logo_label"
-
-    convert                                         \
-        "$image_logo"                               \
-        -fill "$logo_color"                         \
-        -colorize 100%                              \
-        png:-                                       \
-    | convert                                       \
-        $OUTPUT_FILE                                \
-        -                                           \
-        -gravity $logo_gravity                      \
-        -geometry ${logo_dimension}${logo_offset}   \
-        -composite                                  \
-        $OUTPUT_FILE
-
-    if [ -n "$logo_label" ]; then
-        label_offset_x=$((logo_offset_x + 37))
-        label_offset_y=$((logo_offset_y + 6))
-        convert                                             \
-            -background none                                \
-            -size 150x18                                    \
-            -font "Oswald-Regular"                          \
-            -pointsize 13                                   \
-            -gravity east                                   \
-            -fill "$logo_color"                             \
-            caption:"$logo_label"                           \
-            png:-                                           \
-        | convert                                           \
-            $OUTPUT_FILE                                    \
-            -                                               \
-            -gravity $logo_gravity                          \
-            -geometry +${label_offset_x}+${label_offset_y}  \
-            -composite                                      \
-            $OUTPUT_FILE
-    fi
-fi # --logo
 
 guide_show=0
 guide_color=black
@@ -2271,6 +2207,8 @@ while [ "$1" == "--text" ]; do
     fi # if -n $text_string
 done # --text
 
+done # main loop
+
 if [ "$1" == "--author" ]; then
     shift 1
     author_name="" && [[ "$1" == "-a" ]] && { author_name="$2"; shift 2; }
@@ -2317,7 +2255,71 @@ if [ "$1" == "--author" ]; then
         $OUTPUT_FILE
 fi # --author
 
-done
+if [ "$1" == "--logo" ]; then
+    shift 1
+    image_logo="logo/logo_fist_2018.png" && \
+        [[ "$1" == "-f" ]] && { image_logo="$2"; shift 2; }
+    if [[ ! -f "$image_logo" ]]; then
+        echo_err "Cannot find logo file '$image_logo'"
+        exit 1
+    fi
+
+    logo_color="black" && \
+        [[ "$1" == "-c" ]] && { logo_color="$2"; shift 2; }
+    get_logo_dimension $canvas
+    logo_dimension="${dim_temp}x${dim_temp}"
+    logo_offset_x=$((dim_temp / 3))
+    logo_offset_y=$(( (dim_temp / 3) + 1 ))
+    [[ "$1" == "-s" ]] && { logo_dimension="$2"; shift 2; }
+    [[ "$1" == "-ox" ]] && { logo_offset_x=$2; shift 2; }
+    [[ "$1" == "-oy" ]] && { logo_offset_y=$2; shift 2; }
+    logo_gravity="southeast" && \
+        [[ "$1" == "-g" ]] && { logo_gravity="$2"; shift 2; }
+    logo_label="" && \
+        [[ "$1" == "-l" ]] && { logo_label="$2"; shift 2; }
+
+    logo_offset=+${logo_offset_x}+${logo_offset_y}
+
+    echo_debug "Logo:"
+    echo_debug "  File: $image_logo"
+    echo_debug "  Size: $logo_dimension"
+    echo_debug "  Color: $logo_color"
+    echo_debug "  Label: $logo_label"
+
+    convert                                         \
+        "$image_logo"                               \
+        -fill "$logo_color"                         \
+        -colorize 100%                              \
+        png:-                                       \
+    | convert                                       \
+        $OUTPUT_FILE                                \
+        -                                           \
+        -gravity $logo_gravity                      \
+        -geometry ${logo_dimension}${logo_offset}   \
+        -composite                                  \
+        $OUTPUT_FILE
+
+    if [ -n "$logo_label" ]; then
+        label_offset_x=$((logo_offset_x + 37))
+        label_offset_y=$((logo_offset_y + 6))
+        convert                                             \
+            -background none                                \
+            -size 150x18                                    \
+            -font "Oswald-Regular"                          \
+            -pointsize 13                                   \
+            -gravity east                                   \
+            -fill "$logo_color"                             \
+            caption:"$logo_label"                           \
+            png:-                                           \
+        | convert                                           \
+            $OUTPUT_FILE                                    \
+            -                                               \
+            -gravity $logo_gravity                          \
+            -geometry +${label_offset_x}+${label_offset_y}  \
+            -composite                                      \
+            $OUTPUT_FILE
+    fi
+fi # --logo
 
 if [ "$1" == "--output" ]; then
     cp -f $OUTPUT_FILE "$2"
