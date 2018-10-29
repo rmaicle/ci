@@ -464,15 +464,19 @@ function echo_err {
 
 # Return the width of the specified canvas
 function get_canvas_width {
-    declare -r WIDTH_DEFAULT=588
-    declare -r WIDTH_BIG=734            # prev 735 (588 / 4) + 588
-    declare -r WIDTH_BIGGER=819
-    declare -r WIDTH_LARGE=1176         # prev 817
-    declare -r WIDTH_HUGE=1532          # (1176-819)+1176-1
-    declare -r WIDTH_SQUARE=588
-    declare -r WIDTH_SQUARE_BIG=734
-    declare -r WIDTH_SQUARE_BIGGER=819
-    declare -r WIDTH_SQUARE_LARGE=1176
+    # Formula starts at 580.
+    # Let 580 be n and the next number is x. Find out the next number.
+    #   x = (n / 4) + n
+    #   725 = (580 / 4) + 580
+    declare -r WIDTH_DEFAULT=580
+    declare -r WIDTH_BIG=725
+    declare -r WIDTH_BIGGER=906
+    declare -r WIDTH_LARGE=1133
+    declare -r WIDTH_HUGE=1416
+    declare -r WIDTH_SQUARE=580
+    declare -r WIDTH_SQUARE_BIG=725
+    declare -r WIDTH_SQUARE_BIGGER=906
+    declare -r WIDTH_SQUARE_LARGE=1133
     declare -r WIDTH_TALL=640           # iphone 4: 640/960 = 0.666
     declare -r WIDTH_TALLER=720
     declare -r WIDTH_TOWER=800
@@ -501,15 +505,23 @@ function get_canvas_width {
 
 # Return the height of the specified canvas
 function get_canvas_height {
-    declare -r HEIGHT_DEFAULT=330
-    declare -r HEIGHT_BIG=412
-    declare -r HEIGHT_BIGGER=460
-    declare -r HEIGHT_LARGE=660
-    declare -r HEIGHT_HUGE=860
-    declare -r HEIGHT_SQUARE=588
-    declare -r HEIGHT_SQUARE_BIG=734
-    declare -r HEIGHT_SQUARE_BIGGER=819
-    declare -r HEIGHT_SQUARE_LARGE=1176
+    # Formula starts at 580. Use US calling card size ratio.
+    #   3.5" x 2"
+    #   ratio: w / h = 1.75
+    #     w / 1.75 = h
+    #     3.5 / 1.75 = 2
+    # Let 580 be the width. Find out the height.
+    #   w / 1.75 = h
+    #   580 / 1.75 = 331.428571429
+    declare -r HEIGHT_DEFAULT=331
+    declare -r HEIGHT_BIG=414
+    declare -r HEIGHT_BIGGER=518
+    declare -r HEIGHT_LARGE=647
+    declare -r HEIGHT_HUGE=809
+    declare -r HEIGHT_SQUARE=580
+    declare -r HEIGHT_SQUARE_BIG=725
+    declare -r HEIGHT_SQUARE_BIGGER=906
+    declare -r HEIGHT_SQUARE_LARGE=1133
     declare -r HEIGHT_TALL=960
     declare -r HEIGHT_TALLER=1080
     declare -r HEIGHT_TOWER=1200
