@@ -284,12 +284,27 @@ function show_usage {
     echo "  font-default-condensed                  Roboto-Condensed"
     echo "  font-default-condensed-light            Roboto-Condensed-Light"
     echo "  font-default-condensed-bold             Roboto-Condensed-Bold"
+    echo "  font-default-italic                     Roboto-Italic"
+    echo "  font-default-light-italic               Roboto-Light-Italic"
+    echo "  font-default-medium-italic              Roboto-Medium-Italic"
+    echo "  font-default-bold-italic                Roboto-Bold-Italic"
+    echo "  font-default-black-italic               Roboto-Black-Italic"
+    echo "  font-default-thin-italic                Roboto-Thin-Italic"
+    echo "  font-default-condensed-italic           Roboto-Condensed-Italic"
+    echo "  font-default-condensed-light-italic     Roboto-Condensed-Light-Italic"
+    echo "  font-default-condensed-bold-italic      Roboto-Condensed-Bold-Italic"
     echo "  font-sans                               Open-Sans-Regular"
     echo "  font-sans-light                         Open-Sans-Light"
     echo "  font-sans-semibold                      Open-Sans-SemiBold"
     echo "  font-sans-bold                          Open-Sans-Bold"
     echo "  font-sans-extrabold                     Open-Sans-ExtraBold"
     echo "  font-sans-condensed-light               Open-Sans-Condensed-Light"
+    echo "  font-sans-italic                        Open-Sans-Italic"
+    echo "  font-sans-light-italic                  Open-Sans-Light-Italic"
+    echo "  font-sans-semibold-italic               Open-Sans-SemiBold-Italic"
+    echo "  font-sans-bold-italic                   Open-Sans-Bold-Italic"
+    echo "  font-sans-extrabold-italic              Open-Sans-ExtraBold-Italic"
+    echo "  font-sans-condensed-light-italic        Open-Sans-Condensed-Light-Italic"
     echo "  font-sans-condensed-bold                Open-Sans-Condensed-Bold"
     echo "  font-sans-1                             Encode-Sans-Regular"
     echo "  font-sans-1-thin                        Encode-Sans-Thin"
@@ -351,15 +366,28 @@ function show_usage {
     echo "  font-serif-light                        Merriweather-Light"
     echo "  font-serif-bold                         Merriweather-Bold"
     echo "  font-serif-black                        Merriweather-Black"
+    echo "  font-serif-italic                       Merriweather-Italic"
+    echo "  font-serif-light-italic                 Merriweather-Light-Italic"
+    echo "  font-serif-bold-italic                  Merriweather-Bold-Italic"
+    echo "  font-serif-black-italic                 Merriweather-Black-Italic"
     echo "  font-serif-1                            Cormorant-Regular"
     echo "  font-serif-1-light                      Cormorant-Light"
     echo "  font-serif-1-medium                     Cormorant-Medium"
     echo "  font-serif-1-semibold                   Cormorant-Semibold"
     echo "  font-serif-1-bold                       Cormorant-Bold"
+    echo "  font-serif-1-italic                     Cormorant-Italic"
+    echo "  font-serif-1-light-italic               Cormorant-Light-Italic"
+    echo "  font-serif-1-medium-italic              Cormorant-Medium-Italic"
+    echo "  font-serif-1-semibold-italic            Cormorant-Semibold-Italic"
+    echo "  font-serif-1-bold-italic                Cormorant-Bold-Italic"
     echo "  font-serif-2                            GTSectraFine-Regular"
     echo "  font-serif-2-medium                     GTSectraFine-Medium"
     echo "  font-serif-2-bold                       GTSectraFine-Bold"
     echo "  font-serif-2-black                      GTSectraFine-Black"
+    echo "  font-serif-2-italic                     GTSectraFine-RegularItalic"
+    echo "  font-serif-2-medium-italic              GTSectraFine-MediumItalic"
+    echo "  font-serif-2-bold-italic                GTSectraFineBold-Italic"
+    echo "  font-serif-2-black-italic               GTSectraFine-BlackItalic"
     echo "  font-serif-3                            Calluna-Regular"
     echo "  font-serif-3-bold                       Calluna-Bold"
     echo "  font-mono                               RM-Courier-Regular"
@@ -563,6 +591,15 @@ function get_font_family {
         default-condensed)                  font_temp="Roboto-Condensed" ;;
         default-condensed-light)            font_temp="Roboto-Condensed-Light" ;;
         default-condensed-bold)             font_temp="Roboto-Condensed-Bold" ;;
+        default-italic)                     font_temp="Roboto-Italic" ;;
+        default-light-italic)               font_temp="Roboto-Light-Italic" ;;
+        default-medium-italic)              font_temp="Roboto-Medium-Italic" ;;
+        default-bold-italic)                font_temp="Roboto-Bold-Italic" ;;
+        default-black-italic)               font_temp="Roboto-Black-Italic" ;;
+        default-thin-italic)                font_temp="Roboto-Thin-Italic" ;;
+        default-condensed-italic)           font_temp="Roboto-Condensed-Italic" ;;
+        default-condensed-light-italic)     font_temp="Roboto-Condensed-Light-Italic" ;;
+        default-condensed-bold-italic)      font_temp="Roboto-Condensed-Bold-Italic" ;;
         sans)                               font_temp="Open-Sans-Regular" ;;
         sans-light)                         font_temp="Open-Sans-Light" ;;
         sans-semibold)                      font_temp="Open-Sans-SemiBold" ;;
@@ -570,6 +607,12 @@ function get_font_family {
         sans-extrabold)                     font_temp="Open-Sans-ExtraBold" ;;
         sans-condensed-light)               font_temp="Open-Sans-Condensed-Light" ;;
         sans-condensed-bold)                font_temp="Open-Sans-Condensed-Bold" ;;
+        sans-italic)                        font_temp="Open-Sans-Italic" ;;
+        sans-light-italic)                  font_temp="Open-Sans-Light-Italic" ;;
+        sans-semibold-italic)               font_temp="Open-Sans-SemiBold-Italic" ;;
+        sans-bold-italic)                   font_temp="Open-Sans-Bold-Italic" ;;
+        sans-extrabold-italic)              font_temp="Open-Sans-ExtraBold-Italic" ;;
+        sans-condensed-light-italic)        font_temp="Open-Sans-Condensed-Light-Italic" ;;
         sans-1)                             font_temp="Encode-Sans-Regular" ;;
         sans-1-thin)                        font_temp="Encode-Sans-Thin" ;;
         sans-1-light)                       font_temp="Encode-Sans-Light" ;;
@@ -630,15 +673,28 @@ function get_font_family {
         serif-light)                        font_temp="Merriweather-Light" ;;
         serif-bold)                         font_temp="Merriweather-Bold" ;;
         serif-black)                        font_temp="Merriweather-Black" ;;
+        serif-italic)                       font_temp="Merriweather-Italic" ;;
+        serif-light-italic)                 font_temp="Merriweather-Light-Italic" ;;
+        serif-bold-italic)                  font_temp="Merriweather-Bold-Italic" ;;
+        serif-black-italic)                 font_temp="Merriweather-Black-Italic" ;;
         serif-1)                            font_temp="Cormorant-Regular" ;;
         serif-1-light)                      font_temp="Cormorant-Light" ;;
         serif-1-medium)                     font_temp="Cormorant-Medium" ;;
         serif-1-semibold)                   font_temp="Cormorant-Semibold" ;;
         serif-1-bold)                       font_temp="Cormorant-Bold" ;;
+        serif-1-italic)                     font_temp="Cormorant-Italic" ;;
+        serif-1-light-italic)               font_temp="Cormorant-Light-Italic" ;;
+        serif-1-medium-italic)              font_temp="Cormorant-Medium-Italic" ;;
+        serif-1-semibold-italic)            font_temp="Cormorant-Semibold-Italic" ;;
+        serif-1-bold-italic)                font_temp="Cormorant-Bold-Italic" ;;
         serif-2)                            font_temp="GTSectraFine-Regular" ;;
         serif-2-medium)                     font_temp="GTSectraFine-Medium" ;;
         serif-2-bold)                       font_temp="GTSectraFine-Bold" ;;
         serif-2-black)                      font_temp="GTSectraFine-Black" ;;
+        serif-2-italic)                     font_temp="GTSectraFine-RegularItalic" ;;
+        serif-2-medium-italic)              font_temp="GTSectraFine-MediumItalic" ;;
+        serif-2-bold-italic)                font_temp="GTSectraFineBold-Italic" ;;
+        serif-2-black-italic)               font_temp="GTSectraFine-BlackItalic" ;;
         serif-3)                            font_temp="Calluna-Regular" ;;
         serif-3-bold)                       font_temp="Calluna-Bold" ;;
         mono)                               font_temp="RM-Courier-Regular" ;;
