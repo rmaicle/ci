@@ -331,7 +331,7 @@ function show_usage {
     echo "  font-sans-1-semicondensed-medium        Encode-Sans-SemiCondensed-Medium"
     echo "  font-sans-1-semicondensed-semibold      Encode-Sans-SemiCondensed-Semibold"
     echo "  font-sans-1-semicondensed-bold          Encode-Sans-SemiCondensed-Bold"
-    echo "  font-sans-1-semicondensed-extabold      Encode-Sans-SemiCondensed-ExtraBold"
+    echo "  font-sans-1-semicondensed-extrabold     Encode-Sans-SemiCondensed-ExtraBold"
     echo "  font-sans-1-semicondensed-black         Encode-Sans-SemiCondensed-Black"
     echo "  font-sans-1-expanded                    Encode-Sans-Expanded-Regular"
     echo "  font-sans-1-expanded-thin               Encode-Sans-Expanded-Thin"
