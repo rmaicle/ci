@@ -1823,6 +1823,7 @@ done # --rectangle
 
 while [ "$1" == "--poly" ]; do
     shift 1
+    poly_opaqueness=100
     poly_northwest_x=0
     poly_southwest_x=0
     poly_northeast_x=$canvas_width
