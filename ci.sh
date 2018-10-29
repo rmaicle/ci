@@ -540,9 +540,9 @@ function get_canvas_height {
 function get_logo_dimension {
     declare -r WH_DEFAULT=15
     declare -r WH_BIG=20
-    declare -r WH_BIGGER=25
-    declare -r WH_LARGE=30
-    declare -r WH_HUGE=35
+    declare -r WH_BIGGER=30
+    declare -r WH_LARGE=35
+    declare -r WH_HUGE=40
     declare -r WH_SQUARE=15
     declare -r WH_SQUARE_BIG=20
     declare -r WH_SQUARE_BIGGER=25
