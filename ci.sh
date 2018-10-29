@@ -1036,7 +1036,7 @@ if [ $debug -eq 1 ]; then
 fi
 
 while [ $# -gt 0 ] && \
-      [[ "$1" == @("--image"|"--rectangle"|"--poly"|"--circle"|"--logo"|"--text"|"--author") ]]; do
+      [[ "$1" == @("--image"|"--gradient"|"--rectangle"|"--poly"|"--circle"|"--logo"|"--text"|"--author") ]]; do
 
 while [ "$1" == "--image" ]; do
     shift 1
