@@ -1477,14 +1477,20 @@ while [ "$1" == "--image" ]; do
             image_resize_dimension="${canvas_width}x${canvas_height}"
             [[ "$1" == "-s" ]] && { image_resize_dimension="$2"; shift 2; }
             image_resize_dimension_offset=0
-            [[ "$1" == "-o" ]] && { image_resize_dimension_offset=$2; shift 2; }
+            image_resize_offset_width=0
+            [[ "$1" == "-ow" ]] && { image_resize_offset_width=$2; shift 2; }
+            image_resize_offset_height=0
+            [[ "$1" == "-oh" ]] && { image_resize_offset_height=$2; shift 2; }
             image_resize_adjustment=""
             [[ "$1" == "-a" ]] && { image_resize_adjustment="$2"; shift 2; }
 
-            if [ $image_resize_dimension_offset -ne 0 ]; then
-                image_resize_width=$((canvas_width + image_resize_dimension_offset))
-                image_resize_height=$((canvas_height + image_resize_dimension_offset))
-                image_resize_dimension="${image_resize_width}x${image_resize_height}"
+            if [ $image_resize_offset_width -ne 0 ]; then
+                image_resize_width=$((canvas_width + image_resize_offset_width))
+                image_resize_dimension="${image_resize_width}x"
+            fi
+            if [ $image_resize_offset_height -ne 0 ]; then
+                image_resize_height=$((canvas_height + image_resize_offset_height))
+                image_resize_dimension="x${image_resize_height}"
             fi
 
             resize_image                    \
