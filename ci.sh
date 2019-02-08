@@ -22,6 +22,7 @@ declare -i -r CANVAS_SQUARE_LARGE=9
 declare -i -r CANVAS_TALL=10
 declare -i -r CANVAS_TALLER=11
 declare -i -r CANVAS_TOWER=12
+declare -i -r CANVAS_A_ONE=13
 
 declare -r FONT_DEFAULT="Roboto-Condensed"
 
@@ -78,6 +79,10 @@ function show_usage {
     get_canvas_height "$CANVAS_SQUARE_TOWER"
     local -r dimension_tower="${width_temp}x${height_temp}"
 
+    get_canvas_width "${CANVAS_A_ONE}"
+    get_canvas_height "${CANVAS_A_ONE}"
+    local -r dimension_a_one="${width_temp}x${height_temp}"
+
     echo "ci - Compose Image script version 0.6"
     echo "Copyright (C) 2016 Ricky Maicle rmaicle@gmail.com"
     echo "This is free software; see the source for copying conditions."
@@ -103,6 +108,7 @@ function show_usage {
     echo "                                          tall          ${dimension_tall}"
     echo "                                          taller        ${dimension_taller}"
     echo "                                          tower         ${dimension_tower}"
+    echo "                                          a-one         ${dimension_a_one}"
     echo "    [-c <color>]                        canvas color"
     echo "    [-gc <color> <color>]               first and second gradient color"
     echo "    [-cs <color string>]                color string (ex. \"red yellow 33 blue 66 red\")"
