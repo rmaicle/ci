@@ -160,12 +160,9 @@ function show_usage {
     echo "    [-rotate -a <angle>]                rotate image"
     echo "    [-size                              resize image to dimension"
     echo "      <-s <size>>                         dimension"
-    echo "      <-ow <size>>                        offset width, subtracted to image width"
-    echo "      <-oh <size>>                        offset height, subtracted to image height"
-    echo "      [-a <adjustment>]]                  size adjustment"
-    echo "                                            ^ resize using the smallest fitting dimension"
-    echo "                                            < enlarge to fit canvas"
-    echo "                                            > shrink to fit canvas (default)"
+    echo "      <-ow <size>>                        offset width, added/subtracted to image width"
+    echo "      <-oh <size>>                        offset height, added/subtracted to image height"
+    echo "      [-a <fill | shrink | enlarge>]]     size adjustment; default is fill"
     echo "    [-tint                              tint image using color"
     echo "      [-c <color>]                        tint color, default is black"
     echo "      [-a <amount>]]                      tint amount, default is 10"
@@ -976,31 +973,32 @@ function blur {
 function resize_image {
     local arg_input_file=""
     local arg_output_file=""
-    local arg_size
-    local arg_adjustment=">"
+    local arg_size=""
+    local arg_adjustment="fill"
 
-    [[ "$1" == "-i" ]] && { arg_input_file="$2"; shift 2; }
-    [[ "$1" == "-o" ]] && { arg_output_file="$2"; shift 2; }
-    [[ "$1" == "-s" ]] && { arg_size="$2"; shift 2; }
-
-    if [[ "$1" == "-a"  && -n "$2" ]]; then
-        arg_adjustment="$2"
-        shift 2
-    fi
+    [[ "${1}" == "-i" ]] && { arg_input_file="${2}"; shift 2; }
+    [[ "${1}" == "-o" ]] && { arg_output_file="${2}"; shift 2; }
+    [[ "${1}" == "-s" ]] && { arg_size="${2}"; shift 2; }
+    [[ "${1}" == "-a" ]] && { arg_adjustment="${2}"; shift 2; }
 
     # Size/dimension adjustment is appended
-    local image_dimension="${arg_size}${arg_adjustment}"
+    local image_dimension=""
+    case ${arg_adjustment} in
+        ${IMAGE_SIZE_ADJ_FILL})       image_dimension="${arg_size}^" ;;
+        ${IMAGE_SIZE_ADJ_SHRINK})     image_dimension="${arg_size}>" ;;
+        ${IMAGE_SIZE_ADJ_ENLARGE})    image_dimension="${arg_size}<" ;;
+    esac
 
     echo_debug "Resize image:"
-    echo_debug "  Size: $arg_size"
-    echo_debug "  Adjustment: $arg_adjustment"
-    echo_debug "  Dimension: $image_dimension"
+    echo_debug "  Size: ${arg_size}"
+    echo_debug "  Adjustment: ${arg_adjustment}"
+    echo_debug "  Dimension: ${image_dimension}"
 
     convert                         \
         -background none            \
-        $arg_input_file             \
-        -resize "$image_dimension"  \
-        $arg_output_file
+        ${arg_input_file}           \
+        -resize ${image_dimension}  \
+        ${arg_output_file}
 }
 
 
