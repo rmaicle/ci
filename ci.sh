@@ -2405,7 +2405,6 @@ while [ "${1}" == "--text" ]; do
         fi
 
         if [[ ${text_stroke_width} -eq 0 && ${text_shadow_percent} -gt 0 ]]; then
-            echo "------------"
             convert                                                     \
                 -background ${text_background_color}                    \
                 -size ${text_width}x                                    \
