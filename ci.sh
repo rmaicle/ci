@@ -9,6 +9,9 @@
 
 
 declare -r PROGRAM_NAME="${0##*/}"
+# Define directory of 3rd party scripts;
+# usually the same directory as this script.
+declare -r PROGRAM_DIR="/mnt/work/imagemagick/ci"
 
 declare debug=0
 
@@ -1054,12 +1057,12 @@ function create_gradient {
     echo_debug "  Color string: ${arg_color_string}"
     echo_debug "  Output file: $arg_output"
 
-    ./multigradient             \
-        -w $arg_width           \
-        -h $arg_height          \
-        -s "$arg_color_string"  \
-        -t linear               \
-        -d $arg_rotation        \
+    ${PROGRAM_DIR}/multigradient    \
+        -w $arg_width               \
+        -h $arg_height              \
+        -s "$arg_color_string"      \
+        -t linear                   \
+        -d $arg_rotation            \
         $arg_output
 }
 
@@ -1723,7 +1726,7 @@ while [ "${1}" == "--image" ]; do
             echo_debug "    Mode: ${tint_mode}"
 
             if [ $tint_use_rgb -eq 1 ]; then
-                ./graytoning                \
+                ${PROGRAM_DIR}/graytoning   \
                     -r ${tint_red}          \
                     -g ${tint_green}        \
                     -b ${tint_blue}         \
@@ -1732,7 +1735,7 @@ while [ "${1}" == "--image" ]; do
                     int_image.png           \
                     int_image.png
             else
-                ./graytoning                \
+                ${PROGRAM_DIR}/graytoning   \
                     -o ${tint_brightness}   \
                     -c ${tint_contrast}     \
                     -t ${tint_color}        \
@@ -1836,7 +1839,7 @@ if [ "${1}" == "--tint" ]; then
     echo_debug "  Mode: ${tint_mode}"
 
     if [ $tint_use_rgb -eq 1 ]; then
-        ./graytoning                \
+        ${PROGRAM_DIR}/graytoning   \
             -r ${tint_red}          \
             -g ${tint_green}        \
             -b ${tint_blue}         \
@@ -1845,7 +1848,7 @@ if [ "${1}" == "--tint" ]; then
             ${OUTPUT_FILE}          \
             ${OUTPUT_FILE}
     else
-        ./graytoning                \
+        ${PROGRAM_DIR}/graytoning   \
             -o ${tint_brightness}   \
             -c ${tint_contrast}     \
             -t ${tint_color}        \
