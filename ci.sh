@@ -380,6 +380,7 @@ function show_usage {
     echo "  --author                            Define author text"
     echo "    -a <name>                            author name"
     echo "    -d <description>                     description text"
+    echo "  --output                            Destination filename"
     echo "  --add-info                          Add Exif information"
     echo "                                        query Exif information like:"
     echo "                                          exiftool <file>"
@@ -2618,7 +2619,7 @@ if [ "${1}" == "--logo" ]; then
 fi # --logo
 
 if [ "${1}" == "--output" ]; then
-    cp -f ${OUTPUT_FILE} "${2}"
+    mv -f ${OUTPUT_FILE} "${2}"
 fi
 
 if [ "${1}" == "--add-info" ]; then
