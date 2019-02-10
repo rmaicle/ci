@@ -1151,7 +1151,7 @@ function resize_image {
     local arg_input_file=""
     local arg_output_file=""
     local arg_size=""
-    local arg_adjustment="fill"
+    local arg_adjustment="shrink"
 
     [[ "${1}" == "-i" ]] && { arg_input_file="${2}"; shift 2; }
     [[ "${1}" == "-o" ]] && { arg_output_file="${2}"; shift 2; }
