@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 
-# ------------------------------------------------------------------------------
-# Reference(s):
-# Uses Fred's ImageMagick Scripts
-# http://www.fmwconcepts.com/imagemagick/
-#   - graytoning
-# ------------------------------------------------------------------------------
-
+# Create image driver script
 
 declare -r PROGRAM_NAME="${0##*/}"
 # Define directory of 3rd party scripts;
 # usually the same directory as this script.
 declare -r PROGRAM_DIR="/mnt/work/imagemagick/ci"
+declare -r FRED_DIR="/mnt/work/imagemagick/ci/fred"
+
+declare LARGE_IMAGE_SUPPORT="-monitor -limit memory 2GiB -limit map 4GiB"
 
 declare debug=0
+declare debug_flag=""
 
+declare -i -r CANVAS_CUSTOM=0
 declare -i -r CANVAS_DEFAULT=1
 declare -i -r CANVAS_BIG=2
 declare -i -r CANVAS_BIGGER=3
@@ -24,543 +23,516 @@ declare -i -r CANVAS_SQUARE=6
 declare -i -r CANVAS_SQUARE_BIG=7
 declare -i -r CANVAS_SQUARE_BIGGER=8
 declare -i -r CANVAS_SQUARE_LARGE=9
-declare -i -r CANVAS_TALL=10
-declare -i -r CANVAS_TALLER=11
-declare -i -r CANVAS_TOWER=12
-declare -i -r CANVAS_A_ONE=13
-
-declare -r CANVAS_SIZE_STRING_DEFAULT="default"
-declare -r CANVAS_SIZE_STRING_BIG="big"
-declare -r CANVAS_SIZE_STRING_BIGGER="bigger"
-declare -r CANVAS_SIZE_STRING_LARGE="large"
-declare -r CANVAS_SIZE_STRING_HUGE="huge"
-declare -r CANVAS_SIZE_STRING_SQUARE="square"
-declare -r CANVAS_SIZE_STRING_SQUARE_BIG="square-big"
-declare -r CANVAS_SIZE_STRING_SQUARE_BIGGER="square-bigger"
-declare -r CANVAS_SIZE_STRING_SQUARE_LARGE="square-large"
-declare -r CANVAS_SIZE_STRING_TALL="tall"
-declare -r CANVAS_SIZE_STRING_TALLER="taller"
-declare -r CANVAS_SIZE_STRING_TOWER="tower"
-declare -r CANVAS_SIZE_STRING_A_ONE="a-one"
+declare -i -r CANVAS_SQUARE_HUGE=10
+declare -i -r CANVAS_TALL=11
+declare -i -r CANVAS_TALLER=12
+declare -i -r CANVAS_TOWER=13
+declare -i -r CANVAS_A_ONE=14
 
 declare -a -r CANVAS_SIZE_STRINGS=(
-    "${CANVAS_SIZE_STRING_DEFAULT}"
-    "${CANVAS_SIZE_STRING_BIG}"
-    "${CANVAS_SIZE_STRING_BIGGER}"
-    "${CANVAS_SIZE_STRING_LARGE}"
-    "${CANVAS_SIZE_STRING_HUGE}"
-    "${CANVAS_SIZE_STRING_SQUARE}"
-    "${CANVAS_SIZE_STRING_SQUARE_BIG}"
-    "${CANVAS_SIZE_STRING_SQUARE_BIGGER}"
-    "${CANVAS_SIZE_STRING_SQUARE_LARGE}"
-    "${CANVAS_SIZE_STRING_TALL}"
-    "${CANVAS_SIZE_STRING_TALLER}"
-    "${CANVAS_SIZE_STRING_TOWER}"
-    "${CANVAS_SIZE_STRING_A_ONE}"
+    "custom"
+    "default"
+    "big"
+    "bigger"
+    "large"
+    "huge"
+    "square"
+    "square-big"
+    "square-bigger"
+    "square-large"
+    "square-huge"
+    "tall"
+    "taller"
+    "tower"
+    "a-one"
 )
 
+
+declare -A CANVAS_WIDTH
+# Width formula starts at 580.
+# Let 580 be n and the next number is x. Find out the next number.
+#   x = (n / 4) + n
+#   725 = (580 / 4) + 580
+#
+#  Note on tall, etc sizes:
+#    Sizes are computed based on iphone 4 dimensions
+#     640/960 = 0.666
+CANVAS_WIDTH[default]=580
+CANVAS_WIDTH[big]=725
+CANVAS_WIDTH[bigger]=906
+CANVAS_WIDTH[large]=1133
+CANVAS_WIDTH[huge]=1416
+CANVAS_WIDTH[square]=580
+CANVAS_WIDTH[square-big]=725
+CANVAS_WIDTH[square-bigger]=906
+CANVAS_WIDTH[square-large]=1133
+CANVAS_WIDTH[square-huge]=1416
+CANVAS_WIDTH[tall]=640
+CANVAS_WIDTH[taller]=720
+CANVAS_WIDTH[tower]=800
+# A4 is 8.27x1169 at 96 dpi
+CANVAS_WIDTH[a-one]=794
+
+declare -A CANVAS_HEIGHT
+# Height formula starts at 580.
+# Use US calling card size ratio.
+#   3.5" x 2"
+#   ratio: w / h = 1.75
+#     w / 1.75 = h
+#     3.5 / 1.75 = 2
+# Let 580 be the width. Find out the height.
+#   w / 1.75 = h
+#   580 / 1.75 = 331.428571429
+CANVAS_HEIGHT[default]=331
+CANVAS_HEIGHT[big]=414
+CANVAS_HEIGHT[bigger]=518
+CANVAS_HEIGHT[large]=647
+CANVAS_HEIGHT[huge]=809
+CANVAS_HEIGHT[square]=580
+CANVAS_HEIGHT[square-big]=725
+CANVAS_HEIGHT[square-bigger]=906
+CANVAS_HEIGHT[square-large]=1133
+CANVAS_HEIGHT[square-huge]=1416
+CANVAS_HEIGHT[tall]=960
+CANVAS_HEIGHT[taller]=1080
+CANVAS_HEIGHT[tower]=1200
+# A4 is 8.27x1169 at 96 dpi
+CANVAS_HEIGHT[a-one]=1122
+
+declare -r OP_QUERY="--query"
+declare -r OP_CANVAS="--canvas"
 declare -r OP_IMAGE="--image"
-declare -r OP_GRADIENT="--gradient"
-declare -r OP_TINT="--tint"
-declare -r OP_RECTANGLE="--rectangle"
-declare -r OP_POLYGON="--poly"
-declare -r OP_CIRCLE="--circle"
 declare -r OP_TEXT="--text"
+declare -r OP_RECTANGLE="--rectangle"
+declare -r OP_QUAD="--quad"
+declare -r OP_ELLIPSE="--ellipse"
+declare -r OP_GRID="--grid"
+declare -r OP_LOGO="--logo"
+declare -r OP_CUSTOM="--custom"
+declare -r OP_ADD_EXIF="--add-exif"
+declare -r OP_STRIP_EXIF="--strip-exif"
 
 declare -a -r MAJOR_OPERATIONS=(
+    "${OP_QUERY}"
+    "${OP_CANVAS}"
     "${OP_IMAGE}"
-    "${OP_GRADIENT}"
-    "${OP_TINT}"
-    "${OP_RECTANGLE}"
-    "${OP_POLYGON}"
-    "${OP_CIRCLE}"
     "${OP_TEXT}"
+    "${OP_RECTANGLE}"
+    "${OP_QUAD}"
+    "${OP_ELLIPSE}"
+    "${OP_GRID}"
+    "${OP_LOGO}"
+    "${OP_CUSTOM}"
+    "${OP_ADD_EXIF}"
+    "${OP_STRIP_EXIF}"
 )
 
 declare -r IMAGE_OP_BLUR="-blur"
 declare -r IMAGE_OP_BORDER="-border"
-declare -r IMAGE_OP_COLOR="-color"
+declare -r IMAGE_OP_COLORIZE="-colorize"
+declare -r IMAGE_OP_CONTRAST="-contrast"
+declare -r IMAGE_OP_CONTRAST_SIGMOIDAL="-contrast-sig"
+declare -r IMAGE_OP_CONVERT="-convert"
 declare -r IMAGE_OP_CORNER="-corner"
-declare -r IMAGE_OP_CUT="-cut"
+declare -r IMAGE_OP_CHOP="-chop"
+declare -r IMAGE_OP_CROP="-crop"
+declare -r IMAGE_OP_SLICE="-slice"
+declare -r IMAGE_OP_ELLIPSE_SELECT="-ellipse"
 declare -r IMAGE_OP_FLIP="-flip"
+declare -r IMAGE_OP_FLOP="-flop"
 declare -r IMAGE_OP_GRADIENT="-gradient"
+declare -r IMAGE_OP_GRAYSCALE="-grayscale"
+declare -r IMAGE_OP_GRAYSCALE_SIGMOIDAL="-grayscale-sig"
+declare -r IMAGE_OP_GRID="-grid"
+declare -r IMAGE_OP_MODULATE="-modulate"
+declare -r IMAGE_OP_RESIZE="-resize"
+declare -r IMAGE_OP_RESIZE_DIM="-resize-dim"
+declare -r IMAGE_OP_RESIZE_LAB="-resize-lab"
 declare -r IMAGE_OP_ROTATE="-rotate"
-declare -r IMAGE_OP_SIZE="-size"
+declare -r IMAGE_OP_SHADE="-shade"
+declare -r IMAGE_OP_SHADOW="-shadow"
+declare -r IMAGE_OP_SHADOW_ADVANCE="-shadow-advance"
 declare -r IMAGE_OP_TINT="-tint"
 declare -r IMAGE_OP_TRANSPARENT="-transparent"
+declare -r IMAGE_OP_TRANSPOSE="-transpose"
+declare -r IMAGE_OP_TRANSVERSE="-transverse"
 declare -r IMAGE_OP_VIGNETTE="-vignette"
+
+declare -r IMAGE_OP_MERGE="-merge"
+declare -r IMAGE_OP_NOMERGE="-nomerge"
 
 declare -a -r IMAGE_OPERATIONS=(
     "${IMAGE_OP_BLUR}"
     "${IMAGE_OP_BORDER}"
-    "${IMAGE_OP_COLOR}"
+    "${IMAGE_OP_COLORIZE}"
+    "${IMAGE_OP_CONTRAST}"
+    "${IMAGE_OP_CONTRAST_SIGMOIDAL}"
+    "${IMAGE_OP_CONVERT}"
     "${IMAGE_OP_CORNER}"
-    "${IMAGE_OP_CUT}"
+    "${IMAGE_OP_CHOP}"
+    "${IMAGE_OP_CROP}"
+    "${IMAGE_OP_SLICE}"
+    "${IMAGE_OP_ELLIPSE_SELECT}"
     "${IMAGE_OP_FLIP}"
+    "${IMAGE_OP_FLOP}"
     "${IMAGE_OP_GRADIENT}"
+    "${IMAGE_OP_GRAYSCALE}"
+    "${IMAGE_OP_GRAYSCALE_SIGMOIDAL}"
+    "${IMAGE_OP_GRID}"
+    "${IMAGE_OP_MODULATE}"
+    "${IMAGE_OP_MERGE}"
+    "${IMAGE_OP_NOMERGE}"
+    "${IMAGE_OP_RESIZE}"
+    "${IMAGE_OP_RESIZE_DIM}"
+    "${IMAGE_OP_RESIZE_LAB}"
     "${IMAGE_OP_ROTATE}"
-    "${IMAGE_OP_SIZE}"
+    "${IMAGE_OP_SHADE}"
+    "${IMAGE_OP_SHADOW}"
+    "${IMAGE_OP_SHADOW_ADVANCE}"
     "${IMAGE_OP_TINT}"
     "${IMAGE_OP_TRANSPARENT}"
+    "${IMAGE_OP_TRANSPOSE}"
+    "${IMAGE_OP_TRANSVERSE}"
     "${IMAGE_OP_VIGNETTE}"
 )
 
-declare -r IMAGE_SIZE_ADJ_FILL="fill"
-declare -r IMAGE_SIZE_ADJ_SHRINK="shrink"
-declare -r IMAGE_SIZE_ADJ_ENLARGE="enlarge"
+declare -A LOGO_WIDTH
+LOGO_WIDTH[custom]=30
+LOGO_WIDTH[default]=15
+LOGO_WIDTH[big]=20
+LOGO_WIDTH[bigger]=30
+LOGO_WIDTH[large]=35
+LOGO_WIDTH[huge]=40
+LOGO_WIDTH[square]=15
+LOGO_WIDTH[square-big]=20
+LOGO_WIDTH[square-bigger]=30
+LOGO_WIDTH[square-large]=35
+LOGO_WIDTH[square-huge]=40
+LOGO_WIDTH[tall]=30
+LOGO_WIDTH[taller]=35
+LOGO_WIDTH[tower]=40
+LOGO_WIDTH[a-one]=30
 
-declare -a -r IMAGE_SIZE_ADJUSTMENTS=(
-    "${IMAGE_SIZE_ADJ_FILL}"
-    "${IMAGE_SIZE_ADJ_SHRINK}"
-    "${IMAGE_SIZE_ADJ_ENLARGE}"
-)
 
-declare -r FONT_DEFAULT="Roboto-Condensed"
 
+declare -r DEFAULT_DPI=96
+declare -r DEFAULT_DEPTH=8
+declare -r TEXT_FILE="int_text.png"
+declare -r RECTANGLE_FILE="int_rectangle.png"
+declare -r QUAD_FILE="int_quad.png"
+declare -r ELLIPSE_FILE="int_ellipse.png"
+declare -r LOGO_FILE="int_logo.png"
+
+declare -r WORK_FILE="int_work.png"
 declare -r OUTPUT_FILE="out_0.png"
 
 
 
-
-
 function show_usage {
-    get_canvas_width "${CANVAS_DEFAULT}"
-    get_canvas_height "${CANVAS_DEFAULT}"
-    local -r dimension_default="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_BIG}"
-    get_canvas_height "${CANVAS_BIG}"
-    local -r dimension_big="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_BIGGER}"
-    get_canvas_height "${CANVAS_BIGGER}"
-    local -r dimension_bigger="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_LARGE}"
-    get_canvas_height "${CANVAS_LARGE}"
-    local -r dimension_large="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_HUGE}"
-    get_canvas_height "${CANVAS_HUGE}"
-    local -r dimension_huge="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_SQUARE}"
-    get_canvas_height "${CANVAS_SQUARE}"
-    local -r dimension_square="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_SQUARE_BIG}"
-    get_canvas_height "${CANVAS_SQUARE_BIG}"
-    local -r dimension_square_big="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_SQUARE_BIGGER}"
-    get_canvas_height "${CANVAS_SQUARE_BIGGER}"
-    local -r dimension_square_bigger="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_SQUARE_LARGE}"
-    get_canvas_height "${CANVAS_SQUARE_LARGE}"
-    local -r dimension_square_large="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_TALL}"
-    get_canvas_height "${CANVAS_TALL}"
-    local -r dimension_tall="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_TALLER}"
-    get_canvas_height "${CANVAS_TALLER}"
-    local -r dimension_taller="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_TOWER}"
-    get_canvas_height "${CANVAS_TOWER}"
-    local -r dimension_tower="${width_temp}x${height_temp}"
-
-    get_canvas_width "${CANVAS_A_ONE}"
-    get_canvas_height "${CANVAS_A_ONE}"
-    local -r dimension_a_one="${width_temp}x${height_temp}"
-
-    echo "$PROGRAM_NAME - Compose Image script version 0.6"
-    echo "Copyright (C) 2016 Ricky Maicle rmaicle@gmail.com"
-    echo "This is free software; see the source for copying conditions."
-    echo "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+    echo "$PROGRAM_NAME - Create an image."
     echo ""
-    echo "Create a PNG image file composed of text and images."
-    echo "Usage:"
+    echo "Usage: $PROGRAM_NAME [options] [image operations]"
     echo ""
     echo "Options:"
-    echo "  --help                              Show usage"
-    echo "  --debug                             Debug mode"
-    echo "  --canvas                            Define working canvas"
-    echo "    [size]                              pre-defined dimensions:"
-    echo "                                          default       ${dimension_default}"
-    echo "                                          big           ${dimension_big}"
-    echo "                                          bigger        ${dimension_bigger}"
-    echo "                                          large         ${dimension_large}"
-    echo "                                          huge          ${dimension_huge}"
-    echo "                                          square        ${dimension_square}"
-    echo "                                          square-big    ${dimension_square_big}"
-    echo "                                          square-bigger ${dimension_square_bigger}"
-    echo "                                          square-large  ${dimension_square_large}"
-    echo "                                          tall          ${dimension_tall}"
-    echo "                                          taller        ${dimension_taller}"
-    echo "                                          tower         ${dimension_tower}"
-    echo "                                          a-one         ${dimension_a_one}"
-    echo "    [-c <color>]                        canvas color"
-    echo "    [-gc <color> <color>]               first and second gradient color"
-    echo "    [-cs <color string>]                gradient color string (ex. \"red yellow 33 blue 66 red\")"
-    echo "    [-gr <rotation>]                    rotation (0-360), 0=south, default is 0"
-    echo "                                          or to-top, to-right, to-bottom, to-left, to-topright,"
-    echo "                                          to-bottomright, to-bottomleft or to-topleft"
-    echo "  --image                             Define image properties"
-    echo "    <filename>                          image file"
-    echo "    [-g <gravity>]                      where the image position gravitates to"
-    echo "    [-op <position>]                    offset position relative to gravity"
-    echo "    [-q <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
-    echo "    [-blur                              blur image"
-    echo "      <-simple> |                         simple blurring"
-    echo "      [-r <radius>]                       radius, default is 0"
-    echo "      <-s <sigma>>]                       sigma, default is 4"
-    echo "    [-border                            draw border"
-    echo "        <color>                           color"
-    echo "        <[-w <pixels>] |                   width in pixels, default is 3"
-    echo "        [-r <pixels>]>]                    radius in pixels for rounded corner"
-    echo "    [-color                             change color"
-    echo "      -f <color>                          source color"
-    echo "      [-t <color> | -x]                   destination color or transparent"
-    echo "      [-n | -ng]]                         -n replaces each pixel with complementary color,"
-    echo "                                          -ng replaces grayscale pixels with complementary color,"
-    echo "    [-corner                            round image corner"
-    echo "      [-r <radius>]                       corner radius in pixels"
-    echo "    [-cut                               cut image"
-    echo "      [-circle                            circle"
-    echo "        <-r>                                radius"
-    echo "        <-px>                               x position"
-    echo "        <-py>                               y position"
-    echo "        [-bw <width>]                       border width"
-    echo "        [-bc <color>]                       border color"
-    echo "      [<gravity> <pixels>]                cut on side with specified pixels"
-    echo "      [-poly                              right/left diagonal"
-    echo "        <-nw <x position>>                   northwest x position"
-    echo "        <-sw <x position>>]                  southwest x position"
-    echo "        <-ne <x position>>                   northeast x position"
-    echo "        <-se <x position>>]                  southeast x position"
-    echo "    [-flip]                             flip image horizontally"
-    echo "    [-gradient                          transparent gradient"
-    #echo "      [-d <dimension>]                    width and height in pixels, defaults to canvas width and height"
-    echo "      [-w <width>]                        width in pixels, defaults to canvas width"
-    echo "      [-h <height>]                       height in pixels, defaults to canvas height"
-    echo "      <-c <color> <color> |               first and second gradient color, [color to none]"
-    echo "       -cs <color string>>                color string (ex. \"red yellow 33 blue 66 red\")"
-    echo "      [-r <rotation>]                     rotation (0-360), 0=south, default is 0"
-    echo "                                            or to-top, to-right, to-bottom, to-left, to-topright,"
-    echo "                                            to-bottomright, to-bottomleft or to-topleft"
-    echo "      [-q <percentage> |                  opaqueness, default is 50, 100=opaque, 0=transparent"
-    echo "       -m]]                               use as mask, white is opaque, black is transparent"
-    #echo "    [-mask]                             make the image as a mask"
-    echo "    [-rotate -a <angle>]                rotate image"
-    echo "    [-size                              resize image to dimension"
-    echo "      <-s <size>>                         dimension"
-    echo "      <-ow <size>>                        offset width, added/subtracted to image width"
-    echo "      <-oh <size>>                        offset height, added/subtracted to image height"
-    echo "      [-a                                 size adjustment; default is fill (horizontally)"
-    echo "          <fill   |                         fill based on smallest fitting dimension"
-    echo "           shrink |                         shrink if larger"
-    echo "           enlarge>]                        enlarge if smaller"
-    echo "    [-tint                              tint image using color"
-    echo "      [-c <color>]                        tint color, default is black"
-    echo "      [-a <amount>]]                      tint amount, default is 10"
-    echo "      <-rgb                               Use RGB colors, default is 29.9, 58.7, 11.4"
-    echo "          [-default | <r> <g> <b>]] |       RGB values, default is 29.9, 58.7, 11.4"
-    echo "       -bc                                Use gray brightness and contrast,"
-    echo "          <brightness>                      gray brightness, -100<=float<=100, default is 0"
-    echo "          <contrast>                        gray contrast, -100<=float<=100, default is 0"
-    echo "          [-m <mode>]>                      mode of tinting, default is all"
-    echo "                                              a - all"
-    echo "                                              m - midtones"
-    echo "                                              h - highlights"
-    echo "                                              s - shadows"
-    echo "    [-vignette                          vignette"
-    echo "      [-c <color>]                        color, default is black"
-    echo "      [-s <amount>]                       amount, default is 10"
-    echo "      [-d <xy>]]                          xy radius, default is +10+10%"
-    echo "                                            larger values decrease the radius and"
-    echo "                                            smaller values increase the radii"
-    echo "  --gradient                          Gradient color"
-    echo "    [-g <gravity>]                      gravity, default is northwest"
-    echo "    [-p <position>]                     position relative to gravity, defaults to +0+0"
-    echo "    [-horizontal <height>]              full width with specified height"
-    echo "    [-bottom <height>]                  full width with specified height, gravity is south"
-    echo "    [-w <width>]                        width in pixels, defaults to canvas width"
-    echo "    [-h <height>]                       height in pixels, defaults to canvas height"
-    echo "    [-bc <color>]                       background color, default is black"
-    echo "    <-c <color> <color> |               first and second gradient color, [color to none]"
-    echo "     -cs <color string>>                color string (ex. \"red yellow 33 blue 66 red\")"
-    echo "     [-r <rotation>]                    rotation (0-360), 0=south, default is 0"
-    echo "                                          or to-top, to-right, to-bottom, to-left, to-topright,"
-    echo "                                          to-bottomright, to-bottomleft or to-topleft"
-    echo "     [-q <percentage> |                 opaqueness, default is 50, 100=opaque, 0=transparent"
-    echo "      -m]                               use as mask, white is opaque, black is transparent"
-    echo "  --rectangle                         Define rectangular area"
-    echo "    [-g <gravity>]                      gravity, default is northwest"
-    echo "    [-p <position>]                     position relative to gravity, defaults to +0+0"
-    echo "    [-r <pixels>]                       rounded corner diameter, default is 0"
-    echo "    [-horizontal <height>]              full width with specified height"
-    echo "    [-bottom <height>]                  full width with specified height, gravity is south"
-    echo "    [-w <width>]                        width in pixels, defaults to canvas width"
-    echo "    [-h <height>]                       height in pixels, defaults to canvas height"
-    echo "    [-c <color>]                        fill color or first gradient color"
-    echo "    [-q <percentage>]                   opaqueness, default is 100, 100=opaque, 0=transparent"
-    echo "    [-sh <color>                        shadow color, default is gray"
-    echo "    [-shr <radius>                      shadow radius, default is 80"
-    echo "    [-shs <sigma>                       shadow sigma, 0=hard shadow, default is 4 (right),"
-    echo "    [-shx <<+|->pixels>                 shadow x offset, + is east, default is 5 (right),"
-    echo "    [-shy <<+|->pixels>                 shadow y offset, + is south, default is 5 (right),"
-    echo "    [-gc <color> <color>]               gradient color from top to bottom"
-#    echo "      [-gc <color> <color>]               first and second gradient color"
-#    echo "      [-cs <color string>]                color string (ex. \"red yellow 33 blue 66 red\")"
-#    echo "      [-gr <rotation>]]                   rotation (0-360), 0=south, default is 0"
-#    echo "                                            or to-top, to-right, to-bottom, to-left, to-topright,"
-#    echo "                                            to-bottomright, to-bottomleft or to-topleft"
-    echo "    [-o <filename>]                     output image filename"
-    echo "  --poly                              Define four-sided polygon"
-    echo "    [-c <color>]                        fill color"
-    echo "    [-q <perentage>]                    opaqueness, default is 100, 100=opaque, 0=transparent"
-    echo "    [-nw <x position>]                  northwest x position"
-    echo "    [-sw <x position>]                  southwest x position"
-    echo "    [-ne <x position>]                  northeast x position"
-    echo "    [-se <x position>]                  southeast x position"
-    echo "  --circle                              Define a circle"
-    echo "    [-x <position>]                       x position"
-    echo "    [-y <position>]                       y position"
-    echo "    [-r <pixels>]                         radius in pixels"
-    echo "    [-d <pixels>]                         diameter in pixels"
-    echo "    [-g <gravity>]                        gravity, default is northwest"
-    echo "    [-c <color>]                          fill color"
-    echo "    [-q <perentage>]                      opaqueness, default is 100, 100=opaque, 0=transparent"
-    echo "    [-sh <color>                          shadow color, default is gray"
-    echo "    [-shr <radius>                        shadow radius, default is 80"
-    echo "    [-shs <sigma>                         shadow sigma, 0=hard shadow, default is 4 (right),"
-    echo "    [-shx <<+|->pixels>                   shadow x offset, + is east, default is 5 (right),"
-    echo "    [-shy <<+|->pixels>                   shadow y offset, + is south, default is 5 (right),"
-    echo "    [-sw <pixels>]                        stroke width in pixels"
-    echo "    [-sc <color>]                         stroke color"
-    echo "  --text                              Define text properties"
-    echo "    [-W <width>]                        Global text area width"
-    echo "    [-Wo <width>]                       Offset, value is subtracted from W"
-    echo "    [-Ho <height>]                      Offset, value is subtracted from H"
-    echo "    [-Px <x position>]                  Global x position"
-    echo "    [-Py <y position>]                  Global y position"
-    echo "    [-t <text>]                         text"
-    echo "    [-f <font>]                         font"
-    echo "    [-s <point size>]                   font size"
-    echo "    [-c <color>]                        text color"
-    echo "    [-bc <color>]                       background color"
-    echo "    [-g <gravity>]                      gravity"
-    echo "    [-k <kerning>]                      inter-character spacing"
-    echo "    [-iw <inter-word spacing>]          inter-word spacing"
-    echo "    [-i <inter-line spacing>]           inter-line spacing"
-    echo "    [-w <width>]                        text width"
-    echo "    [-px <x position>]                  x position for this text entry only"
-    echo "    [-py <y position>]                  y position for this text entry only"
-    echo "    [-pg <gravity>]                     position for this text entry only"
-    echo "    [-ox <x position>]                  offset x position for this text entry only"
-    echo "    [-oy <y position>]                  offset y position for this text entry only"
-    echo "    [-sw <width>]                       stroke width in pixels"
-    echo "    [-sc <color>]                       stroke color"
-    echo "    [-sf <percentage>]                  stroke fade percentage, default is 1"
-    echo "    [-sh <percentage>]                  shadow percentage"
-    echo "    [-shc <color>]                      shadow color, default is black"
-    echo "    [-sho <pixels>]                     shadow offset in pixels, default is 3"
-    echo "    [-rotate <angle>]                   rotate text by the specified angle"
-    echo "  --logo                              Define logo properties"
-    echo "    [-f <file>]                         image file to use"
-    echo "    [-c <color>]                        color"
-    echo "    [-s <size>]                         size in pixels, default is 30x30"
-    echo "    [-ox <x position>]                  x position, defaults to 11"
-    echo "    [-oy <y position>]                  y position, defaults to 9"
-    echo "    [-g <gravity>]                      gravity, defaults to southeast"
-    echo "    [-l <text>]                         optional label before logo"
-    echo "  --author                            Define author text"
-    echo "    -a <name>                            author name"
-    echo "    -d <description>                     description text"
-    echo "  --output                            Destination filename"
-    echo "  --add-info                          Add Exif information"
-    echo "                                        query Exif information like:"
-    echo "                                          exiftool <file>"
-    echo "  "
-    echo "Font Family:"
-    echo "  font-default                            Roboto"
-    echo "  font-default-light                      Roboto-Light"
-    echo "  font-default-medium                     Roboto-Medium"
-    echo "  font-default-bold                       Roboto-Bold"
-    echo "  font-default-black                      Roboto-Black"
-    echo "  font-default-thin                       Roboto-Thin"
-    echo "  font-default-condensed                  Roboto-Condensed"
-    echo "  font-default-condensed-light            Roboto-Condensed-Light"
-    echo "  font-default-condensed-bold             Roboto-Condensed-Bold"
-    echo "  font-default-italic                     Roboto-Italic"
-    echo "  font-default-light-italic               Roboto-Light-Italic"
-    echo "  font-default-medium-italic              Roboto-Medium-Italic"
-    echo "  font-default-bold-italic                Roboto-Bold-Italic"
-    echo "  font-default-black-italic               Roboto-Black-Italic"
-    echo "  font-default-thin-italic                Roboto-Thin-Italic"
-    echo "  font-default-condensed-italic           Roboto-Condensed-Italic"
-    echo "  font-default-condensed-light-italic     Roboto-Condensed-Light-Italic"
-    echo "  font-default-condensed-bold-italic      Roboto-Condensed-Bold-Italic"
-    echo "  font-sans                               Open-Sans-Regular"
-    echo "  font-sans-light                         Open-Sans-Light"
-    echo "  font-sans-semibold                      Open-Sans-SemiBold"
-    echo "  font-sans-bold                          Open-Sans-Bold"
-    echo "  font-sans-extrabold                     Open-Sans-ExtraBold"
-    echo "  font-sans-condensed-light               Open-Sans-Condensed-Light"
-    echo "  font-sans-condensed-bold                Open-Sans-Condensed-Bold"
-    echo "  font-sans-italic                        Open-Sans-Italic"
-    echo "  font-sans-light-italic                  Open-Sans-Light-Italic"
-    echo "  font-sans-semibold-italic               Open-Sans-SemiBold-Italic"
-    echo "  font-sans-bold-italic                   Open-Sans-Bold-Italic"
-    echo "  font-sans-extrabold-italic              Open-Sans-ExtraBold-Italic"
-    echo "  font-sans-condensed-light-italic        Open-Sans-Condensed-Light-Italic"
-    echo "  font-sans-1                             Encode-Sans-Regular"
-    echo "  font-sans-1-thin                        Encode-Sans-Thin"
-    echo "  font-sans-1-light                       Encode-Sans-Light"
-    echo "  font-sans-1-extralight                  Encode-Sans-ExtraLight"
-    echo "  font-sans-1-medium                      Encode-Sans-Medium"
-    echo "  font-sans-1-semibold                    Encode-Sans-Semibold"
-    echo "  font-sans-1-bold                        Encode-Sans-Bold"
-    echo "  font-sans-1-extabold                    Encode-Sans-ExtraBold"
-    echo "  font-sans-1-black                       Encode-Sans-Black"
-    echo "  font-sans-1-condensed                   Encode-Sans-Condensed-Regular"
-    echo "  font-sans-1-condensed-thin              Encode-Sans-Condensed-Thin"
-    echo "  font-sans-1-condensed-light             Encode-Sans-Condensed-Light"
-    echo "  font-sans-1-condensed-extralight        Encode-Sans-Condensed-ExtraLight"
-    echo "  font-sans-1-condensed-medium            Encode-Sans-Condensed-Medium"
-    echo "  font-sans-1-condensed-semibold          Encode-Sans-Condensed-Semibold"
-    echo "  font-sans-1-condensed-bold              Encode-Sans-Condensed-Bold"
-    echo "  font-sans-1-condensed-extrabold         Encode-Sans-Condensed-ExtraBold"
-    echo "  font-sans-1-condensed-black             Encode-Sans-Condensed-Black"
-    echo "  font-sans-1-semicondensed               Encode-Sans-SemiCondensed-Regular"
-    echo "  font-sans-1-semicondensed-thin          Encode-Sans-SemiCondensed-Thin"
-    echo "  font-sans-1-semicondensed-light         Encode-Sans-SemiCondensed-Light"
-    echo "  font-sans-1-semicondensed-extralight    Encode-Sans-SemiCondensed-ExtraLight"
-    echo "  font-sans-1-semicondensed-medium        Encode-Sans-SemiCondensed-Medium"
-    echo "  font-sans-1-semicondensed-semibold      Encode-Sans-SemiCondensed-Semibold"
-    echo "  font-sans-1-semicondensed-bold          Encode-Sans-SemiCondensed-Bold"
-    echo "  font-sans-1-semicondensed-extrabold     Encode-Sans-SemiCondensed-ExtraBold"
-    echo "  font-sans-1-semicondensed-black         Encode-Sans-SemiCondensed-Black"
-    echo "  font-sans-1-expanded                    Encode-Sans-Expanded-Regular"
-    echo "  font-sans-1-expanded-thin               Encode-Sans-Expanded-Thin"
-    echo "  font-sans-1-expanded-light              Encode-Sans-Expanded-Light"
-    echo "  font-sans-1-expanded-extralight         Encode-Sans-Expanded-ExtraLight"
-    echo "  font-sans-1-expanded-medium             Encode-Sans-Expanded-Medium"
-    echo "  font-sans-1-expanded-semibold           Encode-Sans-Expanded-Semibold"
-    echo "  font-sans-1-expanded-bold               Encode-Sans-Expanded-Bold"
-    echo "  font-sans-1-expanded-extabold           Encode-Sans-Expanded-ExtraBold"
-    echo "  font-sans-1-expanded-black              Encode-Sans-Expanded-Black"
-    echo "  font-sans-1-semiexpanded                Encode-Sans-SemiExpanded-Regular"
-    echo "  font-sans-1-semiexpanded-thin           Encode-Sans-SemiExpanded-Thin"
-    echo "  font-sans-1-semiexpanded-light          Encode-Sans-SemiExpanded-Light"
-    echo "  font-sans-1-semiexpanded-extralight     Encode-Sans-SemiExpanded-ExtraLight"
-    echo "  font-sans-1-semiexpanded-medium         Encode-Sans-SemiExpanded-Medium"
-    echo "  font-sans-1-semiexpanded-semibold       Encode-Sans-SemiExpanded-Semibold"
-    echo "  font-sans-1-semiexpanded-bold           Encode-Sans-SemiExpanded-Bold"
-    echo "  font-sans-1-semiexpanded-extabold       Encode-Sans-SemiExpanded-ExtraBold"
-    echo "  font-sans-1-semiexpanded-black          Encode-Sans-SemiExpanded-Black"
-    echo "  font-sans-2                             Lato-Regular"
-    echo "  font-sans-2-extralight                  Lato-Hairline"
-    echo "  font-sans-2-light                       Lato-Light"
-    echo "  font-sans-2-bold                        Lato-Bold"
-    echo "  font-sans-2-black                       Lato-Black"
-    echo "  font-sans-2-italic                      Lato-Italic"
-    echo "  font-sans-2-extralight-italic           Lato-HairlineItalic"
-    echo "  font-sans-2-light-italic                Lato-LightItalic"
-    echo "  font-sans-2-bold-italic                 Lato-Bold-Italic"
-    echo "  font-sans-2-black-italic                Lato-Black-Italic"
-    echo "  font-sans-3                             Oswald-Regular"
-    echo "  font-sans-3-extralight                  Oswald-ExtraLight"
-    echo "  font-sans-3-light                       Oswald-Light"
-    echo "  font-sans-3-medium                      Oswald-Medium"
-    echo "  font-sans-3-semibold                    Oswald-Semibold"
-    echo "  font-sans-3-bold                        Oswald-Bold"
-    echo "  font-sans-4                             Share-Regular"
-    echo "  font-sans-4-bold                        Share-Bold"
-    echo "  font-sans-4-italic                      Share-Italic"
-    echo "  font-sans-4-bold-italic                 Share-Bold-Italic"
-    echo "  font-serif                              PT-Serif-Regular"
-    echo "  font-serif-bold                         PT-Serif-Bold"
-    echo "  font-serif-italic                       PT-Serif-Italic"
-    echo "  font-serif-bold-italic                  PT-Serif-Bold-Italic"
-    echo "  font-serif-1                            Crimson-Text-Regular"
-    echo "  font-serif-1-semibold                   Crimson-Text-SemiBold"
-    echo "  font-serif-1-bold                       Crimson-Text-Bold"
-    echo "  font-serif-1-italic                     Crimson-Text-Italic"
-    echo "  font-serif-1-semibold-italic            Crimson-Text-SemiBold-Italic"
-    echo "  font-serif-1-bold-italic                Crimson-Text-Bold-Italic"
-    echo "  font-serif-2                            Cormorant-Regular"
-    echo "  font-serif-2-light                      Cormorant-Light"
-    echo "  font-serif-2-medium                     Cormorant-Medium"
-    echo "  font-serif-2-semibold                   Cormorant-Semibold"
-    echo "  font-serif-2-bold                       Cormorant-Bold"
-    echo "  font-serif-2-italic                     Cormorant-Italic"
-    echo "  font-serif-2-light-italic               Cormorant-Light-Italic"
-    echo "  font-serif-2-medium-italic              Cormorant-Medium-Italic"
-    echo "  font-serif-2-semibold-italic            Cormorant-SemiBold-Italic"
-    echo "  font-serif-2-bold-italic                Cormorant-Bold-Italic"
-    echo "  font-serif-3                            GTSectraFine-Regular"
-    echo "  font-serif-3-medium                     GTSectraFine-Medium"
-    echo "  font-serif-3-bold                       GTSectraFine-Bold"
-    echo "  font-serif-3-black                      GTSectraFine-Black"
-    echo "  font-serif-3-italic                     GTSectraFine-RegularItalic"
-    echo "  font-serif-3-medium-italic              GTSectraFine-MediumItalic"
-    echo "  font-serif-3-bold-italic                GTSectraFineBold-Italic"
-    echo "  font-serif-3-black-italic               GTSectraFine-BlackItalic"
-    echo "  font-serif-4                            Calluna-Regular"
-    echo "  font-serif-4-bold                       Calluna-Bold"
-    echo "  font-mono                               RM-Courier-Regular"
-    echo "  font-mono-vt323                         VT323-Regular"
-    echo "  font-mono-fixedsys                      Fixedsys-Excelsior"
-    echo "  font-mono-ocr                           OCR-A-Extended"
-    echo "  font-typewriter                         F25Executive"
-    echo "  font-typewriter-thin                    ELEGANT-TYPEWRITER"
-    echo "  font-typewriter-1                       Underwood-Champion"
-    echo "  font-typewriter-2                       Sears-Tower"
-    echo "  font-typewriter-3                       Rough_Typewriter"
-    echo "  font-comic                              DigitalStrip"
-    echo "  font-comic-1                            SmackAttack-BB"
-    echo "  font-comic-2                            Year-supply-of-fairy-cakes"
-    echo "  font-comic-3                            Komika-Title---Axis"
-    echo "  font-comic-4                            BadaBoom-BB"
-    echo "  font-comic-5                            Bangers"
-    echo "  font-comic-6                            Yikes!"
-    echo "  font-comic-7                            Mouse-Memoirs"
-    echo "  font-comic-8                            GROBOLD"
-    echo "  font-comic-9                            Helsinki"
-    echo "  font-display                            Coda-ExtraBold"
-    echo "  font-display-1                          Muli-Black"
-    echo "  font-display-2                          Chonburi"
-    echo "  font-dirty)                             Dark-Underground"
-    echo "  font-dirty-1)                           BadSuabiaSwing-Regular"
-    echo "  font-dirty-2)                           Depressionist-3-Revisited"
-    echo "  font-dirty-3)                           Very-Damaged-Bold"
-    echo "  font-dirty-4)                           Impacted2.0-Regular"
-    echo "  font-dirty-5)                           Dirty-Headline"
-    echo "  font-dirty-6)                           HighVoltage-Rough"
-    echo "  font-dirty-7)                           Iron-&-Brine"
-    echo "  font-dirty-8)                           A-Love-of-Thunder"
-    echo "  font-brush                              Edo-SZ"
-    echo "  font-brush-1                            Yenoh-Brush"
-    echo "  font-brush-2                            ProtestPaint-BB"
-    echo "  font-brush-2-italic                     ProtestPaint-BB-Italic"
-    echo "  font-horror                             YouMurdererBB"
-    echo "  font-horror-1                           FaceYourFears"
-    echo "  font-horror-2                           Something-Strange"
-    echo "  font-horror-3                           Gallow-Tree-Free (Italic)"
-    echo "  font-old                                OldNewspaperTypes"
-    echo "  font-old-1                              1543HumaneJenson-Normal"
-    echo "  font-old-1-bold                         1543HumaneJenson-Bold"
-    echo "  font-acme                               Acme"
-    echo "  font-averia                             Averia-Libre-Regular"
-    echo "  font-averia-bold                        Averia-Libre-Bold"
-    echo "  font-scratch                            Scratch"
-    echo "  font-something                          Something-in-the-air"
+    echo "  --help                       Show usage"
+    echo "  --debug                      Debug mode"
     echo ""
-    echo "  font-<font name>                        use \`convert -list font\` to check font names"
+    echo "  --query                      Query information"
+    echo "    [-canvas-width size]         Echo width in pixels of given canvas size, see below"
+    echo "    [-canvas-height size]        Echo height in pixels of given canvas size, see below"
+    echo ""
+    echo "  --canvas size                Define pre-defined canvas 'size'"
+    echo "                                 default          ${CANVAS_WIDTH[default]}x${CANVAS_HEIGHT[default]}"
+    echo "                                 big              ${CANVAS_WIDTH[big]}x${CANVAS_HEIGHT[big]}"
+    echo "                                 bigger           ${CANVAS_WIDTH[bigger]}x${CANVAS_HEIGHT[bigger]}"
+    echo "                                 large            ${CANVAS_WIDTH[large]}x${CANVAS_HEIGHT[large]}"
+    echo "                                 huge             ${CANVAS_WIDTH[huge]}x${CANVAS_HEIGHT[huge]}"
+    echo "                                 square           ${CANVAS_WIDTH[square]}x${CANVAS_HEIGHT[square]}"
+    echo "                                 square-big       ${CANVAS_WIDTH[square-big]}x${CANVAS_HEIGHT[square-big]}"
+    echo "                                 square-bigger    ${CANVAS_WIDTH[square-bigger]}x${CANVAS_HEIGHT[square-bigger]}"
+    echo "                                 square-large     ${CANVAS_WIDTH[square-large]}x${CANVAS_HEIGHT[square-large]}"
+    echo "                                 square-huge      ${CANVAS_WIDTH[square-huge]}x${CANVAS_HEIGHT[square-huge]}"
+    echo "                                 tall             ${CANVAS_WIDTH[tall]}x${CANVAS_HEIGHT[tall]}"
+    echo "                                 taller           ${CANVAS_WIDTH[taller]}x${CANVAS_HEIGHT[taller]}"
+    echo "                                 tower            ${CANVAS_WIDTH[tower]}x${CANVAS_HEIGHT[tower]}"
+    echo "                                 a-one            ${CANVAS_WIDTH[a-one]}x${CANVAS_HEIGHT[a-one]}"
+    echo "                                 custom           requires -w and -h to be specified"
+    echo "    [-d dpi]                     Density in dots per inch, default is 96;"
+    echo "                                   possible values: 300, 600"
+    echo "    [-b bits]                    Number of bits per pixel; default is 16"
+    echo "    [-w width]                   Canvas width in pixels"
+    echo "    [-h height]                  Canvas height in pixels"
+    echo "    [-i file]                    Set canvas dimensions equal to some image file"
+    echo "                                   overrides -w and -h options"
+    echo "    [-c color]                   Canvas fill color; default is white"
+    echo "    [-o file]                    Write output to file"
+    echo ""
+    echo "  --image input                Use image"
+    echo "                                 Image could be a file, 'canvas', 'rectangle', 'quad',"
+    echo "                                 'ellipse', 'text'"
+    echo ""
+    echo "  --text                       Create text"
+    echo "    text                         Text"
+    echo "    [-quote]                     Enclose text between quotation marks"
+    echo "    [-w width]                   Text area width; default is canvas width"
+    echo "    [-h height]                  Text area height; default is 0"
+    echo "    [-ow pixels]                 Offset width in pixels added to width; default is 0"
+    echo "    [-oh pixels]                 Offset height in pixels added to height; default is 0,"
+    echo "    [-f font]                    Font"
+    echo "    [-s pointsize]               Font size; default is 15"
+    echo "    [-c color]                   Text color; default is black"
+    echo "    [-b color]                   Background color; default is none"
+    echo "    [-g gravity]                 Gravity; default is northwest"
+    echo "    [-k kerning]                 Inter-character spacing; default is 0"
+    echo "    [-t tracking]                Inter-word spacing; default is 0"
+    echo "    [-l leading]                 Inter-line spacing; default is 0"
+    echo "    [-sw width]                  Stroke width in pixels, visually acceptable values >= 3;"
+    echo "                                   default is 0"
+    echo "    [-sc color]                  Stroke color; default is none"
+    echo "    [-so geoposition]            Stroke offset to center filled areas; default is +1+1"
+    echo "    [-notrim]                    Do not trim text area; default is trim"
+    echo "    [-o file]                    Write output to file; default is ${TEXT_FILE}"
+    echo ""
+    echo "  --rectangle                  Draw rectangle"
+    echo "    [-w width]                   Width in pixels; default is canvas width"
+    echo "    [-h height]                  Height in pixels; default is canvas height"
+    echo "    [-r radius]                  x,y corner radius in pixels; default is 0,0"
+    echo "    [-c color]                   Fill color; default is black"
+    echo "    [-sw width]                  Stroke width in pixels; default is 0"
+    echo "    [-sc color]                  Stroke color; default is none"
+    echo "    [-o file]                    Write output to file; default is ${RECTANGLE_FILE}"
+    echo ""
+    echo "  --quad                       Draw a quadrilateral polygon"
+    echo "    [-ul position]               Upper left x,y position; default is 0,0"
+    echo "    [-ll position]               Lower left x,y position; default is 0,canvas-height"
+    echo "    [-ur position]               Upper right x,y position; default is canvas-width,0"
+    echo "    [-lr position]               Lower right x,y position; default is canvas-width,canvas-height"
+    echo "    [-c color]                   Fill color; default is black"
+    echo "    [-sw width]                  Stroke width in pixels; default is 0"
+    echo "    [-sc color]                  Stroke color; default is none"
+    echo "    [-o file]                    Write output to file; default is ${QUAD_FILE}"
+    echo ""
+    echo "  --ellipse                    Draw an ellipse"
+    echo "    [-w width]                   Width in pixels; default is half width"
+    echo "    [-h height]                  Height in pixels; default is half height"
+    echo "    [-r radius]                  Circle radius in pixels; default is half height"
+    echo "    [-c color]                   Fill color; default is black"
+    echo "    [-sc width]                  Stroke width in pixels; default is 0"
+    echo "    [-sc color]                  Stroke color; default is none"
+    echo "    [-o file]                    Write output to file; default is ${ELLIPSE_FILE}"
+    echo ""
+    echo "  --grid pixels color          Draw grid with pixels width/height using color"
+    echo ""
+    echo "  --logo input                 Draw logo image"
+    echo "    [-w width]                   Width in pixels, height is automatically scaled;"
+    echo "                                   default is canvas size dependent"
+    echo "    [-p x y]                     Offset x and y positions relative to gravity"
+    echo "    [-x xposition]               X position relative to gravity; default is 1/3 image width"
+    echo "    [-y yposition]               Y position relative to gravity; default is 1/3 image width + 1"
+    echo "    [-g gravity]                 Gravity; default is southeast"
+    echo "    [-c color]                   Fill color; default is black"
+    echo ""
+    echo "  --custom                     Pass a custom command without the output destination"
+    echo "                                 specification. The following is an example of such"
+    echo "                                 command assigned to a variable which is passed to"
+    echo "                                 this script."
+    echo "                                   rectangle=\"convert -size 100x60 xc:none"
+    echo "                                              -fill white -stroke black"
+    echo "                                              -draw \\\"rectangle 5,10 15,50\\\"\""
+    echo "                                 The variable 'rectangle' is passed like:"
+    echo "                                   --custom \"\${rectangle}\" -merge -p 100 100 "
+    echo "  --add-exif                   Add Exif information"
+    echo "                                 query Exif information like: exiftool <file>"
+    echo ""
+    echo "  Image operations:"
+    echo ""
+    echo "  --convert                    Convert RGB colorspace to sRGB"
+    echo ""
+    echo "  -resize                      Resize image"
+    echo "    [-lab]                       Use LAB colorspace"
+    echo "    [-w]                         Width in pixels; default is canvas width"
+    echo "    [-h]                         Height in pixels; default is canvas height"
+    echo "    [-ow]                        Offset width in pixels added to width; default is 0"
+    echo "    [-oh]                        Offset height in pixels added to height; default is 0"
+    echo "    [-s]                         Scale (fill | shrink | enlarge) base on dimension;"
+    echo "                                   default is fill"
+    echo "  -resize-dim                  Resize image dimension"
+    echo "    [-w]                         Width in pixels; default is canvas width"
+    echo "    [-h]                         Height in pixels; default is canvas height"
+    echo "    [-ow]                        Offset width in pixels; default is 0"
+    echo "    [-oh]                        Offset height in pixels; default is 0"
+    echo "  -flip                        Reflect the image vertically"
+    echo "  -flop                        Reflect the image horizontally"
+    echo "  -transpose                   Reflect the image along the top-left to bottom-right diagonal"
+    echo "  -transverse                  Reflect the image along the bottom-left to top-right diagonal"
+    echo "  -rotate angle                Rotate image,"
+    echo "                                 positive value rotates clockwise,"
+    echo "                                 negative value rotates counter-clockwise"
+    echo "  -chop                        Chop off side from an image"
+    echo "    [side n]                     Remove n pixels from the specified side"
+    echo "    [-nw x -sw x]                Northwest and southwest x position"
+    echo "    [-ne x -se x]                Northeast and southeast x position"
+    echo "  -crop                        Cut rectangular area from an image"
+    echo "    [-p point]                   Starting at point relative to gravity; default is 0x0"
+    echo "    [-w pixels]                  Width in pixels; 0 means canvas width; default is 100"
+    echo "    [-h pixels]                  Height in pixels; 0 means canvas height; default is 100"
+    echo "    [-g gravity]                 Gravity; default is northwest"
+    echo "  -slice                       Cut off sides from a quadrilateral area"
+    echo "    [-nw xposition]              Northwest x position"
+    echo "    [-sw xposition]              Southwest x position"
+    echo "    [-ne xposition]              Northeast x position"
+    echo "    [-se xposition]              Southeast x position"
+    echo "  -ellipse                     Select an elliptical area"
+    echo "    x,y                          Comma-separated x and y coodinates"
+    echo "    xradius,yradius              Comma-separated x and y radius in pixels"
+    echo "  -corner                      Rounded corner"
+    echo "    [-r radius]                  Corner radius in pixels; default is 6"
+    echo "  -border                      Draw border"
+    echo "    [-c color]                   Color; default is none"
+    echo "    [-w pixels]                  Width in pixels, default is 3"
+    echo "    [-r pixels]                  Radius in pixels for rounded corner"
+    echo "  -vignette                    Vignette"
+    echo "    [-i radius]                  Inner radius, default is 0"
+    echo "    [-o radius]                  Inner radius, default is 150"
+    echo "    [-f radius]                  Feathering amount for inner radius; float>=0; default is 0"
+    echo "    [-c color]                   Color, default is black"
+    echo "    [-a amount]                  Vignette amount, default is 100"
+    echo "  -blur                        Blur image"
+    echo "    [-gaussian                   Use gaussian algorithm"
+    echo "      -s sigma]                    Sigma, default is 2.5"
+    echo "    [-r radius                   Radius, default is 0"
+    echo "    -s sigma]                    Sigma, default is 4"
+    echo "  -contrast                    Linear constrast/decontrast"
+    echo "    [-b percentage]              Black percentage; default is 0%"
+    echo "    [-w percentage]              White percentage; default is 0%"
+    echo "    [-g gamma]                   Gamma adjustment, 10.0 bright; default is 1.0"
+    echo "    [-r]                         Reverse or decontrast image"
+    echo "  -contrast-sig                Sigmoidal (non-linear) constrast/decontrast"
+    echo "    [-f factor]                  Contrast factor, 10 (very high), 0.5 (very low); default is 5"
+    echo "    [-t percentage]              Threshold percentage; default is 50%"
+    echo "    [-r]                         Reverse or decontrast image"
+    echo "  -colorize                    Change color"
+    echo "    [-l                          Level adjustment for contrast and color enhancement"
+    echo "      color                        Color values <= color becomes black"
+    echo "      color                        Color values >= color becomes white"
+    echo "      [-t channel]                 Include transparency channel; default is RGB only"
+    echo "    [-r                          Replace color with another"
+    echo "      color                        Color to replace"
+    echo "      color                        Replacement color"
+    echo "      [-f value]                   Fuzz value on each side of the color to replace for "
+    echo "                                     the range of hues; 0<=float<=180 degrees;"
+    echo "                                     default=40 degrees"
+    echo "      [-g value]                   Gain on color conversion; integers>=0; default=100"
+    echo "      [-t value]                   Threshold value in percent for forcing low saturation"
+    echo "                                     colors to zero saturation, i.e. converts near gray"
+    echo "                                     (white through black) to pure gray; float>=0; default=0"
+    echo "      [-b brightness]              Percent change in replacement color brightness; integer>=-100;"
+    echo "                                     default=0 (no change)"
+    echo "      [-s saturation]]             Percent change in replacement color saturation;"
+    echo "                                     -100<=integer<=100; default=0 (no change)"
+    echo "    [-x[r] color r g b]          Replace color with RGB color and optional transparency,"
+    echo "                                   or the reverse, replace non-matching color to RGB color"
+    echo "                                   and optional transparency"
+    echo "                                   RGB color default is black; transparency default is 50%"
+    echo "      [-f percentage]            Fuzz percentage, 0<=value<=100; default is 100"
+    echo "      [-q percentage]            Opaqueness, default is 100, 100=opaque, 0=transparent"
+    echo "    [-t[r] color]                Replace color with transparency, or the reverse, replace"
+    echo "                                   non-matching color with transparency"
+    echo "      [-f percentage]            Fuzz percentage, 0<=value<=100; default is 10"
+    echo "    [-n]                         Negate, replace with complementary colors"
+    echo "    [-g]                         Replace grayscale pixels with complementary color"
+    echo "  -tint                        Tint"
+    echo "    [-c color]                   Mid-point color; default is GoldenRod"
+    echo "                                   Possible sepia tone colors: GoldenRod, Gold, Khaki, Wheat"
+    echo "    [-h color]                   Highlight color for \"3-color duotone\""
+    echo "    [-a amount]                  Tint amount, 0<=tint<=200; default is 100"
+    echo "    [-m mode]                  Mode of tinting; default is midtones"
+    echo "                                 Modes: all | midtones | highlights | shadows"
+    echo "  -modulate                    Modulate brightness, saturation and hue"
+    echo "    [-h percentage]              Hue percentage, 0<=value<=200; default is 100"
+    echo "    [-s percentage]              Saturation percentage, 0<=value<=200; default is 100"
+    echo "    [-b percentage]              Brightness percentage, 0<=value<=200; default is 100"
+    echo "  -grayscale                   Mix color channels into grayscale using weighted combination"
+    echo "    [-r red]                     Red mix percentage; default is 29.9"
+    echo "    [-g green]                   Green mix percentage; default is 58.7"
+    echo "    [-b blue]                    Blue mix percentage; default is 11.4"
+    echo "    [-f form]                    Form of channel combination; default is add"
+    echo "                                   add | rms (root mean squared) | colorspace"
+    echo "    [-cs colorspace]             Where to get intensity channel from; default is hsl (HSL)"
+    echo "                                   rec709luma (gray) | rec601luma (HCL) | ohta | sgray |"
+    echo "                                   lab | hsl | bch | hsb"
+    echo "    [-b percentage]              Percent brightness, -100<=float<=100; default=0"
+    echo "    [-c percentage]              Percent contrast, -100<=float<=100; default=0"
+    echo "  -grayscale-sig               Sigmoidal (non-linear) grayscale"
+    echo "    [-f factor]                  Contrast factor, 0<=float<=10; default is 10"
+    echo "    [-t percentage]              Threshold percentage; default is 40%"
+    echo "  -gradient                    Create gradient color"
+    echo "    [-w]                         Width in pixels; default is canvas width"
+    echo "    [-h]                         Height in pixels; default is canvas height"
+    echo "    [-m]                         Use as mask to transparent to opaque gradient,"
+    echo "                                   black is transparent, white is opaque."
+    echo "    [-c \"color\"]                 Space-separated pairs of color and percent location;"
+    echo "                                   default=\"black white\""
+    echo "                                   Ex. \"none blue\" and \"blue none\" will output blue to none"
+    echo "                                   Ex. \"red yellow 33 blue 66 red\""
+    echo "    [-t type]                    Gradient type: [linear | circle | ellipse],"
+    echo "                                   linear draws as specified by the direction, see option -d,"
+    echo "                                   circle and ellipse draws from the 'center',"
+    echo "                                   default is linear"
+    echo "    [-d direction]               Direction of gradient; angle or sides or corners;"
+    echo "                                   Linear default is to-bottom;"
+    echo "                                   Circle or ellipse default is closest-side"
+    echo "    [-p x,y]                     X and y coordinates for ellipse or circle;"
+    echo "                                   pair of comma separated floats>=0;"
+    echo "                                   default is (width-2)/2,(height-1)/2"
+    echo "    [-r x,y]                     X and y radii for ellipse or circle;"
+    echo "                                   pair of comma separated floats>=0;"
+    echo "                                   default is determined by distance from center"
+    echo "                                   to closest-side"
+    echo "    [-zeroangle direction]       Direction where angle=0 for type=linear;"
+    echo "                                   or to-top | to-right; default is to-top"
+    echo "  -shadow                      Add shadow (simple)"
+    echo "    [-c color]                   Shadow color; default is black"
+    echo "    [-r radius]                  Shadow radius; default is 80"
+    echo "    [-s sigma]                   Shadow sigma; default is 3; 0=hard shadow"
+    echo "    [-p x y]                     x and y offset position; default is +5+5;"
+    echo "    [-x position]                x offset position; default is +5; + is east"
+    echo "    [-y position]]               y offset position; default is +5; + is south"
+    echo "  -shadow-advance              Add shadow (advance)"
+    echo "    [-t type]                    Type may be inner or outer; default is outer"
+    echo "    [-c color]                   Shadow color; default is black"
+    echo "    [-r radius]                  Shadow radius; default is 80"
+    echo "    [-s sigma]                   Shadow sigma; default is 3; 0=hard shadow"
+    echo "    [-d direction]               Shadow direction, -360<=integer<=360 clockwise from the"
+    echo "                                   positive x axis; default=135"
+    echo "  -grid pixels color           Draw grid with pixels width/height using color"
+    echo "  -nomerge                     Do not merge, copy working file"
+    echo "    [-o file]                    Output file; default is 'int_image.png'"
+    echo "  -merge                       Merge working image to output image"
+    echo "    [-g gravity]                 Where image position gravitates to; default is northwest"
+    echo "    [-p x y]                     Offset x and y positions relative to gravity;"
+    echo "                                   default is 0 0"
+    echo "    [-x position]                Offset x position relative to gravity; default is 0"
+    echo "    [-y position]                Offset y position relative to gravity; default is 0"
+    echo "    [-ox pixels]                 Offset the x position, added to x position; default is 0"
+    echo "    [-oy pixels]                 Offset the y position, added to y position; default is 0"
+    echo "    [-px]                        Use previously computed x position"
+    echo "    [-py]                        Use previously computed y position"
+    echo "    [-nx]                        Use next computed x position"
+    echo "    [-ny]                        Use next computed y position"
+    echo "    [-q percentage]              Opaqueness, default is 100, 100=opaque, 0=transparent"
+    echo ""
+    echo "  Gravity: north | south | east | west | northeast | northwest | southeast | southwest"
+    echo "  Direction: angle | side | corner"
+    echo "    Either an angle in degrees measured clockwise starting from 'zeroangle' from -360 to 360"
+    echo "    Side (linear): to-top | to-right | to-bottom | to-left"
+    echo "    Corner (linear): to-topright | to-bottomright | to-bottomleft | to-topleft"
+    echo "    Side (circle or ellipse): closest-side | furthest-side"
+    echo "    Corner (linear): closest-corner | furthest-corner"
+    echo "  Position: <+|->xposition<+|->yposition; +0+0, +10-20"
+    echo "  Dimension: widthxheight; 100x200"
+    echo "  Scale: fill | shrink | enlarge"
+    echo "  Side: north | south | east | west"
 }
 
 
@@ -588,168 +560,26 @@ function echo_err {
 
 
 
-# array=("something to search for" "a string" "test2000")
-# containsElement "a string" "${array[@]}"
-# echo $?
-# containsElement "blaha" "${array[@]}"
-# echo $?
-function elementIn() {
-#  local e match="$1"
-#  shift
-#  for e; do [[ "$e" == "$match" ]] && return 0; done
-#  return 1
-    local -r needle="${1}"
-    shift 1
-    local -r haystack="("$@")"
-    for item in ${haystack[*]}; do
-        [[ "${item}" == "${needle}" ]] && return 0
-    done
-    return 1
+# Watch values
+function watch {
+    local label="${1}"
+    shift
+    local others=""
+    if [ $# -gt 0 ]; then
+        others=": ${@}"
+    fi
+    echo "-----"
+    echo "${label}${others}"
 }
 
 
 
-# Return the width of the specified canvas
-function get_canvas_width {
-    # Formula starts at 580.
-    # Let 580 be n and the next number is x. Find out the next number.
-    #   x = (n / 4) + n
-    #   725 = (580 / 4) + 580
-    declare -r WIDTH_DEFAULT=580
-    declare -r WIDTH_BIG=725
-    declare -r WIDTH_BIGGER=906
-    declare -r WIDTH_LARGE=1133
-    declare -r WIDTH_HUGE=1416
-    declare -r WIDTH_SQUARE=580
-    declare -r WIDTH_SQUARE_BIG=725
-    declare -r WIDTH_SQUARE_BIGGER=906
-    declare -r WIDTH_SQUARE_LARGE=1133
-    declare -r WIDTH_TALL=640           # iphone 4: 640/960 = 0.666
-    declare -r WIDTH_TALLER=720
-    declare -r WIDTH_TOWER=800
-    declare -r WIDTH_A_ONE=640
-
-    [[ $# -eq 0 ]] \
-        && { echo_err "get_canvas_width parameter not found."; return 1; }
-    case "${1}" in
-        ${CANVAS_DEFAULT})          width_temp=${WIDTH_DEFAULT} ;;
-        ${CANVAS_BIG})              width_temp=${WIDTH_BIG} ;;
-        ${CANVAS_BIGGER})           width_temp=${WIDTH_BIGGER} ;;
-        ${CANVAS_LARGE})            width_temp=${WIDTH_LARGE} ;;
-        ${CANVAS_HUGE})             width_temp=${WIDTH_HUGE} ;;
-        ${CANVAS_SQUARE})           width_temp=${WIDTH_SQUARE} ;;
-        ${CANVAS_SQUARE_BIG})       width_temp=${WIDTH_SQUARE_BIG} ;;
-        ${CANVAS_SQUARE_BIGGER})    width_temp=${WIDTH_SQUARE_BIGGER} ;;
-        ${CANVAS_SQUARE_LARGE})     width_temp=${WIDTH_SQUARE_LARGE} ;;
-        ${CANVAS_TALL})             width_temp=${WIDTH_TALL} ;;
-        ${CANVAS_TALLER})           width_temp=${WIDTH_TALLER} ;;
-        ${CANVAS_TOWER})            width_temp=${WIDTH_TOWER} ;;
-        ${CANVAS_A_ONE})            width_temp=${WIDTH_A_ONE} ;;
-        *)                          width_temp=0 ;;
-    esac
-    return 0
-}
-
-
-
-# Return the height of the specified canvas
-function get_canvas_height {
-    # Formula starts at 580. Use US calling card size ratio.
-    #   3.5" x 2"
-    #   ratio: w / h = 1.75
-    #     w / 1.75 = h
-    #     3.5 / 1.75 = 2
-    # Let 580 be the width. Find out the height.
-    #   w / 1.75 = h
-    #   580 / 1.75 = 331.428571429
-    declare -r HEIGHT_DEFAULT=331
-    declare -r HEIGHT_BIG=414
-    declare -r HEIGHT_BIGGER=518
-    declare -r HEIGHT_LARGE=647
-    declare -r HEIGHT_HUGE=809
-    declare -r HEIGHT_SQUARE=580
-    declare -r HEIGHT_SQUARE_BIG=725
-    declare -r HEIGHT_SQUARE_BIGGER=906
-    declare -r HEIGHT_SQUARE_LARGE=1133
-    declare -r HEIGHT_TALL=960
-    declare -r HEIGHT_TALLER=1080
-    declare -r HEIGHT_TOWER=1200
-    declare -r HEIGHT_A_ONE=905
-
-    [[ $# -eq 0 ]] \
-        && { echo_err "get_canvas_height parameter not found."; return 1; }
-    case "${1}" in
-        ${CANVAS_DEFAULT})          height_temp=${HEIGHT_DEFAULT} ;;
-        ${CANVAS_BIG})              height_temp=${HEIGHT_BIG} ;;
-        ${CANVAS_BIGGER})           height_temp=${HEIGHT_BIGGER} ;;
-        ${CANVAS_LARGE})            height_temp=${HEIGHT_LARGE} ;;
-        ${CANVAS_HUGE})             height_temp=${HEIGHT_HUGE} ;;
-        ${CANVAS_SQUARE})           height_temp=${HEIGHT_SQUARE} ;;
-        ${CANVAS_SQUARE_BIG})       height_temp=${HEIGHT_SQUARE_BIG} ;;
-        ${CANVAS_SQUARE_BIGGER})    height_temp=${HEIGHT_SQUARE_BIGGER} ;;
-        ${CANVAS_SQUARE_LARGE})     height_temp=${HEIGHT_SQUARE_LARGE} ;;
-        ${CANVAS_TALL})             height_temp=${HEIGHT_TALL} ;;
-        ${CANVAS_TALLER})           height_temp=${HEIGHT_TALLER} ;;
-        ${CANVAS_TOWER})            height_temp=${HEIGHT_TOWER} ;;
-        ${CANVAS_A_ONE})            height_temp=${HEIGHT_A_ONE} ;;
-        *)                          height_temp=0 ;;
-    esac
-    return 0
-}
-
-
-
-# Return the corresponding logo width or height of the specified canvas
-function get_logo_dimension {
-    declare -r WH_DEFAULT=15
-    declare -r WH_BIG=20
-    declare -r WH_BIGGER=30
-    declare -r WH_LARGE=35
-    declare -r WH_HUGE=40
-    declare -r WH_SQUARE=15
-    declare -r WH_SQUARE_BIG=20
-    declare -r WH_SQUARE_BIGGER=25
-    declare -r WH_SQUARE_LARGE=30
-    declare -r WH_TALL=30
-    declare -r WH_TALLER=35
-    declare -r WH_TOWER=40
-    declare -r WH_A_ONE=30
-
-    [[ $# -eq 0 ]] \
-        && { echo_err "get_logo_dimension parameter not found."; return 1; }
-    case "${1}" in
-        ${CANVAS_DEFAULT})          dim_temp=${WH_DEFAULT} ;;
-        ${CANVAS_BIG})              dim_temp=${WH_BIG} ;;
-        ${CANVAS_BIGGER})           dim_temp=${WH_BIGGER} ;;
-        ${CANVAS_LARGE})            dim_temp=${WH_LARGE} ;;
-        ${CANVAS_HUGE})             dim_temp=${WH_HUGE} ;;
-        ${CANVAS_SQUARE})           dim_temp=${WH_SQUARE} ;;
-        ${CANVAS_SQUARE_BIG})       dim_temp=${WH_SQUARE_BIG} ;;
-        ${CANVAS_SQUARE_BIGGER})    dim_temp=${WH_SQUARE_BIGGER} ;;
-        ${CANVAS_SQUARE_LARGE})     dim_temp=${WH_SQUARE_LARGE} ;;
-        ${CANVAS_TALL})             dim_temp=${WH_TALL} ;;
-        ${CANVAS_TALLER})           dim_temp=${WH_TALLER} ;;
-        ${CANVAS_TOWER})            dim_temp=${WH_TOWER} ;;
-        ${CANVAS_A_ONE})            dim_temp=${WH_A_ONE} ;;
-        *)                          dim_temp=0 ;;
-    esac
-    return 0
-}
-
-
-
-function get_font_family {
+# Returns the font name in the 'font_temp' variable.
+function get_font {
     [[ $# -eq 0 ]] \
         && { echo_err "get_font parameter not found."; return 1; }
-    local font="${1}"
-    if [[ ! "${font:0:5}" == "font-" ]]; then
-        echo_err "Font does not start with 'font-'"
-        exit
-    else
-        font="${font:5}"
-    fi
 
-    case "$font" in
+    case "${1}" in
         default)                            font_temp="Roboto" ;;
         default-light)                      font_temp="Roboto-Light" ;;
         default-medium)                     font_temp="Roboto-Medium" ;;
@@ -783,8 +613,8 @@ function get_font_family {
         sans-condensed-light-italic)        font_temp="Open-Sans-Condensed-Light-Italic" ;;
         sans-1)                             font_temp="Encode-Sans-Regular" ;;
         sans-1-thin)                        font_temp="Encode-Sans-Thin" ;;
-        sans-1-light)                       font_temp="Encode-Sans-Light" ;;
         sans-1-extralight)                  font_temp="Encode-Sans-ExtraLight" ;;
+        sans-1-light)                       font_temp="Encode-Sans-Light" ;;
         sans-1-medium)                      font_temp="Encode-Sans-Medium" ;;
         sans-1-semibold)                    font_temp="Encode-Sans-Semibold" ;;
         sans-1-bold)                        font_temp="Encode-Sans-Bold" ;;
@@ -875,7 +705,6 @@ function get_font_family {
         serif-3-bold-italic)                font_temp="GTSectraFineBold-Italic" ;;
         serif-3-black-italic)               font_temp="GTSectraFine-BlackItalic" ;;
         serif-4)                            font_temp="Calluna-Regular" ;;
-        serif-4-bold)                       font_temp="Calluna-Bold" ;;
         mono)                               font_temp="RM-Courier-Regular" ;;
         mono-vt323)                         font_temp="VT323-Regular" ;;
         mono-fixedsys)                      font_temp="Fixedsys-Excelsior-3.01" ;;
@@ -898,9 +727,10 @@ function get_font_family {
         display)                            font_temp="Coda-ExtraBold" ;;
         display-1)                          font_temp="Muli-Black" ;;
         display-2)                          font_temp="Chonburi" ;;
-        dirty)                              font_temp="Dark-Underground" ;;
-        dirty-1)                            font_temp="BadSuabiaSwing-Regular" ;;
-        dirty-2)                            font_temp="Depressionist-3-Revisited" ;;
+        dirty)                              font_temp="Fake-News" ;;                                # Thick CAPS
+        #dirty)                              font_temp="Dark-Underground" ;;
+        dirty-1)                            font_temp="BadSuabiaSwing-Regular" ;;                   # Narrow
+        dirty-2)                            font_temp="Depressionist-3-Revisited" ;;                # Less Narrow
         dirty-3)                            font_temp="Very-Damaged-Bold" ;;
         dirty-4)                            font_temp="Impacted2.0-Regular" ;;
         dirty-5)                            font_temp="Dirty-Headline" ;;
@@ -908,1738 +738,1813 @@ function get_font_family {
         dirty-7)                            font_temp="Iron-&-Brine" ;;
         dirty-8)                            font_temp="A-Love-of-Thunder" ;;
         brush)                              font_temp="Edo-SZ" ;;
-        brush-1)                            font_temp="Yenoh-Brush" ;;
-        brush-2)                            font_temp="ProtestPaint-BB" ;;
-        brush-2-italic)                     font_temp="ProtestPaint-BB-Italic" ;;
+        brush-1)                            font_temp="ProtestPaint-BB" ;;
+        brush-1-italic)                     font_temp="ProtestPaint-BB-Italic" ;;
         horror)                             font_temp="YouMurdererBB" ;;
         horror-1)                           font_temp="FaceYourFears" ;;
         horror-2)                           font_temp="Something-Strange" ;;
         horror-3)                           font_temp="Gallow-Tree-Free" ;;
         old)                                font_temp="OldNewspaperTypes" ;;
-        old-1)                              font_temp="1543HumaneJenson-Normal" ;;
-        old-1-bold)                         font_temp="1543HumaneJenson-Bold" ;;
+        #old-1)                              font_temp="1543HumaneJenson-Normal" ;;
+        #old-1-bold)                         font_temp="1543HumaneJenson-Bold" ;;
         acme)                               font_temp="Acme" ;;
         averia)                             font_temp="Averia-Libre-Regular" ;;
         averia-bold)                        font_temp="Averia-Libre-Bold" ;;
         scratch)                            font_temp="Scratch" ;;
         something)                          font_temp="Something-in-the-air" ;;
-        *)                                  font_temp="$font"
+        *)                                  font_temp="${1}"
     esac
     return 0
 }
 
 
 
-# Create rectangle
-#
-# Arguments:
-#   size
-#   color
-#   opaqueness, 100=opaque, 0=transparent
-#   output image
-function create_rectangle {
-    # Shadow code reference
-    # https://www.imagemagick.org/discourse-server/viewtopic.php?t=16882
-    local arg_size=""
-    local arg_color=""
-    local arg_gradient_color_1=""
-    local arg_gradient_color_2=""
-    local arg_opaqueness=100
-    local arg_shadow_color=""
-    local arg_shadow_radius=""
-    local arg_shadow_sigma=""
-    local arg_shadow_xoffset=""
-    local arg_shadow_yoffset=""
-    local arg_output=""
-
-    [[ "${1}" == "-s" ]] && { arg_size="${2}"; shift 2; }
-    [[ "${1}" == "-c" ]] && { arg_color="${2}"; shift 2; }
-    [[ "${1}" == "-gc" ]] && { arg_gradient_color_1="${2}"; arg_gradient_color_2="${3}"; shift 3; }
-    [[ "${1}" == "-q" ]] && { arg_opaqueness=${2}; shift 2; }
-    [[ "${1}" == "-sh" ]] && { arg_shadow_color="${2}"; shift 2; }
-    [[ "${1}" == "-shr" ]] && { arg_shadow_radius=${2}; shift 2; }
-    [[ "${1}" == "-shs" ]] && { arg_shadow_sigma=${2}; shift 2; }
-    [[ "${1}" == "-shx" ]] && { arg_shadow_xoffset=${2}; shift 2; }
-    [[ "${1}" == "-shy" ]] && { arg_shadow_yoffset=${2}; shift 2; }
-    [[ "${1}" == "-o" ]] && { arg_output="${2}"; shift 2; }
-
-    echo_debug "Create Rectangle:"
-    echo_debug "  Size: ${arg_size}"
-    echo_debug "  Color: ${arg_color}"
-    echo_debug "  Gradient color: ${arg_gradient_color_1} ${arg_gradient_color_2}"
-    echo_debug "  Opaqueness: ${arg_opaqueness}"
-    echo_debug "  Shadow color: ${arg_shadow_color}"
-    echo_debug "  Shadow radius: ${arg_shadow_radius}"
-    echo_debug "  Shadow sigma: ${arg_shadow_sigma}"
-    echo_debug "  Shadow x offset: ${arg_shadow_xoffset}"
-    echo_debug "  Shadow y offset: ${arg_shadow_yoffset}"
-    echo_debug "  Output: ${arg_output}"
-
-    if [ -z "${arg_gradient_color_1}" ]; then
-        convert                                 \
-            -size ${arg_size}                   \
-            xc:${arg_color}                     \
-            -alpha set                          \
-            -channel A                          \
-            -evaluate set ${arg_opaqueness}%    \
-            ${arg_output}
-    else
-        convert                                                         \
-            -size ${arg_size}                                           \
-            gradient:"${arg_gradient_color_1}-${arg_gradient_color_2}"  \
-            ${arg_output}
-    fi
-
-    if [ -n "${arg_shadow_color}" ]; then
-        convert \
-            ${arg_output} \
-            \( -clone 0 \
-                -background ${arg_shadow_color} \
-                -shadow "${arg_shadow_radius}x${arg_shadow_sigma}${arg_shadow_xoffset}${arg_shadow_yoffset}" \) \
-            -reverse -background none -layers merge +repage ${arg_output}
-    fi
-}
-
-
-
-# Create a gradient image
-#
-# Arguments:
-#   dimension
-#   width
-#   height
-#   rotation
-#   color1
-#   color2
-#   color string
-#   output file
-function create_gradient {
-    local arg_width=0
-    local arg_height=0
-    local arg_rotation=0
-    local arg_color_1=""
-    local arg_color_2=""
-    local arg_color_string=""
-    local arg_output=""
-
-    local dimension=""
-
-    [[ "${1}" == "-d" ]]  && { dimension="${2}"; shift 2; }
-    [[ "${1}" == "-dw" ]] && { arg_width=${2}; shift 2; }
-    [[ "${1}" == "-dh" ]] && { arg_height=${2}; shift 2; }
-    unset arg_rotation
-    [[ "${1}" == "-r" ]] && { arg_rotation=${2}; shift 2; }
-    unset arg_color_1
-    unset arg_color_2
-    [[ "${1}" == "-c1" ]] && { arg_color_1="${2}"; shift 2; }
-    [[ "${1}" == "-c2" ]] && { arg_color_2="${2}"; shift 2; }
-    arg_color_string=""
-    [[ "${1}" == "-cs" ]] && { arg_color_string="${2}"; shift 2; }
-    [[ "${1}" == "-o" ]]  && { arg_output="${2}"; shift 2; }
-
-    if [[ -z ${arg_color_string} ]]; then
-        arg_color_string="$arg_color_1 $arg_color_2"
-        if [[ "$arg_rotation" == @("northsouth"|"eastwest") ]]; then
-            if [ "$arg_rotation" == "northsouth" ]; then
-                arg_rotation=0
-            elif [ "$arg_rotation" == "eastwest" ]; then
-                arg_rotation=90
-            fi
-            arg_color_string="$arg_color_1 $arg_color_2 50 $arg_color_1"
-        fi
-    fi
-
-    echo_debug "Create Gradient:"
-    echo_debug "  Dimension: ${dimension}"
-    echo_debug "  Width: ${arg_width}"
-    echo_debug "  Height: ${arg_height}"
-    echo_debug "  Rotation: ${arg_rotation}"
-    echo_debug "  Color: ${arg_color_1} ${arg_color_2}"
-    echo_debug "  Color string: ${arg_color_string}"
-    echo_debug "  Output file: $arg_output"
-
-    ${PROGRAM_DIR}/multigradient    \
-        -w $arg_width               \
-        -h $arg_height              \
-        -s "$arg_color_string"      \
-        -t linear                   \
-        -d $arg_rotation            \
-        $arg_output
-}
-
-
-
-# Apply mask to image
-#
-# Arguments:
-#
-#   image file
-#   mask file
-#   output file
-function apply_mask {
-    local arg_image=""
-    local arg_mask=""
-    local arg_output=""
-
-    [[ "${1}" == "-i" ]] && { arg_image="${2}"; shift 2; }
-    [[ "${1}" == "-m" ]] && { arg_mask=${2}; shift 2; }
-    [[ "${1}" == "-o" ]] && { arg_output=${2}; shift 2; }
-
-    echo_debug "Apply mask:"
-    echo_debug "  Input: ${arg_image}"
-    echo_debug "  Mask: ${arg_mask}"
-    echo_debug "  Output: ${arg_output}"
-
-    convert                             \
-        $arg_image                      \
-        -write MPR:orig                 \
-        -alpha extract                  \
-        $arg_mask                       \
-        -compose multiply               \
-        -composite MPR:orig             \
-        +swap                           \
-        -compose copyopacity            \
-        -composite $arg_output
-}
-
-
-
-# Blur image
-#
-# Arguments:
-#   input file
-#   output file
-function simple_blur {
-    local arg_input_file="${1}"
-    local arg_output_file="${2}"
-    convert                         \
-        $arg_input_file             \
-        -filter Gaussian            \
-        -resize 50%                 \
-        -define filter:sigma=2.5    \
-        -resize 200%                \
-        $arg_output_file
-}
-
-
-
-# Blur image
-#
-# Arguments:
-#   input file
-#   output file
-function blur {
-    local arg_input_file="${1}"
-    local arg_output_file="${2}"
-    local arg_radius=${3}
-    local arg_sigma=${4}
-    convert                                 \
-        $arg_input_file                     \
-        -channel A                          \
-        -blur ${arg_radius}x${arg_sigma}    \
-        -channel RGB                        \
-        -blur ${arg_radius}x${arg_sigma}    \
-        $arg_output_file
-}
-
-
-
-# Resize the specified image
-#
-# Arguments:
-#   -i image file
-#   -o output image file
-#   -s size
-#   -a adjustment
-function resize_image {
-    local arg_input_file=""
-    local arg_output_file=""
-    local arg_size=""
-    local arg_adjustment="shrink"
-
-    [[ "${1}" == "-i" ]] && { arg_input_file="${2}"; shift 2; }
-    [[ "${1}" == "-o" ]] && { arg_output_file="${2}"; shift 2; }
-    [[ "${1}" == "-s" ]] && { arg_size="${2}"; shift 2; }
-    [[ "${1}" == "-a" ]] && { arg_adjustment="${2}"; shift 2; }
-
-    # Size/dimension adjustment is appended
-    local image_dimension=""
-    case ${arg_adjustment} in
-        ${IMAGE_SIZE_ADJ_FILL})       image_dimension="${arg_size}^" ;;
-        ${IMAGE_SIZE_ADJ_SHRINK})     image_dimension="${arg_size}>" ;;
-        ${IMAGE_SIZE_ADJ_ENLARGE})    image_dimension="${arg_size}<" ;;
-    esac
-
-    echo_debug "Resize image:"
-    echo_debug "  Size: ${arg_size}"
-    echo_debug "  Adjustment: ${arg_adjustment}"
-    echo_debug "  Dimension: ${image_dimension}"
-
-    convert                         \
-        -background none            \
-        ${arg_input_file}           \
-        -resize ${image_dimension}  \
-        ${arg_output_file}
-}
-
-
-
-# Make a rounded corner image
-#
-# Arguments:
-#   image file
-#   round corner pixel count
-#   output image file
-function round_corner {
-    local arg_image="${1}"
-    local arg_corner="${2}"
-    local arg_output="${3}"
-    convert                         \
-        $arg_image                  \
-        \( +clone -alpha extract    \
-            -draw "fill black polygon 0,0 0,$arg_corner $arg_corner,0 fill white circle $arg_corner,$arg_corner $arg_corner,0" \
-            \( +clone -flip \) -compose multiply -composite \
-            \( +clone -flop \) -compose multiply -composite \
-        \)                                                  \
-        -alpha off                                          \
-        -compose CopyOpacity                                \
-        -composite  "$arg_output"
-}
-
-
-
-# ============================================================================
-
-
-
-program_name="$0"
-
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 || "$1" == "--help" ]]; then
     show_usage
-    exit
+    exit 0
 fi
 
-if [ "${1}" == "--help" ]; then
-    show_usage
-    exit
+if [ "${1}" == "--debug" ]; then
+    echo "Mode: Debug"
+    debug=1
+    debug_flag=--debug
+    shift
 fi
+
+
 
 # Collect all arguments so it can be passed to Exif later
 args=("$@")                             # store arguments in a special array
 ELEMENTS=${#args[@]}                    # get number of elements
 commandline_arguments=""
 for (( i=0;i<$ELEMENTS;i++)); do
-    commandline_arguments="$commandline_arguments ${args[${i}]}"
+    commandline_arguments+="${args[${i}]} "
 done
 
-if [ "${1}" == "--debug" ]; then
-    echo "Mode: Debug"
-    debug=1
-    shift 1
+# Make sure there is no work file.
+# The existence of the work file will be checked by some operations
+# and will be dependent on how the operation will proceed.
+rm -f "${WORK_FILE}"
+if [[ -f "${arg_source_image_file}" ]]; then
+    echo_err "Work file should not exist: '${WORK_FILE}'"
+    exit 1
 fi
 
-canvas_color="black"
-canvas_gradient_color_1=""
-canvas_gradient_color_2=""
-canvas_gradient_color_string=""
-canvas_gradient_rotation=0
+arg_canvas_size="default"
+arg_canvas_density=${DEFAULT_DPI}
+arg_canvas_depth=${DEFAULT_DEPTH}
+arg_canvas_width=0
+arg_canvas_height=0
+arg_canvas_image_file=""
+arg_canvas_color="white"
+arg_canvas_output="${OUTPUT_FILE}"
 
-if [ "${1}" == "--canvas" ]; then
-    shift 1
-    if [[ ! "${CANVAS_SIZE_STRINGS[@]}" =~ "${1}" ]]; then
-        echo_err "Unknown canvas size: ${1}"
-        exit 1
-    fi
-    case "${1}" in
-        default)        canvas="${CANVAS_DEFAULT}" ;;
-        big)            canvas="${CANVAS_BIG}" ;;
-        bigger)         canvas="${CANVAS_BIGGER}" ;;
-        large)          canvas="${CANVAS_LARGE}" ;;
-        huge)           canvas="${CANVAS_HUGE}" ;;
-        square)         canvas="${CANVAS_SQUARE}" ;;
-        square-big)     canvas="${CANVAS_SQUARE_BIG}" ;;
-        square-bigger)  canvas="${CANVAS_SQUARE_BIGGER}" ;;
-        square-large)   canvas="${CANVAS_SQUARE_LARGE}" ;;
-        tall)           canvas="${CANVAS_TALL}" ;;
-        taller)         canvas="${CANVAS_TALLER}" ;;
-        tower)          canvas="${CANVAS_TOWER}" ;;
-        a-one)          canvas="${CANVAS_A_ONE}" ;;
-    esac
-    shift 1
-    [[ "${1}" == "-c" ]] && { canvas_color="${2}"; shift 2; }
-    [[ "${1}" == "-gc" ]] && { canvas_gradient_color_1="${2}"; canvas_gradient_color_2="${3}"; shift 3; }
-    [[ "${1}" == "-cs" ]] && { canvas_gradient_color_string="${2}"; shift 2; }
-    [[ "${1}" == "-gr" ]] && { canvas_gradient_rotation=${2}; shift 2; }
-else
-    canvas="${CANVAS_DEFAULT}"
-fi # --canvas
-
-get_canvas_width "${canvas}"
-get_canvas_height "${canvas}"
-
-canvas_width="${width_temp}"
-canvas_height="${height_temp}"
-
-echo_debug "Canvas"
-echo_debug "  Size: ${canvas}"
-echo_debug "  Dimension: ${canvas_width}x${canvas_height}"
-echo_debug "  Width: ${canvas_width}"
-echo_debug "  Height: ${canvas_height}"
-echo_debug "  Color: ${canvas_color}"
-echo_debug "  Gradient color: ${canvas_gradient_color_1} ${canvas_gradient_color_2}"
-echo_debug "  Gradient color string: ${canvas_gradient_color_string}"
-echo_debug "  Gradient rotation: ${canvas_gradient_rotation}"
-
-if [[ -n "${canvas_gradient_color_1}" || -n "${canvas_gradient_color_string}" ]]; then
-    create_gradient                             \
-        -dw ${canvas_width}                     \
-        -dh ${canvas_height}                    \
-        -r  ${canvas_gradient_rotation}         \
-        -c1 ${canvas_gradient_color_1}          \
-        -c2 ${canvas_gradient_color_2}          \
-        -cs "${canvas_gradient_color_string}"   \
-        -o ${OUTPUT_FILE}
-else
-    convert                                     \
-        -size ${canvas_width}x${canvas_height}  \
-        xc:"$canvas_color"                      \
-        ${OUTPUT_FILE}
-fi
-
-if [ ${debug} -eq 1 ]; then
-    # Make a copy of the canvas image for debugging purposes
-    cp -f $OUTPUT_FILE int_canvas.png
-fi
+#is_text_operation=0
+compute_next_y=0
+declare -i skip_merge_operation=0
+text_prev_x=0
+text_prev_y=0
+text_next_x=0
+text_next_y=0
 
 while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
-while [ "${1}" == "--image" ]; do
-    shift 1
-    if [[ ! -f "${1}" ]]; then
-        echo_err "Cannot find image file '${1}'"
-        exit 1
+    echo_debug "Operation: ${1}"
+
+    if [[ "${1}" == "${OP_QUERY}" ]]; then
+
+        shift
+
+        arg_logo_width=${LOGO_WIDTH[${arg_canvas_size}]}
+        arg_logo_x=$((arg_logo_width / 2))
+        arg_logo_y=$((arg_logo_width / 2 + 1))
+
+        while [ $# -gt 0 ]; do
+            case "${1}" in
+                -canvas-width)  arg_canvas_size=${2}
+                                echo "${CANVAS_WIDTH[${arg_canvas_size}]}"
+                                shift 2 ;;
+                -canvas-height) arg_canvas_size=${2}
+                                echo "${CANVAS_HEIGHT[${arg_canvas_size}]}"
+                                shift 2 ;;
+                -logo-width)    arg_canvas_size=${2}
+                                echo "${LOGO_WIDTH[${arg_canvas_size}]}"
+                                shift 2 ;;
+                -logo-x)        arg_canvas_size=${2}
+                                arg_logo_width=${LOGO_WIDTH[${arg_canvas_size}]}
+                                arg_logo_x=$((arg_logo_width / 2))
+                                echo "${arg_logo_x}"
+                                shift 2 ;;
+                -logo-y)        arg_canvas_size=${2}
+                                arg_logo_width=${LOGO_WIDTH[${arg_canvas_size}]}
+                                arg_logo_y=$((arg_logo_width / 2 + 1))
+                                echo "${arg_logo_y}"
+                                shift 2 ;;
+                *)              break ;;
+            esac
+        done
+
+    elif [[ "${1}" == "${OP_CANVAS}" ]]; then
+
+        arg_canvas_size="${2}"
+        shift 2
+        if [[ ! "${CANVAS_SIZE_STRINGS[@]}" =~ "${arg_canvas_size}" ]]; then
+            if [[ ! "${arg_canvas_size}" == "custom" ]]; then
+                echo_err "Unknown canvas size: ${arg_canvas_size}"
+                exit 1
+            fi
+        fi
+
+        while [ $# -gt 0 ]; do
+            case "${1}" in
+                -d)     arg_canvas_density=${2}; shift 2 ;;
+                -b)     arg_canvas_depth=${2}; shift 2 ;;
+                -w)     arg_canvas_width=${2}; shift 2 ;;
+                -h)     arg_canvas_height=${2}; shift 2 ;;
+                -i)     arg_canvas_image_file="${2}"; shift 2 ;;
+                -c)     arg_canvas_color=${2}; shift 2 ;;
+                -o)     arg_canvas_output="${2}"; shift 2 ;;
+                *)      break ;;
+            esac
+        done
+
+        if [ -n "${arg_canvas_image_file}" ]; then
+            arg_canvas_size="custom"
+            arg_canvas_width=`convert "${arg_canvas_image_file}" -ping -format '%w' info:`
+            arg_canvas_height=`convert "${arg_canvas_image_file}" -ping -format '%h' info:`
+        else
+            if [[ ! "${arg_canvas_size}" == "custom" ]]; then
+                arg_canvas_width=${CANVAS_WIDTH[${arg_canvas_size}]}
+                arg_canvas_height=${CANVAS_HEIGHT[${arg_canvas_size}]}
+            fi
+        fi
+
+        if [[ ${arg_canvas_width} -lt 1500 || ${arg_canvas_height} -lt 1500 ]]; then
+            LARGE_IMAGE_SUPPORT=""
+        fi
+
+        echo_debug "Canvas:"
+        echo_debug "  DPI: ${arg_canvas_density}"
+        echo_debug "  Bits: ${arg_canvas_depth}"
+        echo_debug "  Size: ${arg_canvas_size}"
+        echo_debug "  Dimension: ${arg_canvas_width}x${arg_canvas_height}"
+        echo_debug "  Background: ${arg_canvas_color}"
+
+#        convert                                                 \
+#            -size ${arg_canvas_width}x${arg_canvas_height}      \
+#            xc:"${arg_canvas_color}"                            \
+#            png:-                                               \
+#        | convert                                               \
+#            -units PixelsPerInch                                \
+#            -                                                   \
+#            -colorspace sRGB                                    \
+#            -type truecoloralpha                                \
+#            -density ${arg_canvas_width}x${arg_canvas_height}   \
+#            -depth ${arg_canvas_depth}                          \
+#            ${arg_canvas_output}
+
+        convert                                                 \
+            -size ${arg_canvas_width}x${arg_canvas_height}      \
+            xc:"${arg_canvas_color}"                            \
+            -units PixelsPerInch                                \
+            -colorspace sRGB                                    \
+            -type truecoloralpha                                \
+            -density ${arg_canvas_width}x${arg_canvas_height}   \
+            -depth ${arg_canvas_depth}                          \
+            ${arg_canvas_output}
+
+        # Make the output file our working output file.
+        # The original file can or may be used for some other operation(s).
+        if [[ ! "${arg_canvas_output}" == "${OUTPUT_FILE}" ]]; then
+            cp -f "${arg_canvas_output}" "${OUTPUT_FILE}"
+        fi
+
+    elif [[ "${1}" == "${OP_IMAGE}" ]]; then
+
+        compute_next_y=1
+        case "${2}" in
+            canvas)     arg_source_image_file="${OUTPUT_FILE}"
+                        compute_next_y=0 ;;
+            text)       arg_source_image_file="${TEXT_FILE}" ;;
+            rectangle)  arg_source_image_file="${RECTANGLE_FILE}" ;;
+            quad)       arg_source_image_file="${QUAD_FILE}" ;;
+            ellipse)    arg_source_image_file="${ELLIPSE_FILE}" ;;
+            *)          arg_source_image_file="${2}" ;;
+        esac
+        shift 2
+        if [[ ! -f "${arg_source_image_file}" ]]; then
+            echo "Cannot find image file: '${arg_source_image_file}'"
+            echo "Skipping..."
+            skip_merge_operation=1
+        else
+
+            echo_debug "Image: ${arg_source_image_file}"
+            # Make a copy of the image file in our directory
+            cp -f "${arg_source_image_file}" "./${WORK_FILE}"
+        fi
+
+    elif [[ "${1}" == "${OP_TEXT}" ]]; then
+
+        arg_text_string="${2}"
+        shift 2
+        arg_text_quote=0
+        arg_text_width=${arg_canvas_width}
+        arg_text_height=0
+        arg_text_offset_width=0
+        arg_text_offset_height=0
+        arg_text_font="default"
+        arg_text_size="15"
+        arg_text_color="black"
+        arg_text_background_color="none"
+        arg_text_gravity="northwest"
+        arg_text_kerning=0
+        arg_text_tracking=0
+        arg_text_leading=0
+        arg_text_stroke_width=0
+        arg_text_stroke_color="none"
+        arg_text_stroke_offset="+1+1"
+        arg_text_trim=1
+        arg_text_output="${TEXT_FILE}"
+
+        while [ $# -gt 0 ]; do
+            case "${1}" in
+                -quote)     arg_text_quote=1; shift ;;
+                -w)         arg_text_width=${2}; shift 2 ;;
+                -h)         arg_text_height=${2}; shift 2 ;;
+                -ow)        arg_text_offset_width=${2}; shift 2 ;;
+                -oh)        arg_text_offset_height=${2}; shift 2 ;;
+                -f)         arg_text_font="${2}"; shift 2 ;;
+                -s)         arg_text_size=${2}; shift 2 ;;
+                -c)         arg_text_color="${2}"; shift 2 ;;
+                -b)         arg_text_background_color="${2}"; shift 2 ;;
+                -g)         arg_text_gravity=${2}; shift 2 ;;
+                -k)         arg_text_kerning=${2}; shift 2 ;;
+                -t)         arg_text_tracking=${2}; shift 2 ;;
+                -l)         arg_text_leading=${2}; shift 2 ;;
+                -sw)        arg_text_stroke_width=${2}; shift 2 ;;
+                -sc)        arg_text_stroke_color="${2}"; shift 2 ;;
+                -so)        arg_text_stroke_offset="${2}"; shift 2 ;;
+                -notrim)    arg_text_trim=0; shift ;;
+                -o)         arg_text_output="${2}"; shift 2 ;;
+                *)          break ;;
+            esac
+        done
+
+        if [[ -z "${arg_text_string}" ]]; then
+            skip_merge_operation=1
+        elif [[ -n "${arg_text_string}" ]]; then
+            compute_next_y=1
+
+            get_font "${arg_text_font}"
+            arg_text_font="$font_temp"
+
+            echo_debug "Text:"
+            echo_debug "  Text: ${arg_text_string}"
+            echo_debug "  Width: ${arg_text_width}"
+            echo_debug "  Height: ${arg_text_height}"
+            echo_debug "  Offset width: ${arg_text_offset_width}"
+            echo_debug "  Offset height: ${arg_text_offset_height}"
+            echo_debug "  Font: ${arg_text_font}"
+            echo_debug "  Size: ${arg_text_size}"
+            echo_debug "  Color: ${arg_text_color}"
+            echo_debug "  Background color: ${arg_text_background_color}"
+            echo_debug "  Gravity: ${arg_text_gravity}"
+            echo_debug "  Kerning: ${arg_text_kerning}"
+            echo_debug "  Tracking: ${arg_text_tracking}"
+            echo_debug "  Leading: ${arg_text_leading}"
+            echo_debug "  Stroke width: ${arg_text_stroke_width}"
+            echo_debug "  Stroke color: ${arg_text_stroke_color}"
+            echo_debug "  Trim: ${arg_text_trim}"
+            echo_debug "  Output: ${arg_text_output}"
+
+            size_width=$((arg_text_width + arg_text_offset_width + (arg_text_stroke_width * 2)))
+            size_height=$((arg_text_height + arg_text_offset_height))
+
+            if [ ${size_width} -eq 0 ]; then
+                echo_err "Text width cannot be zero."
+                exit 1
+            fi
+
+            size_dimension=""
+            if [ ${arg_text_height} -eq 0 ]; then
+                size_dimension="${size_width}x${arg_canvas_height}"
+            else
+                size_dimension="${size_width}x${size_height}"
+            fi
+
+            if [ ${arg_text_quote} -eq 1 ]; then
+                arg_text_string="“${arg_text_string}”"
+            fi
+
+            convert                                             \
+                -background "${arg_text_background_color}"      \
+                -size ${size_dimension}                         \
+                -font "${arg_text_font}"                        \
+                -pointsize "${arg_text_size}"                   \
+                -gravity "${arg_text_gravity}"                  \
+                -kerning ${arg_text_kerning}                    \
+                -interword-spacing ${arg_text_tracking}         \
+                -interline-spacing ${arg_text_leading}          \
+                -fill "${arg_text_color}"                       \
+                -stroke "${arg_text_stroke_color}"              \
+                -strokewidth ${arg_text_stroke_width}           \
+                caption:"${arg_text_string}"                    \
+                "${arg_text_output}"
+
+            if [ ${arg_text_stroke_width} -gt 2 ]; then
+                convert                                         \
+                    -background "${arg_text_background_color}"  \
+                    -size ${size_dimension}                     \
+                    -font "${arg_text_font}"                    \
+                    -pointsize "${arg_text_size}"               \
+                    -gravity "${arg_text_gravity}"              \
+                    -kerning ${arg_text_kerning}                \
+                    -interword-spacing ${arg_text_tracking}     \
+                    -interline-spacing ${arg_text_leading}      \
+                    -fill "${arg_text_color}"                   \
+                    caption:"${arg_text_string}"                \
+                    png:-                                       \
+                | composite                                     \
+                    -gravity center                             \
+                    -geometry ${arg_text_stroke_offset}         \
+                    -                                           \
+                    "${arg_text_output}"                        \
+                    "${arg_text_output}"
+            fi
+
+            if [ ${arg_text_trim} -eq 1 ]; then
+                mogrify -trim "${arg_text_output}"
+            fi
+
+            # Make a copy of the image file in our directory
+            cp -f "${arg_text_output}" "./${WORK_FILE}"
+        fi # if string is not empty
+
+    elif [[ "${1}" == "${OP_RECTANGLE}" ]]; then
+
+        shift
+        if [ ${arg_canvas_width} -eq 0 ] && [ ${arg_canvas_height} -eq 0 ]; then
+            echo_err "No canvas dimension specified."
+            exit 1
+        fi
+
+        compute_next_y=1
+        arg_rectangle_width=${arg_canvas_width}
+        arg_rectangle_height=${arg_canvas_height}
+        arg_rectangle_corner_radius=0
+        arg_rectangle_color="black"
+        arg_rectangle_stroke_width=0
+        arg_rectangle_stroke_color="none"
+        arg_rectangle_output="${RECTANGLE_FILE}"
+
+        while [ $# -gt 0 ]; do
+            case "${1}" in
+                -w)         arg_rectangle_width=${2}; shift 2 ;;
+                -h)         arg_rectangle_height=${2}; shift 2 ;;
+                -r)         arg_rectangle_corner_radius=${2}; shift 2 ;;
+                -c)         arg_rectangle_color="${2}"; shift 2 ;;
+                -sw)        arg_rectangle_stroke_width=${2}; shift 2 ;;
+                -sc)        arg_rectangle_stroke_color="${2}"; shift 2 ;;
+                -o)         arg_rectangle_output="${2}"; shift 2 ;;
+                *)          break ;;
+            esac
+        done
+
+        echo_debug "Rectangle:"
+        echo_debug "  Width: ${arg_rectangle_width}"
+        echo_debug "  Height: ${arg_rectangle_height}"
+        echo_debug "  Corner radius: ${arg_rectangle_corner_radius}"
+        echo_debug "  Color: ${arg_rectangle_color}"
+        echo_debug "  Stroke width: ${arg_rectangle_stroke_width}"
+        echo_debug "  Stroke color: ${arg_rectangle_stroke_color}"
+
+        size_width=$((arg_rectangle_width + arg_rectangle_stroke_width))
+        size_height=$((arg_rectangle_height + arg_rectangle_stroke_width))
+        arg_draw="rectangle 0,0 ${arg_rectangle_width},${arg_rectangle_height}"
+
+        convert                                                     \
+            -size ${size_width}x${size_height}                      \
+            xc:none -fill "${arg_rectangle_color}"                  \
+            -stroke "${arg_rectangle_stroke_color}"                 \
+            -strokewidth ${arg_rectangle_stroke_width}              \
+            -draw "${arg_draw}"                                     \
+            "${arg_rectangle_output}"
+
+        if [ ${arg_rectangle_corner_radius} -gt 0 ]; then
+#            ${PROGRAM_DIR}/ci_round_corners                 \
+#                "${debug_flag}"                             \
+#                --r ${arg_rectangle_corner_radius}          \
+#                --input "${arg_rectangle_output}"           \
+#                --output "${arg_rectangle_output}"
+
+            draw_fill_black="fill black polygon 0,0 0,${arg_rectangle_corner_radius} ${arg_rectangle_corner_radius},0"
+            draw_fill_white="fill white circle ${arg_rectangle_corner_radius},${arg_rectangle_corner_radius} ${arg_rectangle_corner_radius},0"
+            convert                                                 \
+                "${arg_rectangle_output}"                           \
+                \( +clone -alpha extract                            \
+                    -draw "${draw_fill_black} ${draw_fill_white}"   \
+                    \( +clone -flip \) -compose multiply -composite \
+                    \( +clone -flop \) -compose multiply -composite \
+                \)                                                  \
+                -alpha off                                          \
+                -compose copyopacity                                \
+                -composite  "${arg_rectangle_output}"
+        fi
+
+        # Make the output file our current work file.
+        # The original file can or may be used for some other operation(s).
+        cp -f "${arg_rectangle_output}" "${WORK_FILE}"
+
+    elif [[ "${1}" == "${OP_QUAD}" ]]; then
+
+        if [ ${arg_canvas_width} -eq 0 ] && [ ${arg_canvas_height} -eq 0 ]; then
+            echo_err "No canvas dimension specified."
+            exit 1
+        fi
+        shift
+        arg_quad_ul=0
+        arg_quad_ll=0
+        arg_quad_ur=${arg_canvas_width}
+        arg_quad_lr=${arg_canvas_width}
+        arg_quad_color="black"
+        arg_quad_stroke_width=0
+        arg_quad_stroke_color="none"
+        arg_quad_output="${QUAD_FILE}"
+
+        while [ $# -gt 0 ]; do
+            case "${1}" in
+                -ul)        arg_quad_ul="${2}"; shift 2 ;;
+                -ll)        arg_quad_ll="${2}"; shift 2 ;;
+                -ur)        arg_quad_ur="${2}"; shift 2 ;;
+                -lr)        arg_quad_lr="${2}"; shift 2 ;;
+                -c)         arg_quad_color="${2}"; shift 2 ;;
+                -sw)        arg_quad_stroke_width=${2}; shift 2 ;;
+                -sc)        arg_quad_stroke_color="${2}"; shift 2 ;;
+                -o)         arg_rectangle_output="${2}"; shift 2 ;;
+                *)          break ;;
+            esac
+        done
+
+        echo_debug "Quadrilateral:"
+        echo_debug "  Upper left: ${arg_quad_ul}"
+        echo_debug "  Lower left: ${arg_quad_ll}"
+        echo_debug "  Upper right: ${arg_quad_ur}"
+        echo_debug "  Lower right: ${arg_quad_lr}"
+        echo_debug "  Color: ${arg_quad_color}"
+        echo_debug "  Stroke width: ${arg_quad_stroke_width}"
+        echo_debug "  Stroke color: ${arg_quad_stroke_color}"
+
+        arg_draw="polygon ${arg_quad_ul} ${arg_quad_ll} ${arg_quad_lr} ${arg_quad_ur}"
+
+        if [ ${arg_quad_stroke_width} -eq 0 ]; then
+            convert                                             \
+                -size ${arg_canvas_width}x${arg_canvas_height}  \
+                xc:none -fill "${arg_quad_color}"               \
+                -draw "${arg_draw}"                             \
+                "${arg_quad_output}"
+        else
+            convert                                             \
+                -size ${arg_canvas_width}x${arg_canvas_height}  \
+                xc:none -fill "${arg_quad_color}"               \
+                -stroke "${arg_quad_stroke_color}"              \
+                -strokewidth ${arg_quad_stroke_width}           \
+                -draw "${arg_draw}"                             \
+                "${arg_quad_output}"
+        fi
+
+        convert -trim "${arg_quad_output}"
+
+        # Make the output file our current work file.
+        # The original file can or may be used for some other operation(s).
+        cp -f "${arg_quad_output}" "${WORK_FILE}"
+
+    elif [[ "${1}" == "${OP_ELLIPSE}" ]]; then
+
+        shift
+        arg_ellipse_width=${arg_canvas_width}
+        arg_ellipse_height=${arg_canvas_height}
+        arg_ellipse_radius=0
+        arg_ellipse_fill_color="none"
+        arg_ellipse_background_color="none"
+        arg_ellipse_stroke_width=1
+        arg_ellipse_stroke_color="black"
+        arg_ellipse_output="${ELLIPSE_FILE}"
+
+        while [ $# -gt 0 ]; do
+            case "${1}" in
+                -w)         arg_ellipse_width=${2}; shift 2 ;;
+                -h)         arg_ellipse_height=${2}; shift 2 ;;
+                -r)         arg_ellipse_radius=${2}; shift 2 ;;
+                -c)         arg_ellipse_fill_color="${2}"; shift 2 ;;
+                -bc)        arg_ellipse_background_color="${2}"; shift 2 ;;
+                -sw)        arg_ellipse_stroke_width=${2}; shift 2 ;;
+                -sc)        arg_ellipse_stroke_color="${2}"; shift 2 ;;
+                -o)         arg_ellipse_output="${2}"; shift 2 ;;
+                *)          break ;;
+            esac
+        done
+
+        # Get the horizontal and vertical radius
+        half_width=$(( (arg_ellipse_width / 2) - (arg_ellipse_width % 2) ))
+        half_height=$(( (arg_ellipse_height / 2) - (arg_ellipse_height % 2) ))
+        if [ ${arg_ellipse_radius} -gt 0 ]; then
+            half_width=${arg_ellipse_radius}
+            half_height=${arg_ellipse_radius}
+        fi
+
+        # Add width and height because of the stroke
+        size_width=$(( (half_width * 2) + (arg_ellipse_stroke_width * 2) + 1))
+        size_height=$(( (half_height * 2) + (arg_ellipse_stroke_width * 2) + 1))
+        # Get the center point
+        x_pos=$((size_width / 2))
+        y_pos=$((size_height / 2))
+
+        echo_debug "Ellipse:"
+        echo_debug "  Center: ${x_pos} ${y_pos}"
+        echo_debug "  Width: ${arg_ellipse_width}"
+        echo_debug "  Height: ${arg_ellipse_height}"
+        echo_debug "  Radius: ${arg_ellipse_radius}"
+        echo_debug "  Fill color: ${arg_ellipse_fill_color}"
+        echo_debug "  Background color: ${arg_ellipse_background_color}"
+        echo_debug "  Stroke width: ${arg_ellipse_stroke_width}"
+        echo_debug "  Stroke color: ${arg_ellipse_stroke_color}"
+
+        arg_draw="ellipse ${x_pos},${y_pos} ${half_width},${half_height} 0,360"
+        convert                                                 \
+            -size ${size_width}x${size_height}                  \
+            xc:none                \
+            -fill "${arg_ellipse_fill_color}"                   \
+            -stroke "${arg_ellipse_stroke_color}"               \
+            -strokewidth ${arg_ellipse_stroke_width}            \
+            -draw "${arg_draw}"                                 \
+            "${arg_ellipse_output}"
+
+        # Make the output file our current work file.
+        # The original file can or may be used for some other operation(s).
+        cp -f "${arg_ellipse_output}" "${WORK_FILE}"
+
+    elif [[ "${1}" == "${OP_GRID}" ]]; then
+
+        arg_grid_pixels=${2}
+        arg_grid_color="${3}"
+        shift 3
+        echo_debug "Image operation: grid ${arg_grid_pixels} ${arg_grid_color}"
+        ${FRED_DIR}/grid            \
+            -s ${arg_grid_pixels}   \
+            -c "${arg_grid_color}"  \
+            "${OUTPUT_FILE}"        \
+            "${OUTPUT_FILE}"
+
+    elif [[ "${1}" == "${OP_LOGO}" ]]; then
+
+        if [ ${arg_canvas_width} -eq 0 ] && [ ${arg_canvas_height} -eq 0 ]; then
+            echo_err "No canvas dimension specified."
+            exit 1
+        fi
+
+        arg_logo_image="${2}"
+        shift 2
+        if [[ ! -f "${arg_logo_image}" ]]; then
+            echo_err "Cannot find logo file: '${arg_logo_image}'"
+            exit 1
+        fi
+        arg_logo_width=${LOGO_WIDTH[${arg_canvas_size}]}
+        arg_logo_x=$((arg_logo_width / 2))
+        arg_logo_y=$((arg_logo_width / 2 + 1))
+        arg_logo_gravity=southeast
+        arg_logo_color="black"
+        arg_logo_output="${LOGO_FILE}"
+
+        while [ $# -gt 0 ]; do
+            case "${1}" in
+                -w)         arg_logo_width=${2}; shift 2 ;;
+                -p)         arg_logo_x=${2}; arg_logo_y=${3}; shift 3 ;;
+                -x)         arg_logo_x=${2}; shift 2 ;;
+                -y)         arg_logo_y=${2}; shift 2 ;;
+                -g)         arg_logo_gravity=${2}; shift 2 ;;
+                -c)         arg_logo_color="${2}"; shift 2 ;;
+                *)          break ;;
+            esac
+        done
+
+        echo_debug "Logo:"
+        echo_debug "  Image: ${arg_logo_image}"
+        echo_debug "  Width: ${arg_logo_width}"
+        echo_debug "  Position: +${arg_logo_x}+${arg_logo_y}"
+        echo_debug "  Gravity: ${arg_logo_gravity}"
+        echo_debug "  Color: ${arg_logo_color}"
+
+        convert                                                         \
+            "${arg_logo_image}"                                         \
+            -colorspace LAB                                             \
+            -resize ${arg_logo_width}x${arg_logo_width}                 \
+            -colorspace sRGB                                            \
+            png:-                                                       \
+        | convert                                                       \
+            -                                                           \
+            -fill "${arg_logo_color}"                                   \
+            -colorize 100%                                              \
+            png:-                                                       \
+        | convert                                                       \
+            "${OUTPUT_FILE}"                                            \
+            -                                                           \
+            -gravity ${arg_logo_gravity}                                \
+            -geometry ${arg_logo_width}x+${arg_logo_x}+${arg_logo_y}    \
+            -composite                                                  \
+            "${OUTPUT_FILE}"
+
+    elif [[ "${1}" == "${OP_CUSTOM}" ]]; then
+
+        shift
+        op="${1}"
+        echo_debug "Custom:"
+        echo_debug "  ${op}"
+        eval "${1} ${WORK_FILE}"
+        shift
+
+    elif [ "${1}" == "--add-exif" ]; then
+
+        shift
+        arg_exif_artist=""
+        arg_exif_author="Duterte Legionnaire"
+        arg_exif_description=""
+        arg_exif_copyright="CC BY-NC-SA 4.0"
+        arg_exif_copyright=""
+        arg_exif_source="${commandline_arguments}"
+        arg_exif_create_date=`date --iso-8601=ns`
+        if hash exiftool 2>/dev/null; then
+            exiftool                                            \
+                -q                                              \
+                -overwrite_original                             \
+                -XMP-dc:creator="${arg_exif_author}"            \
+                -XMP-dc:description="${arg_exif_description}"   \
+                -XMP-dc:source="${arg_exif_source}"             \
+                "${OUTPUT_FILE}"
+
+            arg_exif_show=0
+            [[ "${1}" == "-s" ]] && { arg_exif_show=1; shift; }
+
+            if [ ${arg_exif_show} -eq 1 ]; then
+                exiftool_output=`exiftool "${OUTPUT_FILE}"`
+                echo "--------"
+                echo "ExifTool:"
+                echo "${exiftool_output}"
+            fi
+        else
+            echo "Missing ExifTool"
+        fi
+
+    elif [ "${1}" == "--strip-exif" ]; then
+
+        shift
+        mogrify -strip "${WORK_FILE}"
+
+    fi # major operations
+
+
+
+    # --------------------------------------------------------------------------
+
+
+
+    if [[ ! "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; then
+        if [[ ! "${IMAGE_OPERATIONS[@]}" =~ "${1}" ]]; then
+            echo_err "Unknown operation or option: ${1}"
+            exit 1
+        fi
     fi
-    image_file="${1}"
-    shift 1
-    image_gravity="northwest"
-    [[ "${1}" == "-g" ]] && { image_gravity="${2}"; shift 2; }
-    image_offset_position="+0+0"
-    [[ "${1}" == "-op" ]] && { image_offset_position="${2}"; shift 2; }
-    image_opaqueness=100
-    [[ "${1}" == "-q" ]] && { image_opaqueness="${2}"; shift 2; }
-    image_output_file=""
-    [[ "${1}" == "-o" ]] && { image_output_file="${2}"; shift 2; }
 
-    echo_debug "Image:"
-    echo_debug "  File: ${image_file}"
-    echo_debug "  Dimension (w/ adj.): ${image_dimension}"
-    echo_debug "  Gravity: ${image_gravity}"
-    echo_debug "  Offset: ${image_offset_position}"
-    echo_debug "  Output file: ${image_output_file}"
+    while [ $# -gt 0 ] && [[ "${IMAGE_OPERATIONS[@]}" =~ "${1}" ]]; do
 
-    # Make a copy of the image file into our directory
-    cp -f "${image_file}" int_image.png
+        if [[ "${1}" == "${IMAGE_OP_CONVERT}" ]]; then
 
-    while [[ "${IMAGE_OPERATIONS[@]}" =~ "${1}" ]]; do
-        if [ "${1}" == "-blur" ]; then
-            shift 1
-            if [ "${1}" == "-simple" ]; then
-                shift 1
-                echo_debug "  Blur: simple"
-                simple_blur         \
-                    int_image.png   \
-                    int_image.png
-            else
-                blur_radius=0 && \
-                    [[ "${1}" == "-r" ]] && { blur_radius=${2}; shift 2; }
-                blur_sigma=4 && \
-                    [[ "${1}" == "-s" ]] && { blur_sigma=${2}; shift 2; }
+            shift
+            convert "${WORK_FILE}" -colorspace RGB -colorspace sRGB "${WORK_FILE}"
 
-                echo_debug "  Blur:"
-                echo_debug "    Radius: ${blur_radius}"
-                echo_debug "    Sigma: ${blur_sigma}"
-
-                blur                \
-                    int_image.png   \
-                    int_image.png   \
-                    ${blur_radius}  \
-                    ${blur_sigma}
+        elif [[ "${1}" == "${IMAGE_OP_RESIZE}" ]]; then
+            shift
+            if [ ${arg_canvas_width} -eq 0 ] && [ ${arg_canvas_height} -eq 0 ]; then
+                echo_err "No canvas dimension specified."
+                exit 1
             fi
-        elif [ "${1}" == "-border" ]; then
-            image_border_color="${2}"
-            shift 2
-            image_border_width=3
-            [[ "${1}" == "-w" ]] && { image_border_width=${2}; shift 2; }
-            image_border_radius=0
-            [[ "${1}" == "-r" ]] && { image_border_radius=${2}; shift 2; }
+            arg_resize_colorspace_lab=0
+            arg_resize_width=${arg_canvas_width}
+            arg_resize_height=${arg_canvas_height}
+            arg_resize_offset_width=0
+            arg_resize_offset_height=0
+            arg_resize_scale="fill"
+            with_width=0
+            with_height=0
+            size_width=0
+            size_height=0
+            size_dimension=""
 
-            echo_debug "  Border:"
-            echo_debug "    Color: ${image_border_color}"
-            echo_debug "    Width: ${image_border_width}"
-            echo_debug "    Radius: ${image_border_radius}"
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -lab)   arg_resize_colorspace_lab=1; shift 1 ;;
+                    -w)     arg_resize_width=${2}
+                            with_width=1
+                            shift 2 ;;
+                    -h)     arg_resize_height=${2}
+                            with_height=1
+                            shift 2 ;;
+                    -ow)    arg_resize_offset_width=${2}
+                            with_width=1
+                            shift 2 ;;
+                    -oh)    arg_resize_offset_height=${2}
+                            with_height=1
+                            shift 2 ;;
+                    -s)     arg_resize_scale="${2}"; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
 
-            if [ ${image_border_radius} -eq 0 ]; then
-                convert                                     \
-                    int_image.png                           \
-                    -shave 1x1                              \
-                    -bordercolor "${image_border_color}"    \
-                    -border ${image_border_width}           \
-                    int_image.png
-            else
+            size_width=$((arg_resize_width + arg_resize_offset_width))
+            size_height=$((arg_resize_height + arg_resize_offset_height))
 
-                image_border_width=`convert int_image.png -ping -format '%w' info:`
-                image_border_height=`convert int_image.png -ping -format '%h' info:`
+            size_dimension="${size_width}x${size_height}"
+            if [ ${with_width} -eq 1 ] && [ ${with_height} -eq 0 ]; then
+                #size_dimension="${size_width}x${arg_resize_height}"
+                size_dimension="${size_width}x"
+            elif [ ${with_width} -eq 0 ] && [ ${with_height} -eq 1 ]; then
+                #size_dimension="${arg_resize_width}x${size_height}"
+                size_dimension="x${size_height}"
+            fi
 
-                image_border_width=$((image_border_width + image_border_radius))
-                image_border_height=$((image_border_height + image_border_radius))
-
+            # Append Size/dimension adjustment
+            case "${arg_resize_scale}" in
+                fill)       size_dimension+="^" ;;
+                shrink)     size_dimension+=">" ;;
+                enlarge)    size_dimension+="<" ;;
+            esac
+            echo_debug "Image operation: Resize"
+            echo_debug " Colorspace: ${arg_resize_colorspace_lab}"
+            echo_debug " Width: ${arg_resize_width}"
+            echo_debug " Height: ${arg_resize_height}"
+            echo_debug " Width (computed): ${size_width}"
+            echo_debug " Height (computed): ${size_height}"
+            echo_debug " Dimension: ${size_dimension}"
+            if [ ${arg_resize_colorspace_lab} -eq 0 ]; then
                 convert                                                 \
-                    -size ${image_border_width}x${image_border_height}  \
-                    xc:none -fill ${image_border_color}                 \
-                    -draw "roundrectangle 0,0 ${image_border_width},${image_border_height} $image_border_radius,$image_border_radius" \
-                    int_rr.png
-                convert                 \
-                    int_rr.png          \
-                    int_image.png       \
-                    -gravity center     \
-                    -composite          \
-                    int_image.png
+                    ${LARGE_IMAGE_SUPPORT}                              \
+                    "${WORK_FILE}"                                      \
+                    -colorspace RGB                                     \
+                    -resize ${size_dimension}                           \
+                    -gravity center                                     \
+                    `#-extent ${arg_resize_width}x${arg_resize_height}`    \
+                    -colorspace sRGB                                    \
+                    "${WORK_FILE}"
+            else
+                convert                                                 \
+                    ${LARGE_IMAGE_SUPPORT}                              \
+                    "${WORK_FILE}"                                      \
+                    -colorspace LAB                                     \
+                    -resize ${size_dimension}                           \
+                    -gravity center                                     \
+                    `#-extent ${arg_resize_width}x${arg_resize_height}`    \
+                    -colorspace sRGB                                    \
+                    "${WORK_FILE}"
             fi
-        elif [ "${1}" == "-color" ]; then
-            shift 1
-            while [[ "-f -n -ng" == *"${1}"* ]]; do
-                color_from="" && \
-                    [[ "${1}" == "-f" ]] && { color_from=${2}; shift 2; }
-                color_to="" && \
-                    [[ "${1}" == "-t" ]] && { color_to=${2}; shift 2; }
-                color_to_transparent=0 && \
-                    [[ "${1}" == "-x" ]] && { color_to_transparent=1; shift 1; }
-                color_negate=0 && \
-                    [[ "${1}" == "-n" ]] && { color_negate=1; shift 1; }
-                color_negate_grayscale=0 && \
-                    [[ "${1}" == "-ng" ]] && { color_negate_grayscale=1; shift 1; }
+        elif [[ "${1}" == "${IMAGE_OP_RESIZE_DIM}" ]]; then
+            shift
+            if [ ${arg_canvas_width} -eq 0 ] && [ ${arg_canvas_height} -eq 0 ]; then
+                echo_err "No canvas dimension specified."
+                exit 1
+            fi
+            arg_resize_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
+            arg_resize_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
+            arg_resize_offset_width=0
+            arg_resize_offset_height=0
+            with_width=0
+            with_height=0
+            size_width=0
+            size_height=0
+            size_dimension="${arg_resize_width}x${arg_resize_height}"
 
-                echo_debug "  Color:"
-                echo_debug "    From: ${color_from}"
-                echo_debug "    To: ${color_to}"
-                echo_debug "    Transparent: ${color_to_transparent}"
-                echo_debug "    Negate: ${color_negate}"
-                echo_debug "    Negate (grayscale): ${color_negate_grayscale}"
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -w)     arg_resize_width=${2}
+                            with_width=1
+                            shift 2 ;;
+                    -h)     arg_resize_height=${2}
+                            with_height=1
+                            shift 2 ;;
+                    -ow)    arg_resize_offset_width=${2}; shift 2 ;;
+                    -oh)    arg_resize_offset_height=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
 
-                if [ ${color_to_transparent} -gt 0 ]; then
-                    convert                         \
-                        int_image.png               \
-                        -transparent ${color_from}  \
-                        int_image.png
-                elif [ ${color_negate} -gt 0 ]; then
-                    convert                         \
-                        int_image.png               \
-                        -negate                     \
-                        int_image.png
-                elif [ ${color_negate_grayscale} -gt 0 ]; then
-                    convert                         \
-                        int_image.png               \
-                        +negate                     \
-                        int_image.png
+            if [ ${with_width} -gt 0 ]; then
+                size_dimension="${arg_resize_width}x"
+            fi
+            if [ ${with_height} -gt 0 ]; then
+                if [ ${with_width} -gt 0 ]; then
+                    size_dimension+="${arg_resize_height}"
                 else
-                    convert                         \
-                        int_image.png               \
-                        -fill ${color_to}           \
-                        -opaque ${color_from}       \
-                        int_image.png
+                    size_dimension+="x${arg_resize_height}"
                 fi
-            done
-        elif [ "${1}" == "-corner" ]; then
-            shift 1
-            corner_radius=15 && \
-                [[ "${1}" == "-r" ]] && { corner_radius=${2}; shift 2; }
-            echo_debug "  Round corner: ${corner_radius}"
-            round_corner        \
-                int_image.png   \
-                ${corner_radius}  \
-                int_image.png
-        elif [ "${1}" == "-cut" ]; then
-            shift 1
-            while [[ "${1}" == @("north"|"south"|"east"|"west") ]]; do
-                cut_gravity=${1}
-                cut_pixels=${2}
+            fi
+
+            if [ ${arg_resize_offset_width} -ne 0 ]; then
+                size_width=$((arg_resize_width + arg_resize_offset_width))
+                size_dimension="${size_width}x"
+            fi
+            if [ ${arg_resize_offset_height} -ne 0 ]; then
+                size_height=$((arg_resize_height + arg_resize_offset_height))
+                if [ ${arg_resize_offset_width} -ne 0 ]; then
+                    size_dimension+="${size_height}"
+                else
+                    size_dimension+="x${size_height}"
+                fi
+            fi
+
+            echo_debug "Image operation: Resize Dimension"
+            echo_debug " Dimension: ${size_dimension}"
+            convert                             \
+                "${WORK_FILE}"                  \
+                -gravity center                 \
+                -background none                \
+                -extent "${size_dimension}+0+0" \
+                "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_FLIP}" ]]; then
+            shift
+            echo_debug "Image operation: Flip"
+            mogrify -flip "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_FLOP}" ]]; then
+            shift
+            echo_debug "Image operation: Flop"
+            mogrify -flop "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_TRANSPOSE}" ]]; then
+            shift
+            echo_debug "Image operation: Transpose"
+            mogrify -transpose "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_TRANSVERSE}" ]]; then
+            shift
+            echo_debug "Image operation: Transverse"
+            mogrify -transverse "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_ROTATE}" ]]; then
+            arg_rotate_angle="${2}"
+            shift 2
+            echo_debug "Image operation: Rotate"
+            echo_debug "  Angle: ${arg_rotate_angle}"
+            mogrify                             \
+                -background 'rgba(0,0,0,0)'     \
+                -rotate ${arg_rotate_angle}     \
+                "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_CHOP}" ]]; then
+            shift
+            while [ $# -gt 0 ] && [[ "${1}" == @("north"|"south"|"east"|"west") ]]; do
+                arg_chop_gravity=${1}
+                arg_chop_pixels=${2}
                 shift 2
-
-                if [ ${cut_pixels} -gt 0 ]; then
-                    echo_debug "  Cut (side):"
-                    echo_debug "    Gravity: ${cut_gravity}"
-                    echo_debug "    Pixels: ${cut_pixels}"
-
-                    chop_argument=""
-                    if [[ "${cut_gravity}" == @("east"|"west") ]]; then
-                        chop_argument="${cut_pixels}x0"
-                    elif [[ "${cut_gravity}" == @("north"|"south") ]]; then
-                        chop_argument="0x${cut_pixels}"
+                echo_debug "Image operation: Chop"
+                echo_debug "  Gravity: ${arg_chop_gravity}"
+                echo_debug "  Pixels: ${arg_chop_pixels}"
+                if [ ${arg_chop_pixels} -gt 0 ]; then
+                    arg_chop=""
+                    if [[ "${arg_chop_gravity}" == @("east"|"west") ]]; then
+                        arg_chop="${arg_chop_pixels}x0"
+                    elif [[ "${arg_chop_gravity}" == @("north"|"south") ]]; then
+                        arg_chop="0x${arg_chop_pixels}"
                     fi
-
-                    convert                     \
-                        int_image.png           \
-                        -gravity ${cut_gravity} \
-                        -chop ${chop_argument}  \
-                        int_image.png
-
-                    if [ $debug -eq 1 ]; then
-                        image_width=`convert int_image.png -ping -format '%w' info:`
-                        image_height=`convert int_image.png -ping -format '%h' info:`
-
-                        echo_debug "    New width: ${image_width}"
-                        echo_debug "    New height: ${image_height}"
-                    fi
+                    convert                             \
+                        "${WORK_FILE}"                  \
+                        -gravity ${arg_chop_gravity}    \
+                        -chop ${arg_chop}               \
+                        "${WORK_FILE}"
                 fi
+            done # gravity
+        elif [[ "${1}" == "${IMAGE_OP_CROP}" ]]; then
+                "${WORK_FILE}"
+            shift
+            arg_crop_position="0x0"
+            arg_crop_gravity=northwest
+            arg_crop_width=100
+            arg_crop_height=100
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -p)     arg_crop_position="${2}"; shift 2 ;;
+                    -g)     arg_crop_gravity="${2}"; shift 2 ;;
+                    -w)     arg_crop_width=${2}; shift 2 ;;
+                    -h)     arg_crop_height=${2}; shift 2 ;;
+                    -o)     arg_crop_output="${2}"; shift 2 ;;
+                    *)      break ;;
+                esac
             done
-            if [ "${1}" == "-circle" ]; then
-                shift 1
-                cut_radius=100 && \
-                    [[ "${1}" == "-r" ]] && { cut_radius=${2}; shift 2; }
-                cut_x=0 && \
-                    [[ "${1}" == "-px" ]] && { cut_x=${2}; shift 2; }
-                cut_y=0 && \
-                    [[ "${1}" == "-py" ]] && { cut_y=${2}; shift 2; }
-                cut_border=10 && \
-                    [[ "${1}" == "-bw" ]] && { cut_border=${2}; shift 2; }
-                cut_border_color=white && \
-                    [[ "${1}" == "-bc" ]] && { cut_border_color="${2}"; shift 2; }
+            echo_debug "Image operation: Crop"
+            echo_debug "  Position: ${arg_crop_position}"
+            echo_debug "  Gravity: ${arg_crop_gravity}"
+            echo_debug "  Width: ${arg_crop_width}"
+            echo_debug "  Height: ${arg_crop_height}"
+            echo_debug "  Output: ${arg_crop_output}"
+            convert                                 \
+                "${WORK_FILE}"                      \
+                -gravity ${arg_crop_gravity}        \
+                -crop ${arg_crop_position}+${arg_crop_width}+${arg_crop_height} \
+                "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_SLICE}" ]]; then
+            shift
+            image_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
+            image_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
+            arg_slice_northwest_x=0
+            arg_slice_southwest_x=0
+            arg_slice_northeast_x=${image_width}
+            arg_slice_southeast_x=${image_width}
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -nw)    arg_slice_northwest_x=${2}; shift 2 ;;
+                    -sw)    arg_slice_southwest_x=${2}; shift 2 ;;
+                    -ne)    arg_slice_northeast_x=${2}; shift 2 ;;
+                    -se)    arg_slice_southeast_x=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+            echo_debug "Image operation: Slice"
+            echo_debug "  Dimension: ${image_width}x${image_height}"
+            echo_debug "  Upper left: ${arg_slice_northwest_x}"
+            echo_debug "  Lower left: ${arg_slice_southwest_x}"
+            echo_debug "  Upper right: ${arg_slice_northeast_x}"
+            echo_debug "  Lower right: ${arg_slice_southeast_x}"
+            cut_gravity=west
+            cut_width=0
 
-                echo_debug "  Cut (circle):"
-                echo_debug "    Radius: ${cut_radius}"
-                echo_debug "    Position: ${cut_x}, ${cut_y}"
-                echo_debug "    Border: ${cut_border}"
-                echo_debug "    Color: ${cut_border_color}"
+            if [[ ${arg_slice_northwest_x} -gt 0 || ${arg_slice_southwest_x} -gt 0 ]]; then
+                cut_gravity=west
+                if [ ${arg_slice_northwest_x} -le ${arg_slice_southwest_x} ]; then
+                    diff_width=${arg_slice_northwest_x}
+                    cut_width=$((arg_slice_northwest_x - 1))
+                    arg_slice_northwest_x=0
+                    arg_slice_southwest_x=$((arg_slice_southwest_x - diff_width))
+                    arg_slice_northeast_x=$((arg_slice_northeast_x - diff_width))
+                    arg_slice_southeast_x=$((arg_slice_southeast_x - diff_width))
+                else
+                    diff_width=${arg_slice_southwest_x}
+                    cut_width="$((arg_slice_southwest_x - 1))"
+                    arg_slice_northwest_x=$((arg_slice_northwest_x - diff_width))
+                    arg_slice_southwest_x=0
+                    arg_slice_northeast_x=$((arg_slice_northeast_x - diff_width))
+                    arg_slice_southeast_x=$((arg_slice_southeast_x - diff_width))
+                fi
+                convert                             \
+                    "${WORK_FILE}"                  \
+                    -gravity ${cut_gravity}         \
+                    -chop ${cut_width}x0            \
+                    "${WORK_FILE}"
+            fi
+            image_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
+            if [[ ${arg_slice_northeast_x} -lt ${image_width} || ${arg_slice_southeast_x} -lt ${image_width} ]]; then
+                cut_gravity=east
+                if [[ ${arg_slice_northeast_x} -ge ${arg_slice_southeast_x} ]]; then
+                    cut_width=$((image_width - arg_slice_northeast_x + 1))
+                    # There is a blank 1 pixel at the left of the image so do not add 1
+                    #cut_width=$((image_width - arg_cut_northeast_x))
+                else
+                    cut_width=$((image_width - arg_slice_southeast_x + 1))
+                    # There is a blank 1 pixel at the left of the image so do not add 1
+                    #cut_width=$((image_width - arg_cut_southeast_x))
+                fi
+                convert                             \
+                    "${WORK_FILE}"                  \
+                    -gravity ${cut_gravity}         \
+                    -chop ${cut_width}x0            \
+                    "${WORK_FILE}"
+            fi
 
-                convert int_image.png                               \
-                    \( +clone                                       \
-                        -threshold -1                               \
-                        -negate                                     \
-                        -fill white                                 \
-                        -draw "ellipse ${cut_x},${cut_y} ${cut_radius},${cut_radius} 0,360" \)    \
-                    -alpha off                                      \
-                    -compose copy_opacity                           \
-                    -composite                                      \
-                    png:-                                           \
-                | convert                                           \
-                    -                                               \
-                    -trim                                           \
-                    +repage                                         \
-                    int_image.png
-
-                x0=$((cut_radius + cut_border))
-                y0=$((cut_radius + cut_border))
-                x1=$(((cut_radius * 2) + (cut_border * 2)))
-                y1=$((cut_radius))
-                cut_diameter=$(((cut_radius * 2) + (cut_border * 2) + 1))
-
-                convert                                     \
-                    -size ${cut_diameter}x${cut_diameter}   \
-                    xc:none                                 \
-                    -fill ${cut_border_color}               \
-                    -draw "circle $x0,$y0, $x1,$y0"         \
-                    png:-                                   \
-                | convert                                   \
-                    -                                       \
-                    int_image.png                           \
-                    -gravity center                         \
-                    -composite                              \
-                    int_image.png
-            elif [ "${1}" == "-poly" ]; then
-                shift 1
-
-                image_width=`convert int_image.png -ping -format '%w' info:`
-                image_height=`convert int_image.png -ping -format '%h' info:`
-
-                cut_northwest_x=0
-                cut_southwest_x=0
-                cut_northeast_x=${image_width}
-                cut_southeast_x=${image_width}
-                [[ "${1}" == "-nw" ]] && { cut_northwest_x=${2}; shift 2; }
-                [[ "${1}" == "-sw" ]] && { cut_southwest_x=${2}; shift 2; }
-                [[ "${1}" == "-ne" ]] && { cut_northeast_x=${2}; shift 2; }
-                [[ "${1}" == "-se" ]] && { cut_southeast_x=${2}; shift 2; }
-
-                echo_debug "  Cut (left diagonal):"
-                echo_debug "    Dimension: ${image_width}x${image_height}"
-                echo_debug "    NorthWest X: ${cut_northwest_x}"
-                echo_debug "    SouthWest X: ${cut_southwest_x}"
-                echo_debug "    NorthEast X: ${cut_northeast_x}"
-                echo_debug "    SouthEast X: ${cut_southeast_x}"
-
-                # polygon starts at the top left
+            if [[ ${arg_slice_southwest_x} -gt 0 || ${arg_slice_northwest_x} -gt 0 ]]; then
+                ul="0,0"
+                ll="0,${image_height}"
+                lr="${arg_slice_southwest_x},${image_height}"
+                ur="${arg_slice_northwest_x},0"
                 convert                                     \
                     -size ${image_width}x${image_height}    \
                     xc:white                                \
                     -fill black                             \
-                    -draw "polygon ${cut_northwest_x},0 ${cut_southwest_x},${image_height} ${cut_southeast_x},${image_height} ${cut_northeast_x},0" \
-                    png:-                                   \
-                | convert                                   \
-                    int_image.png                           \
-                    -                                       \
-                    -alpha off                              \
+                    -draw "polygon ${ul} ${ll} ${lr} ${ur}" \
+                    int_cut_diagonal_left.png
+                convert                                     \
+                    "${WORK_FILE}"                          \
+                    -write MPR:orig                         \
+                    -alpha extract                          \
+                    int_cut_diagonal_left.png               \
+                    -compose multiply                       \
+                    -composite MPR:orig                     \
+                    +swap                                   \
                     -compose copyopacity                    \
-                    -composite int_image.png
-            fi
-        elif [ "${1}" == "-flip" ]; then
-            shift 1
-            echo_debug "  Flip: true"
-            convert                                 \
-                int_image.png                       \
-                -flop                               \
-                int_image.png
-        elif [ "${1}" == "-gradient" ]; then
-            shift 1
-            image_gradient_width=`convert int_image.png -ping -format '%w' info:`
-            image_gradient_height=`convert int_image.png -ping -format '%h' info:`
-            [[ "${1}" == "-w" ]] && { image_gradient_width=${2}; shift 2; }
-            [[ "${1}" == "-h" ]] && { image_gradient_height=${2}; shift 2; }
-            image_gradient_color_1="black"
-            image_gradient_color_2="white"
-            [[ "${1}" == "-c" ]] && \
-                { image_gradient_color_1="${2}"; image_gradient_color_2="${3}"; shift 3; }
-            image_gradient_color_string=""
-            [[ "${1}" == "-cs" ]] && { image_gradient_color_string="${2}"; shift 2; }
-            image_gradient_rotation=0
-            [[ "${1}" == "-r" ]] && { image_gradient_rotation=${2}; shift 2; }
-            image_gradient_opaqueness=50
-            [[ "${1}" == "-q" ]] && { image_gradient_opaqueness=${2}; shift 2; }
-            image_gradient_mask=0
-            [[ "${1}" == "-m" ]] && { image_gradient_mask=1; shift 1; }
-
-            echo_debug "  Gradient"
-            echo_debug "    Width: ${image_gradient_width}"
-            echo_debug "    Height: ${image_gradient_height}"
-            echo_debug "    2 Color: ${image_gradient_color_1} ${image_gradient_color_2}"
-            echo_debug "    Color string: ${image_gradient_color_string}"
-            echo_debug "    Rotation: ${image_gradient_rotation}"
-            echo_debug "    Opaqueness: ${image_gradient_opaqueness}"
-            echo_debug "    Mask: ${image_gradient_mask}"
-
-            create_gradient                             \
-                -dw ${image_gradient_width}             \
-                -dh ${image_gradient_height}            \
-                -r  ${image_gradient_rotation}          \
-                -c1 ${image_gradient_color_1}           \
-                -c2 ${image_gradient_color_2}           \
-                -cs "${image_gradient_color_string}"    \
-                -o  int_gradient.png
-
-            if [ ${image_gradient_mask} -eq 1 ]; then
-                apply_mask                      \
-                    -i int_image.png            \
-                    -m int_gradient.png         \
-                    -o int_image.png
-            else
-                composite                                       \
-                    -dissolve ${image_gradient_opaqueness}x100  \
-                    int_gradient.png                            \
-                    int_image.png                               \
-                    -alpha set                                  \
-                    `#-gravity north`                           \
-                    `#-geometry +0+0`                           \
-                    int_image.png
-            fi
-        elif [ "${1}" == "-rotate" ]; then
-            shift 1
-            unset rotate_angle
-            [[ "${1}" == "-a" ]] && { rotate_angle=${2}; shift 2; }
-            if [ -z ${rotate_angle+x} ]; then
-                echo_err "Missing -rotate argument (angle)."
-                exit 1
-            fi
-            echo_debug "  Rotate: ${rotate_angle}"
-            mogrify                         \
-                -background 'rgba(0,0,0,0)' \
-                -rotate ${rotate_angle}     \
-                int_image.png
-        elif [ "${1}" == "-size" ]; then
-            shift 1
-            image_resize_dimension="${canvas_width}x${canvas_height}"
-            [[ "${1}" == "-s" ]] && { image_resize_dimension="${2}"; shift 2; }
-            image_resize_dimension_offset=0
-            image_resize_offset_width=0
-            [[ "${1}" == "-ow" ]] && { image_resize_offset_width=${2}; shift 2; }
-            image_resize_offset_height=0
-            [[ "${1}" == "-oh" ]] && { image_resize_offset_height=${2}; shift 2; }
-            image_resize_adjustment=""
-            [[ "${1}" == "-a" ]] && { image_resize_adjustment="${2}"; shift 2; }
-            if [[ ! "${IMAGE_SIZE_ADJUSTMENTS[@]}" =~ "${image_resize_adjustment}" ]]; then
-                echo "Image adjustment '${image_resize_adjustment}' is not recognized."
+                    -composite                              \
+                    "${WORK_FILE}"
             fi
 
-            if [ $image_resize_offset_width -ne 0 ]; then
-                image_resize_width=$((canvas_width + image_resize_offset_width))
-                image_resize_dimension="${image_resize_width}x"
-            fi
-            if [ $image_resize_offset_height -ne 0 ]; then
-                image_resize_height=$((canvas_height + image_resize_offset_height))
-                image_resize_dimension="x${image_resize_height}"
-            fi
-
-            resize_image                        \
-                -i int_image.png                \
-                -o int_image.png                \
-                -s "${image_resize_dimension}"  \
-                -a "${image_resize_adjustment}"
-        elif [ "${1}" == "-tint" ]; then
-            shift 1
-            tint_use_rgb=0
-            tint_red=0.0
-            tint_green=0.0
-            tint_blue=0.0
-            tint_brightness=0
-            tint_contrast=0
-            tint_mode="a"
-            tint_color="black"
-            tint_amount=10
-            [[ "${1}" == "-c" ]] && { tint_color="${2}"; shift 2; }
-            [[ "${1}" == "-a" ]] && { tint_amount="${2}"; shift 2; }
-            if [[ "${1}" == "-rgb" ]]; then
-                shift 1
-                tint_use_rgb=1
-                if [[ "${1}" == "-default" ]]; then
-                    tint_red=29.9
-                    tint_green=58.7
-                    tint_blue=11.4
-                    shift 1
-                else
-                    tint_red="${1}";
-                    tint_green="${2}";
-                    tint_blue="${3}";
-                    shift 3
-                fi
-            elif [[ "${1}" == "-bc" ]]; then
-                shift 1
-                tint_brightness="${1}"
-                tint_contrast="${2}"
-                shift 2
-                [[ "${1}" == "-m" ]] && { tint_mode="${2}"; shift 2; }
+            if [[ ${arg_slice_southeast_x} -gt 0 || ${arg_slice_northeast_x} -gt 0 ]]; then
+                ul="${arg_slice_northeast_x},0"
+                ll="${arg_slice_southeast_x},${image_height}"
+                lr="${image_width},${image_height}"
+                ur="${image_width},0"
+                convert                                     \
+                    -size ${image_width}x${image_height}    \
+                    xc:white                                \
+                    -fill black                             \
+                    -draw "polygon ${ul} ${ll} ${lr} ${ur}" \
+                    int_cut_diagonal_right.png
+                convert                                     \
+                    "${WORK_FILE}"                          \
+                    -write MPR:orig                         \
+                    -alpha extract                          \
+                    int_cut_diagonal_right.png              \
+                    -compose multiply                       \
+                    -composite MPR:orig                     \
+                    +swap                                   \
+                    -compose copyopacity                    \
+                    -composite                              \
+                    "${WORK_FILE}"
             fi
 
-            echo_debug "  Tint:"
-            echo_debug "    Color: ${tint_color}"
-            echo_debug "    Amount: ${tint_amount}"
-            echo_debug "    Red: ${tint_red}"
-            echo_debug "    Green: ${tint_green}"
-            echo_debug "    Blue: ${tint_blue}"
-            echo_debug "    Brightness: ${tint_brightness}"
-            echo_debug "    Contrast: ${tint_contrast}"
-            echo_debug "    Mode: ${tint_mode}"
-
-            if [ $tint_use_rgb -eq 1 ]; then
-                ${PROGRAM_DIR}/graytoning   \
-                    -r ${tint_red}          \
-                    -g ${tint_green}        \
-                    -b ${tint_blue}         \
-                    -t ${tint_color}        \
-                    -a ${tint_amount}       \
-                    int_image.png           \
-                    int_image.png
-            else
-                ${PROGRAM_DIR}/graytoning   \
-                    -o ${tint_brightness}   \
-                    -c ${tint_contrast}     \
-                    -t ${tint_color}        \
-                    -m ${tint_mode}         \
-                    -a ${tint_amount}       \
-                    int_image.png           \
-                    int_image.png
-            fi
-        elif [ "${1}" == "-transparent" ]; then
-            shift 1
-            unset transparent_color
-            [[ "${1}" == "-c" ]] && { transparent_color="${2}"; shift 2; }
-            transparent_fuzz=0
-            [[ "${1}" == "-f" ]] && { transparent_fuzz=${2}; shift 2; }
-            mogrify                                 \
-                -fuzz ${transparent_fuzz}%          \
-                -transparent ${transparent_color}   \
-                int_image.png
-        elif [ "${1}" == "-vignette" ]; then
-            shift 1
-            vignette_background="black" && \
-                [[ "${1}" == "-c" ]] && { vignette_background=${2}; shift 2; }
-            vignette_sigma=10 && \
-                [[ "${1}" == "-s" ]] && { vignette_sigma=${2}; shift 2; }
-            vignette_size="+10+10%" && \
-                [[ "${1}" == "-d" ]] && { vignette_size=${2}; shift 2; }
-
-            echo_debug "  Vignette:"
-            echo_debug "    Background: ${vignette_background}"
-            echo_debug "    Sigma: ${vignette_sigma}"
-            echo_debug "    Size: ${vignette_size}"
-
-            convert                                             \
-                int_image.png                                   \
-                -background ${vignette_background}              \
-                -vignette 0x${vignette_sigma}${vignette_size}   \
-                int_image.png
-        else
-            break;
-        fi
-    done # while
-
-    if [ -z "$image_output_file" ]; then
-        image_output_file="${OUTPUT_FILE}"
-    fi
-
-    composite                               \
-        -dissolve ${image_opaqueness}x100   \
-        int_image.png                       \
-        ${OUTPUT_FILE}                      \
-        -alpha set                          \
-        -gravity ${image_gravity}           \
-        -geometry ${image_offset_position}  \
-        ${image_output_file}
-
-done # --image
-
-if [ "${1}" == "--tint" ]; then
-    shift 1
-    tint_use_rgb=0
-    tint_red=0.0
-    tint_green=0.0
-    tint_blue=0.0
-    tint_brightness=0
-    tint_contrast=0
-    tint_mode="a"
-    tint_color="black"
-    tint_amount=10
-    [[ "${1}" == "-c" ]] && { tint_color="${2}"; shift 2; }
-    [[ "${1}" == "-a" ]] && { tint_amount="${2}"; shift 2; }
-    if [[ "${1}" == "-rgb" ]]; then
-        shift 1
-        tint_use_rgb=1
-        if [[ "${1}" == "-default" ]]; then
-            tint_red=29.9
-            tint_green=58.7
-            tint_blue=11.4
-            shift 1
-        else
-            tint_red="${1}";
-            tint_green="${2}";
-            tint_blue="${3}";
+            rm -f "int_cut_diagonal_left.png"
+            rm -f "int_cut_diagonal_right.png"
+        elif [[ "${1}" == "${IMAGE_OP_SELECT_ELLIPSE}" ]]; then
+            arg_cut_xy="${2}"
+            arg_cut_xyradius="${3}"
             shift 3
-        fi
-    elif [[ "${1}" == "-bc" ]]; then
-        shift 1
-        tint_brightness="${1}"
-        tint_contrast="${2}"
-        shift 2
-        [[ "${1}" == "-m" ]] && { tint_mode="${2}"; shift 2; }
-    fi
+            echo_debug "Image operation: Select Ellipse"
+            echo_debug "  Position: ${arg_cut_xy}"
+            echo_debug "  Radius: ${arg_cut_xyradius}"
 
-    echo_debug "Tint:"
-    echo_debug "  Color: ${tint_color}"
-    echo_debug "  Amount: ${tint_amount}"
-    echo_debug "  Red: ${tint_red}"
-    echo_debug "  Green: ${tint_green}"
-    echo_debug "  Blue: ${tint_blue}"
-    echo_debug "  Brightness: ${tint_brightness}"
-    echo_debug "  Contrast: ${tint_contrast}"
-    echo_debug "  Mode: ${tint_mode}"
-
-    if [ $tint_use_rgb -eq 1 ]; then
-        ${PROGRAM_DIR}/graytoning   \
-            -r ${tint_red}          \
-            -g ${tint_green}        \
-            -b ${tint_blue}         \
-            -t ${tint_color}        \
-            -a ${tint_amount}       \
-            ${OUTPUT_FILE}          \
-            ${OUTPUT_FILE}
-    else
-        ${PROGRAM_DIR}/graytoning   \
-            -o ${tint_brightness}   \
-            -c ${tint_contrast}     \
-            -t ${tint_color}        \
-            -m ${tint_mode}         \
-            -a ${tint_amount}       \
-            ${OUTPUT_FILE}          \
-            ${OUTPUT_FILE}
-    fi
-fi # --tint
-
-if [ "${1}" == "--gradient" ]; then
-    shift 1
-    image_gradient_gravity="northwest"
-    image_gradient_position="+0+0"
-
-    image_gradient_width=${canvas_width}
-    image_gradient_height=${canvas_height}
-
-    [[ "${1}" == "-g" ]] && { image_gradient_gravity="${2}"; shift 2; }
-    [[ "${1}" == "-p" ]] && { image_gradient_position="${2}"; shift 2; }
-
-    if [[ "${1}" == @("-horizontal"|"-bottom") ]]; then
-        if [ "${1}" == "-bottom" ]; then
-            image_gradient_gravity="south"
-        fi
-        image_gradient_height=${2}
-        shift 2
-    fi
-
-    [[ "${1}" == "-w" ]] && { image_gradient_width=${2}; shift 2; }
-    [[ "${1}" == "-h" ]] && { image_gradient_height=${2}; shift 2; }
-
-    echo_debug "Gradient:"
-    echo_debug "  Gravity: ${image_gradient_gravity}"
-    echo_debug "  Position: ${image_gradient_position}"
-    echo_debug "  Width: ${image_gradient_width}"
-    echo_debug "  Height: ${image_gradient_height}"
-
-    image_gradient_background_color="black"
-    [[ "${1}" == "-bc" ]] && { image_gradient_background_color="${2}"; shift 2; }
-    image_gradient_color_1="black"
-    image_gradient_color_2="white"
-    [[ "${1}" == "-c" ]] && { image_gradient_color_1="${2}"; image_gradient_color_2="${3}"; shift 3; }
-    unset image_gradient_color_string
-    [[ "${1}" == "-cs" ]] && { image_gradient_color_string="${2}"; shift 2; }
-    image_gradient_rotation=0
-     [[ "${1}" == "-r" ]] && { image_gradient_rotation=${2}; shift 2; }
-    image_gradient_opaqueness=50
-    [[ "${1}" == "-q" ]] && { image_gradient_opaqueness=${2}; shift 2; }
-    image_gradient_mask=0
-    [[ "${1}" == "-m" ]] && { image_gradient_mask=1; shift 1; }
-
-    echo_debug "  Background color: ${image_gradient_background_color}"
-    echo_debug "  2 Color: $image_gradient_color_1 ${image_gradient_color_2}"
-    echo_debug "  Color string: ${image_gradient_color_string}"
-    echo_debug "  Rotation: ${image_gradient_rotation}"
-    echo_debug "  Opaqueness: ${image_gradient_opaqueness}"
-    echo_debug "  Mask: ${image_gradient_mask}"
-
-    create_gradient                             \
-        -dw ${image_gradient_width}             \
-        -dh ${image_gradient_height}            \
-        -r  ${image_gradient_rotation}          \
-        -c1 ${image_gradient_color_1}           \
-        -c2 ${image_gradient_color_2}           \
-        -cs "${image_gradient_color_string}"    \
-        -o  int_gradient.png
-
-    if [ ${image_gradient_mask} -eq 1 ]; then
-        apply_mask                              \
-            -i ${OUTPUT_FILE}                   \
-            -m int_gradient.png                 \
-            -o int_mask.png
-
-        convert                                                     \
-            -size ${image_gradient_width}x${image_gradient_height}  \
-            xc:${image_gradient_background_color}                   \
-            png:-                                                   \
-        | composite                                                 \
-            int_mask.png                                            \
-            -                                                       \
-            -alpha set                                              \
-            -gravity ${image_gradient_gravity}                      \
-            -geometry ${image_gradient_position}                    \
-            ${OUTPUT_FILE}
-
-        if [ $debug -eq 0 ]; then
-            rm -f int_mask.png
-        fi
-    else
-        composite                                       \
-            -dissolve ${image_gradient_opaqueness}x100  \
-            int_gradient.png                            \
-            ${OUTPUT_FILE}                              \
-            -alpha set                                  \
-            -gravity ${image_gradient_gravity}          \
-            -geometry ${image_gradient_position}        \
-            ${OUTPUT_FILE}
-    fi
-
-    if [ $debug -eq 0 ]; then
-        rm -f int_gradient.png
-    fi
-fi # --gradient
-
-while [ "${1}" == "--rectangle" ]; do
-    shift 1
-    rect_gravity="northwest"
-    rect_position="+0+0"
-
-    rect_width=$canvas_width
-    rect_height=$canvas_height
-    rect_color=""
-    rect_gradient_color_1=""
-    rect_gradient_color_2=""
-    rect_opaqueness=100
-    rect_shadow_color=""
-    rect_shadow_radius=80
-    rect_shadow_sigma=3
-    rect_shadow_xoffset=+5
-    rect_shadow_yoffset=+5
-    rect_round_corner_pixels=0
-
-    rect_destination_file="${OUTPUT_FILE}"
-
-    [[ "${1}" == "-g" ]] && { rect_gravity="${2}"; shift 2; }
-    [[ "${1}" == "-p" ]] && { rect_position="${2}"; shift 2; }
-    [[ "${1}" == "-r" ]] && { rect_round_corner_pixels=${2}; shift 2; }
-
-    echo_debug "Rectangle:"
-    echo_debug "  Gravity: ${rect_gravity}"
-    echo_debug "  Position: ${rect_position}"
-    echo_debug "  Corner: ${rect_round_corner_pixels}"
-
-    if [[ "${1}" == @("-horizontal"|"-bottom") ]]; then
-        rect_height=0
-        rect_opaqueness=1000
-        if [ "${1}" == "-bottom" ]; then
-            rect_gravity="south"
-        fi
-        rect_height=${2}
-        shift 2
-    fi
-
-    while [[ "${1}" == @("-c"|"-gc"|"-h"|"-q"|"-sh"|"-shr"|"-shs"|"-shx"|"-shy"|"-w") ]]; do
-        [[ "${1}" == "-w" ]] && { rect_width=${2}; shift 2; }
-        [[ "${1}" == "-h" ]] && { rect_height=${2}; shift 2; }
-        [[ "${1}" == "-c" ]] && { rect_color="${2}"; shift 2; }
-        [[ "${1}" == "-gc" ]] && { rect_gradient_color_1="${2}"; rect_gradient_color_2="${3}"; shift 3; }
-        [[ "${1}" == "-q" ]] && { rect_opaqueness=${2}; shift 2; }
-        [[ "${1}" == "-sh" ]] && { rect_shadow_color="${2}"; shift 2; }
-        [[ "${1}" == "-shr" ]] && { rect_shadow_radius=${2}; shift 2; }
-        [[ "${1}" == "-shs" ]] && { rect_shadow_sigma=${2}; shift 2; }
-        [[ "${1}" == "-shx" ]] && { rect_shadow_xoffset=${2}; shift 2; }
-        [[ "${1}" == "-shy" ]] && { rect_shadow_yoffset=${2}; shift 2; }
-    done
-
-    echo_debug "  Width: ${rect_width}"
-    echo_debug "  Height: ${rect_height}"
-    echo_debug "  Color: ${rect_color}"
-    echo_debug "  Gradient color: ${rect_gradient_color_1} ${rect_gradient_color_2}"
-    echo_debug "  Opaqueness: ${rect_opaqueness}"
-    echo_debug "  Shadow color: ${rect_shadow_color}"
-    echo_debug "  Shadow radius: ${rect_shadow_radius}"
-    echo_debug "  Shadow sigma: ${rect_shadow_sigma}"
-    echo_debug "  Shadow x offset: ${rect_shadow_xoffset}"
-    echo_debug "  Shadow y offset: ${rect_shadow_yoffset}"
-
-    if [[ -z "${rect_color}" && -z "${rect_gradient_color_1}" ]]; then
-        echo_err "No rectangle color specified."
-        exit 1
-    fi
-
-    if [ -n "${rect_color}" ]; then
-        create_rectangle                                                \
-            -s "${rect_width}x${rect_height}"                           \
-            -c "${rect_color}"                                          \
-            -q ${rect_opaqueness}                                       \
-            -sh "${rect_shadow_color}"                                  \
-            -shr ${rect_shadow_radius}                                  \
-            -shs ${rect_shadow_sigma}                                   \
-            -shx ${rect_shadow_xoffset}                                 \
-            -shy ${rect_shadow_yoffset}                                 \
-            -o int_rect.png
-    else
-        create_rectangle                                                \
-            -s "${rect_width}x${rect_height}"                           \
-            -gc "${rect_gradient_color_1}" "${rect_gradient_color_2}"   \
-            -q ${rect_opaqueness}                                       \
-            -sh "${rect_shadow_color}"                                  \
-            -shr ${rect_shadow_radius}                                  \
-            -shs ${rect_shadow_sigma}                                   \
-            -shx ${rect_shadow_xoffset}                                 \
-            -shy ${rect_shadow_yoffset}                                 \
-            -o int_rect.png
-    fi
-
-    if [ ${rect_round_corner_pixels} -gt 0 ]; then
-        round_corner                        \
-            int_rect.png                    \
-            ${rect_round_corner_pixels}     \
-            int_rect.png
-    fi
-
-    [[ "${1}" == "-o" ]] && { rect_destination_file="${2}"; shift 2; }
-
-    echo_debug "  Output file: ${rect_destination_file}"
-
-    if [ ${rect_opaqueness} -lt 100 ]; then
-        composite                               \
-            -dissolve ${rect_opaqueness}x100    \
-            int_rect.png                        \
-            ${OUTPUT_FILE}                      \
-            -alpha set                          \
-            -gravity ${rect_gravity}            \
-            -geometry ${rect_position}          \
-            ${rect_destination_file}
-    else
-        composite                               \
-            int_rect.png                        \
-            ${OUTPUT_FILE}                      \
-            -gravity ${rect_gravity}            \
-            -geometry ${rect_position}          \
-            ${rect_destination_file}
-    fi
-
-    if [ $debug -eq 0 ]; then
-        rm -f int_rect.png
-    fi
-done # --rectangle
-
-while [ "${1}" == "--poly" ]; do
-    shift 1
-    poly_opaqueness=100
-    poly_northwest_x=0
-    poly_southwest_x=0
-    poly_northeast_x=${canvas_width}
-    poly_southeast_x=${canvas_width}
-
-    while [[ "${1}" == @("-c"|"-q"|"-nw"|"-sw"|"ne"|"se") ]]; do
-        [[ "${1}" == "-c" ]] && { poly_color="${2}"; shift 2; }
-        [[ "${1}" == "-q" ]] && { poly_opaqueness=${2}; shift 2; }
-        [[ "${1}" == "-nw" ]] && { poly_northwest_x=${2}; shift 2; }
-        [[ "${1}" == "-sw" ]] && { poly_southwest_x=${2}; shift 2; }
-        [[ "${1}" == "-ne" ]] && { poly_northeast_x=${2}; shift 2; }
-        [[ "${1}" == "-se" ]] && { poly_southeast_x=${2}; shift 2; }
-    done
-
-    echo_debug "  Polygon (4-sides):"
-    echo_debug "    Dimension: ${canvas_width}x${canvas_height}"
-    echo_debug "    Color: ${poly_color}"
-    echo_debug "    Opaqueness: ${poly_opaqueness}"
-    echo_debug "    NorthWest X: ${poly_northwest_x}"
-    echo_debug "    SouthWest X: ${poly_southwest_x}"
-    echo_debug "    NorthEast X: ${poly_northeast_x}"
-    echo_debug "    SouthEast X: ${poly_southeast_x}"
-
-    convert                                     \
-        -size ${canvas_width}x${canvas_height}  \
-        xc:none                                 \
-        -alpha set                              \
-        -channel A                              \
-        -fill ${poly_color}                     \
-        -draw "polygon ${poly_northwest_x},0 ${poly_southwest_x},${canvas_height} ${poly_southeast_x},${canvas_height} ${poly_northeast_x},0" \
-        png:-                                   \
-    | composite                                 \
-        -dissolve ${poly_opaqueness}x100        \
-        -                                       \
-        ${OUTPUT_FILE}                          \
-        ${OUTPUT_FILE}
-done # --poly
-
-while [ "${1}" == "--circle" ]; do
-    shift 1
-    circle_x=0
-    circle_y=0
-    circle_radius=0
-    circle_diameter=0
-    circle_gravity=northwest
-    circle_color="black"
-    circle_stroke_width=0
-    circle_stroke_color="none"
-    circle_opaqueness=100
-    circle_shadow_color="gray"
-    circle_shadow_radius=80
-    circle_shadow_sigma=4
-    circle_shadow_xoffset=+5
-    circle_shadow_yoffset=+5
-
-    while [[ "${1}" == @("-g"|"-x"|"-y"|"-r"|"-d"|"-c"|"-q"|"-sw"|"-sc"|"-sh"|"-shr"|"-shs"|"-shx"|"-shy") ]]; do
-        [[ "${1}" == "-x" ]] && { circle_x=${2}; shift 2; }
-        [[ "${1}" == "-y" ]] && { circle_y=${2}; shift 2; }
-        [[ "${1}" == "-r" ]] && { circle_radius=${2}; shift 2; }
-        [[ "${1}" == "-d" ]] && { circle_diameter=${2}; shift 2; }
-        [[ "${1}" == "-g" ]] && { circle_gravity=${2}; shift 2; }
-        [[ "${1}" == "-c" ]] && { circle_color="${2}"; shift 2; }
-        [[ "${1}" == "-q" ]] && { circle_opaqueness=${2}; shift 2; }
-        [[ "${1}" == "-sh" ]] && { circle_shadow_color="${2}"; shift 2; }
-        [[ "${1}" == "-shr" ]] && { circle_shadow_radius=${2}; shift 2; }
-        [[ "${1}" == "-shs" ]] && { circle_shadow_sigma=${2}; shift 2; }
-        [[ "${1}" == "-shx" ]] && { circle_shadow_xoffset=${2}; shift 2; }
-        [[ "${1}" == "-shy" ]] && { circle_shadow_yoffset=${2}; shift 2; }
-        [[ "${1}" == "-sw" ]] && { circle_stroke_width=${2}; shift 2; }
-        [[ "${1}" == "-sc" ]] && { circle_stroke_color="${2}"; shift 2; }
-    done
-
-    if [ $circle_diameter -gt 0 ]; then
-        circle_radius=$((circle_diameter / 2))
-    fi
-
-    circle_image_width=$((circle_radius + circle_radius + 5))
-    center=$((circle_radius + 2))
-    dest_y=$((circle_y - circle_radius))
-
-    echo_debug "  Circle:"
-    echo_debug "    Position: ${circle_x},${circle_y}"
-    echo_debug "    Radius: ${circle_radius}"
-    echo_debug "    Diameter: ${circle_diameter}"
-    echo_debug "    Color: ${circle_color}"
-    echo_debug "    Stroke width: ${circle_stroke_width}"
-    echo_debug "    Stroke color: ${circle_stroke_color}"
-    echo_debug "    Opaqueness: ${circle_opaqueness}"
-    echo_debug "    Shadow color: ${circle_shadow_color}"
-    echo_debug "    Shadow radius: ${circle_shadow_radius}"
-    echo_debug "    Shadow sigma: ${circle_shadow_sigma}"
-    echo_debug "    Shadow x offset: ${circle_shadow_xoffset}"
-    echo_debug "    Shadow y offset: ${circle_shadow_yoffset}"
-
-    convert                                                 \
-        -size ${circle_image_width}x${circle_image_width}   \
-        xc:none                                             \
-        `#-alpha set`                                       \
-        `#-channel A`                                       \
-        -stroke ${circle_stroke_color}                      \
-        -fill ${circle_color}                               \
-        -strokewidth ${circle_stroke_width}                 \
-        -draw "ellipse ${center},${center} ${circle_radius},${circle_radius} 0,360" \
-        png:-                                               \
-    | convert                                               \
-         -                                                  \
-        \( -clone 0 -background ${circle_shadow_color} -shadow ${circle_shadow_radius}x${circle_shadow_sigma}${circle_shadow_xoffset}${circle_shadow_yoffset} \) \
-        -reverse -background none -layers merge +repage png:- \
-    | composite                                             \
-        -dissolve ${circle_opaqueness}x100                  \
-        -                                                   \
-        ${OUTPUT_FILE}                                      \
-        -gravity ${circle_gravity}                          \
-        -geometry +${circle_x}+${dest_y}                    \
-        ${OUTPUT_FILE}
-
-done # --circle
-
-
-
-guide_show=0
-guide_color=black
-
-text_width_all=${canvas_width}
-text_height_all=${canvas_height}
-text_position_x_all=0
-text_position_y_all=0
-next_y_pos=0
-
-text_font="${FONT_DEFAULT}"
-text_size="15"
-text_color="black"
-text_background_color="none"
-text_gravity="northwest"
-text_kerning=0
-text_interword_spacing=0
-text_interline_spacing=0
-text_width=${text_width_all}
-compute_next=0
-text_stroke_width=0
-text_stroke_color="black"
-text_stroke_fade=1
-text_shadow_percent=0
-text_shadow_color="black"
-text_shadow_offset=3
-
-pos_x=0
-pos_y=0
-
-if [ ${debug} -gt 0 ]; then
-    text_count=0
-fi
-
-while [ "${1}" == "--text" ]; do
-    shift 1
-    [[ "${1}" == "-W" ]] && { text_width_all=${2}; shift 2; }
-    [[ "${1}" == "-Wo" ]] && { text_width_all=$(($canvas_width - ${2})); shift 2; }
-    if [ "${1}" == "-Ho" ]; then
-        text_position_y_all=$((text_height_all - ${2}))
-        pos_y=$text_position_y_all
-        shift 2
-    fi
-    if [ "${1}" == "-Px" ]; then
-        text_position_x_all="${2}"
-        pos_x="${2}"
-        shift 2
-    fi
-    if [ "${1}" == "-Py" ]; then
-        text_position_y_all="${2}"
-        pos_y="${2}"
-        shift 2
-    fi
-    guide_show=0
-    if [[ "${1}" == "-guide" ]]; then
-        guide_color="${2}"
-        shift 2
-        guide_show=1
-    fi
-
-    if [ $guide_show -eq 1 ]; then
-        create_rectangle                            \
-            -s "${text_width_all}x${canvas_height}" \
-            -c ${guide_color}                       \
-            -q 50                                   \
-            -o int_guide.png
-        composite                                                       \
-            int_guide.png                                               \
-            ${OUTPUT_FILE}                                              \
-            -alpha set                                                  \
-            -gravity northwest                                          \
-            -geometry "+${text_position_x_all}+${text_position_y_all}"  \
-            ${OUTPUT_FILE}
-        rm -f int_guide.png
-    fi
-
-    text_string=""
-    text_width=${text_width_all}
-    while [ $# -gt 0 ] && [[ "-t -f -s -c -bc -k -iw -i -g -w -px -py -pg -ox -oy -sw -sc -sf -sh -shc -sho" == *"${1}"* ]]; do
-        [[ "${1}" == "-t" ]] && { text_string="${2}"; shift 2; }
-        if [ "${1}" == "-f" ]; then
-            get_font_family "${2}"
-            text_font="$font_temp"
-            shift 2
-        fi
-        [[ "${1}" == "-s" ]] && { text_size="${2}"; shift 2; }
-        [[ "${1}" == "-c" ]] && { text_color="${2}"; shift 2; }
-        [[ "${1}" == "-bc" ]] && { text_background_color="${2}"; shift 2; }
-        [[ "${1}" == "-g" ]] && { text_gravity="${2}"; shift 2; }
-        [[ "${1}" == "-k" ]] && { text_kerning=${2}; shift 2; }
-        [[ "${1}" == "-iw" ]] && { text_interword_spacing=${2}; shift 2; }
-        [[ "${1}" == "-i" ]] && { text_interline_spacing="${2}"; shift 2; }
-        [[ "${1}" == "-w" ]] && { text_width=${2}; shift 2; }
-
-        # Always reset absolute position to defaults
-        text_position_x=0 && \
-            [[ "${1}" == "-px" ]] && { text_position_x=${2}; shift 2; }
-        text_position_y=0 && \
-            [[ "${1}" == "-py" ]] && { text_position_y=${2}; shift 2; }
-        text_position_gravity="northwest" && \
-            [[ "${1}" == "-pg" ]] && { text_position_gravity="${2}"; shift 2; }
-
-        if [ "${1}" == "-ox" ]; then
-            if [[ -n "${text_string}" ]]; then
-                pos_x=$((text_position_x_all + ${2}))
-            fi
-            shift 2
-        fi
-        if [ "${1}" == "-oy" ]; then
-            if [[ -n "${text_string}" ]]; then
-                pos_y=$((pos_y + ${2}))
-            fi
-            shift 2
-        fi
-
-        [[ "${1}" == "-sw" ]] && { text_stroke_width=${2}; shift 2; }
-        [[ "${1}" == "-sc" ]] && { text_stroke_color="${2}"; shift 2; }
-        [[ "${1}" == "-sf" ]] && { text_stroke_fade=${2}; shift 2; }
-        [[ "${1}" == "-sh" ]] && { text_shadow_percent=${2}; shift 2; }
-        [[ "${1}" == "-shc" ]] && { text_shadow_color="${2}"; shift 2; }
-        [[ "${1}" == "-sho" ]] && { text_shadow_offset="${2}"; shift 2; }
-
-        # Always compute the next y position
-        # except when absolute x,y position is specified
-        compute_next=1
-    done
-    if [[ -n "${text_string}" ]]; then
-        unset text_transparent_color
-        if [ "${1}" == "-transparent" ]; then
-            shift 1
-            [[ "${1}" == "-c" ]] && { text_transparent_color="${2}"; shift 2; }
-            text_transparent_fuzz=0
-            [[ "${1}" == "-f" ]] && { text_transparent_fuzz=${2}; shift 2; }
-            if [ -z ${text_transparent_color+x} ]; then
-                echo_err "Missing -transparent argument (color)."
-                exit 1
-            fi
-        fi
-
-        unset text_rotate_angle
-        if [ "${1}" == "-rotate" ]; then
-            text_rotate_angle=${2}
-            shift 2
-            if [ -z ${text_rotate_angle+x} ]; then
-                echo_err "Missing -rotate argument (angle)."
-                exit 1
-            fi
-        fi
-
-        echo_debug "Text:"
-        echo_debug "  Width (all): ${text_width_all}"
-        echo_debug "  Position X (all): ${text_position_x_all}"
-        echo_debug "  Position Y (all): ${text_position_y_all}"
-        echo_debug "  Text: ${text_string}"
-        echo_debug "  Font: ${text_font}"
-        echo_debug "  Size: ${text_size}"
-        echo_debug "  Color: ${text_color}"
-        echo_debug "  Background color: ${text_background_color}"
-        echo_debug "  Kerning: ${text_kerning}"
-        echo_debug "  Inter-word spacing: ${text_interword_spacing}"
-        echo_debug "  Inter-line spacing: ${text_interline_spacing}"
-        echo_debug "  Gravity: ${text_gravity}"
-        echo_debug "  Width: ${text_width}"
-        echo_debug "  Position: ${text_position_x}x${text_position_y}"
-        echo_debug "  Gravity: ${text_position_gravity}"
-        echo_debug "  Stroke width: ${text_stroke_width}"
-        echo_debug "  Stroke color: ${text_stroke_color}"
-        echo_debug "  Stroke fade: ${text_stroke_fade}"
-        echo_debug "  Shadow: ${text_shadow_percent}"
-        echo_debug "  Shadow color: ${text_shadow_color}"
-        echo_debug "  Shadow offset: ${text_shadow_offset}"
-        echo_debug "  Rotate: ${text_rotate_angle}"
-        echo_debug "  Transparent: ${text_transparent_color}"
-        echo_debug "  Fuzz: ${text_transparent_fuzz}"
-
-        if [[ ${text_stroke_width} -gt 0 && ${text_shadow_percent} -eq 0 ]]; then
+            arg_draw="ellipse ${arg_cut_xy} ${arg_cut_xyradius} 0,360"
+            convert                             \
+                "${WORK_FILE}"                  \
+                \( +clone                       \
+                    -threshold -1               \
+                    -negate                     \
+                    -fill white                 \
+                    -draw "${arg_draw}" \)      \
+                -alpha off                      \
+                -compose copy_opacity           \
+                -composite                      \
+                png:-                           \
+            | convert                           \
+                -                               \
+                -trim                           \
+                +repage                         \
+                "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_CORNER}" ]]; then
+            shift
+            arg_corner_radius=6
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -r)     arg_corner_radius=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+            echo_debug "Image operation: Corner radius"
+            echo_debug "  Radius: ${arg_corner_radius}"
+            draw_fill_black="fill black polygon 0,0 0,${arg_corner_radius} ${arg_corner_radius},0"
+            draw_fill_white="fill white circle ${arg_corner_radius},${arg_corner_radius} ${arg_corner_radius},0"
             convert                                                 \
-                -background ${text_background_color}                \
-                -size ${text_width}x                                \
-                -font ${text_font}                                  \
-                -pointsize ${text_size}                             \
-                -gravity ${text_gravity}                            \
-                -kerning ${text_kerning}                            \
-                -interword-spacing ${text_interword_spacing}        \
-                -interline-spacing ${text_interline_spacing}        \
-                -fill ${text_color}                                 \
-                -bordercolor ${text_background_color}               \
-                -border ${text_stroke_width}                        \
-                caption:"{$text_string}"                            \
-                \( +clone                                           \
-                    -background ${text_stroke_color}                \
-                    -shadow 100x${text_stroke_width}+0+0            \
-                    -channel A                                      \
-                    -level 0%,${text_stroke_fade}%                  \
-                    +channel \)                                     \
-                +swap                                               \
-                +repage                                             \
-                -gravity center                                     \
-                -composite                                          \
-                int_text.png
-        fi
+                "${WORK_FILE}"                                      \
+                \( +clone -alpha extract                            \
+                    -draw "${draw_fill_black} ${draw_fill_white}"   \
+                    \( +clone -flip \) -compose multiply -composite \
+                    \( +clone -flop \) -compose multiply -composite \
+                \)                                                  \
+                -alpha off                                          \
+                -compose copyopacity                                \
+                -composite  "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_BORDER}" ]]; then
+            shift
+            arg_border_color="none"
+            arg_border_width=3
+            arg_border_radius=0
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -c)     arg_border_color="${2}"; shift 2 ;;
+                    -w)     arg_border_width=${2}; shift 2 ;;
+                    -r)     arg_border_radius=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+            echo_debug "Image operation: Border"
+            echo_debug "  Color: ${arg_border_color}"
+            echo_debug "  Width: ${arg_border_width}"
+            echo_debug "  Corner radius: ${arg_border_radius}"
+            if [ ${arg_border_radius} -eq 0 ]; then
+                mogrify                                     \
+                    -shave 1x1                              \
+                    -bordercolor "${arg_border_color}"      \
+                    -border ${arg_border_width}             \
+                    "${WORK_FILE}"
+            else
+                arg_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
+                arg_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
+                arg_width=$((arg_width + arg_border_width))
+                arg_height=$((arg_height + arg_border_width))
+                arg_draw="roundrectangle 0,0"
+                arg_draw+=" ${arg_width},${arg_height}"
+                arg_draw+=" ${arg_border_radius},${arg_border_radius}"
+                convert                                     \
+                    -size ${arg_width}x${arg_height}        \
+                    xc:none -fill "${arg_border_color}"     \
+                    -draw "${arg_draw}"                     \
+                    int_rr.png
+                convert                     \
+                    int_rr.png              \
+                    "${WORK_FILE}"          \
+                    -gravity center         \
+                    -composite              \
+                    "${WORK_FILE}"
+                #rm -f int_rr.png
+            fi
+        elif [[ "${1}" == "${IMAGE_OP_VIGNETTE}" ]]; then
+            shift
+            arg_vignette_inner=0
+            arg_vignette_outer=150
+            arg_vignette_feather=0
+            arg_vignette_color="black"
+            arg_vignette_amount=100
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -i)     arg_vignette_inner=${2}; shift 2 ;;
+                    -o)     arg_vignette_outer=${2}; shift 2 ;;
+                    -f)     arg_vignette_feather=${2}; shift 2 ;;
+                    -c)     arg_vignette_color="${2}"; shift 2 ;;
+                    -a)     arg_vignette_amount=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+            echo_debug "Image operation: vignette"
+            echo_debug "  Inner: ${arg_vignette_inner}"
+            echo_debug "  Outer: ${arg_vignette_outer}"
+            echo_debug "  Feather: ${arg_vignette_feather}"
+            echo_debug "  Color: ${arg_vignette_color}"
+            echo_debug "  Amount: ${arg_vignette_amount}"
 
-        if [[ ${text_stroke_width} -eq 0 && ${text_shadow_percent} -gt 0 ]]; then
+            ${FRED_DIR}/vignette            \
+                -i ${arg_vignette_inner}    \
+                -o ${arg_vignette_outer}    \
+                -f ${arg_vignette_feather}  \
+                -c ${arg_vignette_color}    \
+                -a ${arg_vignette_amount}   \
+                "${WORK_FILE}"              \
+                "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_BLUR}" ]]; then
+            shift
+            if [ "${1}" == "-gaussian" ]; then
+                shift
+                arg_blur_sigma=2.5
+                [[ "${1}" == "-s" ]] && { arg_blur_sigma="${2}"; shift 2; }
+                echo_debug "Image operation: blur gaussian"
+                echo_debug "  Sigma: ${arg_blur_sigma}"
+                mogrify                         \
+                    -filter Gaussian            \
+                    -resize 50%                 \
+                    -define filter:sigma=${arg_blur_sigma}    \
+                    -resize 200%                \
+                    "${WORK_FILE}"
+            else
+                arg_blur_radius=0
+                arg_blur_sigma=4
+                [[ "${1}" == "-r" ]] && { arg_blur_radius=${2}; shift 2; }
+                [[ "${1}" == "-s" ]] && { arg_blur_sigma=${2}; shift 2; }
+                echo_debug "Image operation: blur"
+                echo_debug "  Radius: ${arg_blur_radius}"
+                echo_debug "  Sigma: ${arg_blur_sigma}"
+                arg_border_width=$((arg_blur_sigma * 2))
+                mogrify                                         \
+                    -bordercolor none                           \
+                    -border ${arg_border_width}                 \
+                    "${WORK_FILE}"
+                mogrify                                         \
+                    -channel A                                  \
+                    -blur ${arg_blur_radius}x${arg_blur_sigma}  \
+                    -channel RGB                                \
+                    -blur ${arg_blur_radius}x${arg_blur_sigma}  \
+                    "${WORK_FILE}"
+            fi
+        elif [ "${1}" == "${IMAGE_OP_CONTRAST}" ]; then
+            shift
+            arg_contrast_black="0%"
+            arg_contrast_white="0%"
+            arg_contrast_gamma="1.0"
+            with_gamma=0
+            arg_contrast_reverse=0
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -b)     arg_contrast_black="${2}"; shift 2 ;;
+                    -w)     arg_contrast_white="${2}"; shift 2 ;;
+                    -g)     arg_contrast_gamma="${2}"
+                            with_gamma=1
+                            shift 2 ;;
+                    -r)     arg_contrast_reverse=1; shift 1 ;;
+                    *)      break ;;
+                esac
+            done
+            echo_debug "Image operation: contrast"
+            echo_debug "  Black: ${arg_contrast_black}"
+            echo_debug "  White: ${arg_contrast_white}"
+            echo_debug "  Gamma: ${arg_contrast_gamma}"
+            arg_gamma=""
+            if [ ${with_gamma} -eq 0 ]; then
+                arg_gamma=",${arg_contrast_gamma}"
+            fi
+            if [ ${arg_contrast_reverse} -eq 0 ]; then
+                convert                                                             \
+                    "${WORK_FILE}"                                                  \
+                    -level ${arg_contrast_black},${arg_contrast_white}${arg_gamma}  \
+                    "${WORK_FILE}"
+            else
+                convert                                                             \
+                    "${WORK_FILE}"                                                  \
+                    +level ${arg_contrast_black},${arg_contrast_white}${arg_gamma}  \
+                    "${WORK_FILE}"
+            fi
+        elif [[ "${1}" == "${IMAGE_OP_CONTRAST_SIGMOIDAL}" ]]; then
+            shift
+            arg_contrast_factor=5
+            arg_contrast_threshold="50%"
+            arg_contrast_reverse=0
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -f)     arg_contrast_factor=${2}; shift 2 ;;
+                    -t)     arg_contrast_threshold="${2}"; shift 2 ;;
+                    -r)     arg_contrast_reverse=1; shift 1 ;;
+                    *)      break ;;
+                esac
+            done
+            if [ ${arg_contrast_reverse} -eq 0 ]; then
+                convert                     \
+                    "${WORK_FILE}"          \
+                    -sigmoidal-contrast ${arg_contrast_factor},${arg_contrast_threshold} \
+                    "${WORK_FILE}"
+            else
+                convert                     \
+                    "${WORK_FILE}"          \
+                    +sigmoidal-contrast ${arg_contrast_factor},${arg_contrast_threshold} \
+                    "${WORK_FILE}"
+            fi
+        elif [[ "${1}" == "${IMAGE_OP_COLORIZE}" ]]; then
+            shift
+            if [[ "${1}" == "-l" ]]; then
+                arg_colorize_black="${2}"
+                arg_colorize_white="${3}"
+                shift 3
+                arg_colorize_channel=""
+                while [ $# -gt 0 ]; do
+                    case "${1}" in
+                        -t)     arg_colorize_channel=" -channel ALL"; shift 2 ;;
+                        *)      break ;;
+                    esac
+                done
+                echo_debug "Image operation: colorize (level adjustment)"
+                echo_debug "  Black: ${arg_colorize_black}"
+                echo_debug "  White: ${arg_colorize_white}"
+                if [ -z "${arg_colorize_channel}" ]; then
+                    echo_debug "  Transparency: exclude"
+                else
+                    echo_debug "  Transparency: include"
+                fi
+                mogrify                                                         \
+                    ${arg_colorize_channel}                                     \
+                    +level-colors ${arg_colorize_black},${arg_colorize_white}   \
+                    "${WORK_FILE}"
+            elif [[ "${1}" == "-r" ]]; then
+                arg_colorize_color_from="${2}"
+                arg_colorize_color_to="${3}"
+                shift 3
+                arg_colorize_fuzz=40
+                arg_colorize_gain=100
+                arg_colorize_threshold=0
+                arg_colorize_brightness=0
+                arg_colorize_saturation=0
+                while [ $# -gt 0 ]; do
+                    case "${1}" in
+                        -f)     arg_colorize_fuzz=${2}; shift 2 ;;
+                        -g)     arg_colorize_gain=${2}; shift 2 ;;
+                        -t)     arg_colorize_threshold=${2}; shift 2 ;;
+                        -b)     arg_colorize_brightness=${2}; shift 2 ;;
+                        -s)     arg_colorize_saturation=${2}; shift 2 ;;
+                        *)      break ;;
+                    esac
+                done
+                echo_debug "Image operation: colorize (replace color advance)"
+                echo_debug "  From Color: ${arg_colorize_color_from}"
+                echo_debug "  To Color: ${arg_colorize_color_to}"
+                echo_debug "  Fuzz: ${arg_colorize_fuzz}"
+                echo_debug "  Gain: ${arg_colorize_gain}"
+                echo_debug "  Threshold: ${arg_colorize_threshold}"
+                echo_debug "  Brightness: ${arg_colorize_brightness}"
+                echo_debug "  Saturation: ${arg_colorize_saturation}"
+                ${FRED_DIR}/replacecolor                \
+                    -i "${arg_colorize_color_from}"     \
+                    -o "${arg_colorize_color_to}"       \
+                    -f ${arg_colorize_fuzz}             \
+                    -g ${arg_colorize_gain}             \
+                    -t ${arg_colorize_threshold}        \
+                    -b ${arg_colorize_brightness}       \
+                    -s ${arg_colorize_saturation}       \
+                    "${WORK_FILE}"                      \
+                    "${WORK_FILE}"
+            elif [[ "${1}" == "-x" || "${1}" == "-xr" ]]; then
+                arg_colorize_option="${1}"
+                shift
+                if [ $# -lt 4 ]; then
+                    echo_err "Missing arguments in colorize -t option."
+                fi
+                arg_colorize_color_from="${1}"
+                arg_colorize_color_red=${2}
+                arg_colorize_color_green=${3}
+                arg_colorize_color_blue=${4}
+                shift 4
+                #arg_colorize_color_destination="${2}"
+                #shift 2
+                arg_colorize_fuzz=100
+                arg_colorize_transparency=100
+                [[ "${1}" == "-f" ]] && { arg_colorize_fuzz=${2}; shift 2; }
+                [[ "${1}" == "-q" ]] && { arg_colorize_transparency=${2}; shift 2; }
+                transparency=$((arg_colorize_transparency / 100))
+                echo_debug "Image operation: colorize (replace color)"
+                echo_debug "  From color: ${arg_colorize_color_from}"
+                echo_debug "  To RGB color: ${arg_colorize_color_red},${arg_colorize_color_green},${arg_colorize_color_blue}"
+                echo_debug "  Fuzz: ${arg_colorize_fuzz}"
+                echo_debug "  Transparency: ${transparency}"
+                if [[ "${arg_colorize_option}" == "-x" ]]; then
+                    convert                                     \
+                        "${WORK_FILE}"                          \
+                        -fuzz ${arg_colorize_fuzz}%             \
+                        -alpha on                               \
+                        -fill "rgba(${arg_colorize_color_red},${arg_colorize_color_green},${arg_colorize_color_blue})" \
+                        -opaque "${arg_colorize_color_from}"    \
+                        "${WORK_FILE}"
+                elif [[ "${arg_colorize_option}" == "-xr" ]]; then
+                    convert                                     \
+                        "${WORK_FILE}"                          \
+                        -fuzz ${arg_colorize_fuzz}%             \
+                        -alpha on                               \
+                        -fill "rgba(${arg_colorize_color_red},${arg_colorize_color_green},${arg_colorize_color_blue},${transparency})" \
+                        +opaque "${arg_colorize_color_from}"    \
+                        "${WORK_FILE}"
+                fi
+            elif [[ "${1}" == "-t" || "${1}" == "-tr" ]]; then
+                arg_colorize_option="${1}"
+                arg_colorize_color_from="${2}"
+                shift 2
+                arg_colorize_fuzz=10
+                [[ "${1}" == "-f" ]] && { arg_colorize_fuzz=${2}; shift 2; }
+                echo_debug "Image operation: colorize (make color transparent)"
+                echo_debug "  From color: ${arg_colorize_color_from}"
+                echo_debug "  Fuzz: ${arg_colorize_fuzz}"
+                if [[ "${arg_colorize_option}" == "-t" ]]; then
+                    convert                                         \
+                        "${WORK_FILE}"                              \
+                        -fuzz ${arg_colorize_fuzz}%                 \
+                        -transparent "${arg_colorize_color_from}"   \
+                        "${WORK_FILE}"
+                elif [[ "${arg_colorize_option}" == "-tr" ]]; then
+                    convert                                         \
+                        "${WORK_FILE}"                              \
+                        -fuzz ${arg_colorize_fuzz}%                 \
+                        +transparent "${arg_colorize_color_from}"   \
+                        "${WORK_FILE}"
+                fi
+            elif [[ "${1}" == "-n" ]]; then
+                shift
+                mogrify -negate "${WORK_FILE}"
+            elif [[ "${1}" == "-g" ]]; then
+                shift
+                mogrify +negate "${WORK_FILE}"
+            fi
+        elif [[ "${1}" == "${IMAGE_OP_TINT}" ]]; then
+            shift
+            arg_tint_midpoint="goldenrod"
+            arg_tint_highlight=""
+            arg_tint_amount=100
+            arg_tint_mode="midtones"
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -c)     arg_tint_midpoint="${2}"; shift 2 ;;
+                    -h)     arg_tint_highlight="${2}"; shift 2 ;;
+                    -a)     arg_tint_amount=${2}; shift 2 ;;
+                    -m)     arg_tint_mode=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+            if [[ -z "${arg_tint_midpoint}" ]]; then
+                echo_err "Missing mid-point color."
+                exit 1
+            fi
+            if [[ -z "${arg_tint_highlight}" ]]; then
+                echo_debug "Image operation: tint"
+                echo_debug "  Color: ${arg_tint_midpoint}"
+                echo_debug "  Amount: ${arg_tint_amount}"
+                echo_debug "  Mode: ${arg_tint_mode}"
+                if [[ "${arg_tint_mode}" == "shadows" ]]; then
+                    convert \
+                        "${WORK_FILE}"                                      \
+                        \( -clone 0                                         \
+                            +level-colors "${arg_tint_midpoint},white" \)   \
+                        -compose blend                                      \
+                        -define compose:args=${arg_tint_amount}             \
+                        -composite                                          \
+                        "${WORK_FILE}"
+                elif [[ "${arg_tint_mode}" == "highlights" ]]; then
+                    convert                                                 \
+                        "${WORK_FILE}"                                      \
+                        \( -clone 0                                         \
+                            +level-colors "black,${arg_tint_midpoint}" \)   \
+                        -compose over                                       \
+                        -compose blend                                      \
+                        -define compose:args=${arg_tint_amount}             \
+                        -composite                                          \
+                        "${WORK_FILE}"
+                elif [[ "${arg_tint_mode}" == "all" ]]; then
+                    convert                                     \
+                        "${WORK_FILE}"                          \
+                        -fill "${arg_tint_midpoint}"            \
+                        -colorize ${arg_tint_amount}            \
+                        "${WORK_FILE}"
+                elif [[ "${arg_tint_mode}" == "midtones" ]]; then
+                    convert                                     \
+                        "${WORK_FILE}"                          \
+                        -fill "${arg_tint_midpoint}"            \
+                        -tint ${arg_tint_amount}                \
+                        "${WORK_FILE}"
+                fi
+            else
+                echo_debug "Image operation: tint"
+                echo_debug "  Color: ${arg_tint_midpoint}"
+                echo_debug "  Highlight: ${arg_tint_highlight}"
+                # Use 3-color duotone
+                # Catrom is also known as Bicubic
+                convert                             \
+                    -size 1x1                       \
+                    xc:Black                        \
+                    xc:"${arg_tint_midpoint}"       \
+                    xc:"${arg_tint_highlight}"      \
+                    +append                         \
+                    duotone_clut.gif
+                convert                             \
+                    "${WORK_FILE}"                  \
+                    duotone_clut.gif                \
+                    -interpolate catrom             \
+                    -clut                           \
+                    "${WORK_FILE}"
+                rm -f duotone_clut.gif
+            fi
+        elif [ "${1}" == "${IMAGE_OP_MODULATE}" ]; then
+            shift
+            arg_modulate_hue="100"
+            arg_modulate_saturation="100"
+            arg_modulate_brightness="100"
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -h)     arg_modulate_hue=${2}; shift 2 ;;
+                    -s)     arg_modulate_saturation=${2}; shift 2 ;;
+                    -b)     arg_modulate_brightness=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+            echo_debug "Image operation: modulate ${arg_modulate_brightness},${arg_modulate_saturation},${arg_modulate_hue}"
+            echo_debug "Image operation: modulate"
+            echo_debug "  Brightness: ${arg_modulate_brightness}"
+            echo_debug "  Saturation: ${arg_modulate_saturation}"
+            echo_debug "  Hue: ${arg_modulate_hue}"
+            convert                     \
+                "${WORK_FILE}"          \
+                -modulate ${arg_modulate_brightness},${arg_modulate_saturation},${arg_modulate_hue} \
+                "${WORK_FILE}"
+        elif [ "${1}" == "${IMAGE_OP_GRAYSCALE}" ]; then
+            shift
+            arg_grayscale_red=29.9
+            arg_grayscale_green=58.7
+            arg_grayscale_blue=11.4
+            arg_grayscale_form="add"
+            arg_grayscale_colorspace="gray"
+            arg_grayscale_brightness=10
+            arg_grayscale_contrast=10
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -r)     arg_grayscale_red="${2}"; shift 2 ;;
+                    -g)     arg_grayscale_green="${2}"; shift 2 ;;
+                    -b)     arg_grayscale_blue="${2}"; shift 2 ;;
+                    -f)     arg_grayscale_form=${2}; shift 2 ;;
+                    -cs)    arg_grayscale_colorspace=${2}; shift 2 ;;
+                    -b)     arg_grayscale_brightness=${2}; shift 2 ;;
+                    -c)     arg_grayscale_contrast=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+            echo_debug "Image operation: grayscale"
+            echo_debug "  RGB: ${arg_grayscale_red} ${arg_grayscale_green} ${arg_grayscale_blue}"
+            echo_debug "  Form: ${arg_grayscale_form}"
+            echo_debug "  Colorspace: ${arg_grayscale_colorspace}"
+            echo_debug "  Brightness/Contrast: ${arg_grayscale_brightness} ${arg_grayscale_contrast}"
+            ${FRED_DIR}/color2gray                  \
+                -r "${arg_grayscale_red}"           \
+                -g "${arg_grayscale_green}"         \
+                -b "${arg_grayscale_blue}"          \
+                -f ${arg_grayscale_form}            \
+                -c ${arg_grayscale_colorspace}      \
+                -B ${arg_grayscale_brightness}      \
+                -C ${arg_grayscale_contrast}        \
+                "${WORK_FILE}"                      \
+                "${WORK_FILE}"
+        elif [ "${1}" == "${IMAGE_OP_GRAYSCALE_SIGMOIDAL}" ]; then
+            shift
+            arg_tone_factor=10
+            arg_tone_threshold="40%"
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -f)     arg_tone_factor=${2}; shift 2 ;;
+                    -t)     arg_tone_threshold=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+            mogrify                     \
+                -colorspace gray        \
+                -sigmoidal-contrast ${arg_tone_factor},${arg_tone_threshold} \
+                "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_GRADIENT}" ]]; then
+            shift
+            image_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
+            image_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
+
+            arg_gradient_width=${image_width}
+            arg_gradient_height=${image_height}
+            arg_gradient_mask=0
+            arg_gradient_color="black white"
+            arg_gradient_type=linear
+            arg_gradient_dir=to-bottom
+            arg_gradient_center=""
+            arg_gradient_radii=""
+            arg_gradient_zeroangle=to-top
+            arg_gradient_output="int_gradient_0.png"
+
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -m)             arg_gradient_mask=1; shift ;;
+                    -width)         arg_gradient_width=${2}; shift 2 ;;
+                    -height)        arg_gradient_height=${2}; shift 2 ;;
+                    -c)             arg_gradient_color="${2}"; shift 2 ;;
+                    -t)             arg_gradient_type=${2}; shift 2 ;;
+                    -d)             arg_gradient_dir=${2}; shift 2 ;;
+                    -p)             arg_gradient_center="${2}"; shift 2 ;;
+                    -r)             arg_gradient_radii="${2}"; shift 2 ;;
+                    -zeroangle)     arg_gradient_zeroangle=${2}; shift 2 ;;
+                    -output)        arg_gradient_output="${2}"; shift 2 ;;
+                    *)              break ;;
+                esac
+            done
+
+            arg_center_params=""
+            arg_radii_params=""
+            if [ "${arg_gradient_type}" == "linear" ]; then
+                ${FRED_DIR}/multigradient               \
+                        -w ${arg_gradient_width}        \
+                        -h ${arg_gradient_height}       \
+                        -s "${arg_gradient_color}"      \
+                        -t ${arg_gradient_type}         \
+                        -d ${arg_gradient_dir}          \
+                        -z ${arg_gradient_zeroangle}    \
+                        "${arg_gradient_output}"
+            elif [ ! "${arg_gradient_type}" == "linear" ]; then
+                if [ -n "${arg_gradient_center}" ]; then
+                    arg_center_params="-c ${arg_gradient_center}"
+                fi
+                if [ -n "${arg_gradient_radii}" ]; then
+                    arg_radii_params="-r ${arg_gradient_radii}"
+                fi
+                ${FRED_DIR}/multigradient               \
+                        -w ${arg_gradient_width}        \
+                        -h ${arg_gradient_height}       \
+                        -s "${arg_gradient_color}"      \
+                        -t ${arg_gradient_type}         \
+                        -d ${arg_gradient_dir}          \
+                        ${arg_center_params}            \
+                        ${arg_radii_params}             \
+                        -z ${arg_gradient_zeroangle}    \
+                        "${arg_gradient_output}"
+            fi
+
+
+
+            if [ ${arg_gradient_mask} -eq 1 ]; then
+                convert                             \
+                    ${LARGE_IMAGE_SUPPORT}          \
+                    "${WORK_FILE}"                  \
+                    -write MPR:orig                 \
+                    -alpha extract                  \
+                    "${arg_gradient_output}"        \
+                    -compose multiply               \
+                    -composite MPR:orig             \
+                    +swap                           \
+                    -compose copyopacity            \
+                    -composite                      \
+                    "${WORK_FILE}"
+            else
+                convert                                                 \
+                    ${LARGE_IMAGE_SUPPORT}                              \
+                    "${WORK_FILE}"                                      \
+                    "${arg_gradient_output}"                            \
+                    -size ${arg_gradient_width}x${arg_gradient_height}  \
+                    gradient: -composite                                \
+                    "${WORK_FILE}"
+            fi
+            if [ ${debug} -eq 0 ]; then
+                rm -f "${arg_gradient_output}"
+            fi
+        elif [[ "${1}" == "${IMAGE_OP_SHADE}" ]]; then
+            shift
+            arg_shade_direction=0
+            arg_shade_elevation=45
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -d)     arg_shade_direction=${2}; shift 2 ;;
+                    -e)     arg_shade_elevation=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
             convert                                                     \
-                -background ${text_background_color}                    \
-                -size ${text_width}x                                    \
-                -font "${text_font}"                                    \
-                -pointsize "${text_size}"                               \
-                -gravity "${text_gravity}"                              \
-                -kerning ${text_kerning}                                \
-                -interword-spacing ${text_interword_spacing}            \
-                -interline-spacing "${text_interline_spacing}"          \
-                -fill "${text_color}"                                   \
-                -bordercolor ${text_background_color}                   \
-                -border ${text_stroke_width}                            \
-                caption:"${text_string}"                                \
-                \( +clone                                               \
-                    -background "${text_shadow_color}"                  \
-                    -shadow ${text_shadow_percent}x2+2+2                \
-                     -channel A                                         \
-                     -level 0,50%                                       \
-                     +channel \)                                        \
-                -geometry -${text_shadow_offset}-${text_shadow_offset}  \
-                +swap                                                   \
-                +repage                                                 \
-                -gravity center                                         \
-                -composite                                              \
-                int_text.png
+                "${WORK_FILE}"                                          \
+                -shade ${arg_shade_direction}x${arg_shade_elevation}    \
+                "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_SHADOW}" ]]; then
+            shift
+            arg_shadow_color="black"
+            arg_shadow_radius=80
+            arg_shadow_sigma=3
+            arg_shadow_xoffset=+5
+            arg_shadow_yoffset=+5
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -c)     arg_shadow_color=${2}; shift 2 ;;
+                    -r)     arg_shadow_radius=${2}; shift 2 ;;
+                    -s)     arg_shadow_sigma=${2}; shift 2 ;;
+                    -p)     arg_shadow_xoffset="${2}"
+                            arg_shadow_yoffset="${3}"
+                            shift 3 ;;
+                    -x)     arg_shadow_xoffset="${2}"; shift 2 ;;
+                    -y)     arg_shadow_yoffset="${2}"; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+#            ${PROGRAM_DIR}/ci_shadow            \
+#                "${debug_flag}"                 \
+#                --c "${arg_shadow_color}"       \
+#                --r ${arg_shadow_radius}        \
+#                --s ${arg_shadow_sigma}         \
+#                --x ${arg_shadow_xoffset}       \
+#                --y ${arg_shadow_yoffset}       \
+#                --input "${WORK_FILE}"          \
+#                --output "${WORK_FILE}"
+            arg_shadow="${arg_shadow_radius}x${arg_shadow_sigma}${arg_shadow_xoffset}${arg_shadow_yoffset}"
+            convert                                     \
+                "${WORK_FILE}"                          \
+                \( -clone 0                             \
+                    -background "${arg_shadow_color}"   \
+                    -shadow "${arg_shadow}" \)          \
+                -reverse                                \
+                -background none                        \
+                -layers merge +repage                   \
+                "${WORK_FILE}"
+
+        elif [[ "${1}" == "${IMAGE_OP_SHADOW_ADVANCE}" ]]; then
+            shift
+            arg_shadow_type=outer
+            arg_shadow_color="black"
+            arg_shadow_radius=80
+            arg_shadow_sigma=3
+            arg_shadow_direction=135
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -t)     arg_shadow_type="${2}"; shift 2 ;;
+                    -c)     arg_shadow_color="${2}"; shift 2 ;;
+                    -r)     arg_shadow_radius=${2}; shift 2 ;;
+                    -s)     arg_shadow_sigma=${2}; shift 2 ;;
+                    -d)     arg_shadow_direction=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+            ${FRED_DIR}/shadows                 \
+                -t ${arg_shadow_type}           \
+                -c ${arg_shadow_color}          \
+                -r ${arg_shadow_radius}         \
+                -s ${arg_shadow_sigma}          \
+                -d ${arg_shadow_direction}      \
+                -b white                        \
+                "${WORK_FILE}"                  \
+                "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_GRID}" ]]; then
+            arg_grid_pixels=${2}
+            arg_grid_color="${3}"
+            shift 3
+            echo_debug "Image operation: grid ${arg_grid_pixels} ${arg_grid_color}"
+            ${FRED_DIR}/grid            \
+                -s ${arg_grid_pixels}   \
+                -c "${arg_grid_color}"  \
+                "${WORK_FILE}"          \
+                "${WORK_FILE}"
+        elif [[ "${1}" == "${IMAGE_OP_NOMERGE}" ]]; then
+            shift
+            arg_nomerge_output="int_image.png"
+            [[ "${1}" == "-o" ]] && { arg_nomerge_output="${2}"; shift 2; }
+            echo_debug "Image operation: no merge (output only)"
+            echo_debug "  Output: ${arg_nomerge_output}"
+            cp -f "${WORK_FILE}" "${arg_nomerge_output}"
+        elif [[ "${1}" == "${IMAGE_OP_MERGE}" ]]; then
+            shift
+            arg_merge_gravity="northwest"
+            arg_merge_xposition=0
+            arg_merge_yposition=0
+            # The x and y offsets move the working image by some pixel.
+            # This becomes necessary when the previously drawn text image
+            # have a shadow so as not to overwrite its lower part.
+            arg_merge_xoffset=0
+            arg_merge_yoffset=0
+            arg_merge_opaqueness=100
+
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                    -g)         arg_merge_gravity=${2}; shift 2 ;;
+                    -p)         arg_merge_xposition=${2}
+                                arg_merge_yposition=${3}
+                                shift 3 ;;
+                    -x)         arg_merge_xposition=${2}; shift 2 ;;
+                    -y)         arg_merge_yposition=${2}; shift 2 ;;
+                    -ox)        arg_merge_xoffset=${2}; shift 2 ;;
+                    -oy)        arg_merge_yoffset=${2}; shift 2 ;;
+                    -px)        arg_merge_xposition=${text_prev_x}; shift ;;
+                    -py)        arg_merge_yposition=${text_prev_y}; shift ;;
+                    -nx)        arg_merge_xposition=${text_next_x}; shift ;;
+                    -ny)        arg_merge_yposition=${text_next_y}; shift ;;
+                    -q)         arg_merge_opaqueness="${2}"; shift 2 ;;
+                    *)          break ;;
+                esac
+            done
+
+            if [ ${skip_merge_operation} -eq 1 ]; then
+                skip_merge_operation=0
+                continue
+            fi
+
+            if [ ${arg_merge_xoffset} -ne 0 ]; then
+                arg_merge_xposition=$((arg_merge_xposition + arg_merge_xoffset))
+            fi
+            if [ ${arg_merge_yoffset} -ne 0 ]; then
+                arg_merge_yposition=$((arg_merge_yposition + arg_merge_yoffset))
+            fi
+
+            echo_debug "Merging work file to canvas:"
+            echo_debug "  Gravity: ${arg_merge_gravity}"
+            echo_debug "  Position: +${arg_merge_xposition}+${arg_merge_yposition}"
+            echo_debug "  X offset: ${arg_merge_xoffset}"
+            echo_debug "  Y offset: ${arg_merge_yoffset}"
+            echo_debug "  Opaqueness: ${arg_merge_opaqueness}"
+
+            composite                                                       \
+                -dissolve ${arg_merge_opaqueness}x100                       \
+                "${WORK_FILE}"                                              \
+                "${OUTPUT_FILE}"                                            \
+                -alpha set                                                  \
+                -gravity ${arg_merge_gravity}                               \
+                -geometry "+${arg_merge_xposition}+${arg_merge_yposition}"  \
+                "${OUTPUT_FILE}"
+
+            # Compute the next text x and y positions will be
+            # only if a text image was last drawn
+            if [ ${compute_next_y} -eq 1 ]; then
+
+                compute_next_y=0
+
+                text_prev_x=${arg_merge_xposition}
+                text_prev_y=${arg_merge_yposition}
+
+                # Compute where the next x position will be.
+                # The next x position is computed to be at the right
+                # of the current text area.
+                image_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
+                text_next_x=$((arg_merge_xposition + image_width))
+
+                # Compute where the next y position will be.
+                # The next y position is computed to be at the bottom
+                # of the current text area.
+                image_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
+                text_next_y=$((arg_merge_yposition + image_height))
+
+                echo_debug "  Prev position: ${text_prev_x},${text_prev_y}"
+                echo_debug "  Next position: ${text_next_x},${text_next_y}"
+            fi
+
+        fi # Image operations
+
+    done # Image operations
+
+    if [[ ! "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; then
+        if [[ ! "${IMAGE_OPERATIONS[@]}" =~ "${1}" ]]; then
+            echo_err "Unknown operation or option: ${1}"
+            exit 1
         fi
-
-        if [[ ${text_stroke_width} -gt 0 && ${text_shadow_percent} -gt 0 ]]; then
-            echo "--------------------------------------------------"
-            echo "Error: Text stroke with shadow is not implemented."
-            echo "--------------------------------------------------"
-        fi
-
-        if [[ ${text_stroke_width} -eq 0 && ${text_shadow_percent} -eq 0 ]]; then
-            convert                                                 \
-                -background ${text_background_color}                \
-                -size ${text_width}x                                \
-                -font "${text_font}"                                \
-                -pointsize "${text_size}"                           \
-                -gravity "${text_gravity}"                          \
-                -kerning ${text_kerning}                            \
-                -interword-spacing ${text_interword_spacing}        \
-                -interline-spacing "${text_interline_spacing}"      \
-                -fill "${text_color}"                               \
-                caption:"${text_string}"                            \
-                int_text.png
-        fi
-
-        if [[ -n ${text_rotate_angle+x} ]]; then
-            mogrify                             \
-                -background 'rgba(0,0,0,0)'     \
-                -rotate ${text_rotate_angle}    \
-                int_text.png
-        fi
-
-        if [[ -n ${text_transparent_color+x} ]]; then
-            mogrify                                     \
-                -median 2                               \
-                -fuzz ${text_transparent_fuzz}%         \
-                -transparent ${text_transparent_color}  \
-                int_text.png
-        fi
-
-        if [ ${debug} -gt 0 ]; then
-            text_count=$((text_count + 1))
-            cp -f int_text.png "int_text_${text_count}.png"
-        fi
-
-        if [[ ${text_position_x} -gt 0 || ${text_position_y} -gt 0 ]]; then
-            convert                                                 \
-                int_text.png                                        \
-                -trim                                               \
-                int_text.png
-            convert                                                 \
-                ${OUTPUT_FILE}                                      \
-                int_text.png                                        \
-                -gravity ${text_position_gravity}                   \
-                -geometry +${text_position_x}+${text_position_y}    \
-                -composite                                          \
-                ${OUTPUT_FILE}
-            compute_next=0
-        else
-            convert                                 \
-                ${OUTPUT_FILE}                      \
-                int_text.png                        \
-                -geometry +${pos_x}+${pos_y}        \
-                -composite                          \
-                ${OUTPUT_FILE}
-        fi
-
-        # Compute next y position
-        if [[ ${compute_next} -eq 1 ]]; then
-            temp_height=`convert int_text.png -ping -format "%h" info:`
-            pos_y=$((pos_y + temp_height))
-        fi
-    fi # if -n $text_string
-done # --text
-
-done # main loop
-
-if [ "${1}" == "--author" ]; then
-    shift 1
-    author_name="" && [[ "${1}" == "-a" ]] && { author_name="${2}"; shift 2; }
-    description="" && [[ "${1}" == "-d" ]] && { description="${2}"; shift 2; }
-    author_color=black && [[ "${1}" == "-c" ]] && { author_color="${2}"; shift 2; }
-
-    echo_debug "Author"
-    echo_debug "  Name: ${author_name}"
-    echo_debug "  Description: ${description}"
-    echo_debug "  Color: ${author_color}"
-
-    convert                                 \
-        -background none                    \
-        -size "${canvas_width}"x            \
-        -font "Roboto-Condensed-Bold"       \
-        -pointsize  15                      \
-        -gravity west                       \
-        -fill "${author_color}"             \
-        caption:"${author_name}"            \
-        png:-                               \
-    | convert                               \
-        ${OUTPUT_FILE}                      \
-        -                                   \
-        -gravity southwest                  \
-        -geometry +12+24                    \
-        -composite                          \
-        ${OUTPUT_FILE}
-
-    convert                                 \
-        -background none                    \
-        -size "${canvas_width}"x            \
-        -font "Roboto-Condensed"            \
-        -pointsize 14                       \
-        -gravity west                       \
-        -fill "${author_color}"             \
-        caption:"${description}"            \
-        png:-                               \
-    | convert                               \
-        ${OUTPUT_FILE}                      \
-        -                                   \
-        -gravity southwest                  \
-        -geometry +12+7                     \
-        -composite                          \
-        ${OUTPUT_FILE}
-fi # --author
-
-if [ "${1}" == "--logo" ]; then
-    shift 1
-    image_logo="logo/logo_fist_2018.png" && \
-        [[ "${1}" == "-f" ]] && { image_logo="${2}"; shift 2; }
-    if [[ ! -f "$image_logo" ]]; then
-        echo_err "Cannot find logo file '$image_logo'"
-        exit 1
     fi
 
-    logo_color="black" && \
-        [[ "${1}" == "-c" ]] && { logo_color="${2}"; shift 2; }
-    get_logo_dimension $canvas
-    logo_dimension="${dim_temp}x${dim_temp}"
-    logo_offset_x=$((dim_temp / 3))
-    logo_offset_y=$(( (dim_temp / 3) + 1 ))
-    [[ "${1}" == "-s" ]] && { logo_dimension="${2}"; shift 2; }
-    [[ "${1}" == "-ox" ]] && { logo_offset_x=${2}; shift 2; }
-    [[ "${1}" == "-oy" ]] && { logo_offset_y=${2}; shift 2; }
-    logo_gravity="southeast" && \
-        [[ "${1}" == "-g" ]] && { logo_gravity="${2}"; shift 2; }
-    logo_label="" && \
-        [[ "${1}" == "-l" ]] && { logo_label="${2}"; shift 2; }
+done # operations
 
-    logo_offset=+${logo_offset_x}+${logo_offset_y}
 
-    echo_debug "Logo:"
-    echo_debug "  File: ${image_logo}"
-    echo_debug "  Size: ${logo_dimension}"
-    echo_debug "  Color: ${logo_color}"
-    echo_debug "  Label: ${logo_label}"
-
-    convert                                         \
-        "${image_logo}"                             \
-        -fill "${logo_color}"                       \
-        -colorize 100%                              \
-        png:-                                       \
-    | convert                                       \
-        ${OUTPUT_FILE}                              \
-        -                                           \
-        -gravity ${logo_gravity}                    \
-        -geometry ${logo_dimension}${logo_offset}   \
-        -composite                                  \
-        ${OUTPUT_FILE}
-
-    if [ -n "$logo_label" ]; then
-        label_offset_x=$((logo_offset_x + 37))
-        label_offset_y=$((logo_offset_y + 6))
-        convert                                             \
-            -background none                                \
-            -size 150x18                                    \
-            -font "Oswald-Regular"                          \
-            -pointsize 13                                   \
-            -gravity east                                   \
-            -fill "${logo_color}"                           \
-            caption:"${logo_label}"                         \
-            png:-                                           \
-        | convert                                           \
-            ${OUTPUT_FILE}                                  \
-            -                                               \
-            -gravity ${logo_gravity}                        \
-            -geometry +${label_offset_x}+${label_offset_y}  \
-            -composite                                      \
-            ${OUTPUT_FILE}
-    fi
-fi # --logo
-
-if [ "${1}" == "--output" ]; then
-    mv -f ${OUTPUT_FILE} "${2}"
-fi
-
-if [ "${1}" == "--add-info" ]; then
-    shift 1
-    if hash exiftool 2>/dev/null; then
-        exiftool -q -XMP-dc:Creator="Duterte Legionnaire" ${OUTPUT_FILE}
-        exiftool -q -xmp-dc:description="Test description" ${OUTPUT_FILE}
-        exiftool -q -xmp-dc:source="Arguments:$commandline_arguments" ${OUTPUT_FILE}
-
-        rm -f "${OUTPUT_FILE}_original"
-
-        echo "--------"
-        echo "ExifTool"
-        echo "--------"
-        exiftool "${OUTPUT_FILE}"
-    else
-        echo "Missing: ExifTool"
-    fi
-fi
-
-echo "Done."
-
-exit 0
+# More
+# http://www.imagemagick.org/discourse-server/viewtopic.php?t=34152
+# http://www.imagemagick.org/discourse-server/viewtopic.php?t=31042
