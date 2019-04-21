@@ -1,0 +1,9 @@
+# Dynamic directories and files
+
+# Static directories and files
+
+ci_**
+int_**
+
+doc/**
+fred/**
