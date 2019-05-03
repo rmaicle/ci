@@ -1920,8 +1920,8 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             fi
         elif [ "${1}" == "${IMAGE_OP_CONTRAST}" ]; then
             shift
-            arg_contrast_black="0%"
-            arg_contrast_white="0%"
+            arg_contrast_black="0"
+            arg_contrast_white="0"
             arg_contrast_gamma="1.0"
             with_gamma=0
             arg_contrast_reverse=0
@@ -1945,14 +1945,14 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 arg_gamma=",${arg_contrast_gamma}"
             fi
             if [ ${arg_contrast_reverse} -eq 0 ]; then
-                convert                                                             \
-                    "${WORK_FILE}"                                                  \
-                    -level ${arg_contrast_black},${arg_contrast_white}${arg_gamma}  \
+                convert                                                                 \
+                    "${WORK_FILE}"                                                      \
+                    -level ${arg_contrast_black}%,${arg_contrast_white}%${arg_gamma}    \
                     "${WORK_FILE}"
             else
-                convert                                                             \
-                    "${WORK_FILE}"                                                  \
-                    +level ${arg_contrast_black},${arg_contrast_white}${arg_gamma}  \
+                convert                                                                 \
+                    "${WORK_FILE}"                                                      \
+                    +level ${arg_contrast_black}%,${arg_contrast_white}%${arg_gamma}    \
                     "${WORK_FILE}"
             fi
         elif [[ "${1}" == "${IMAGE_OP_CONTRAST_SIGMOIDAL}" ]]; then
