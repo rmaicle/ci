@@ -730,7 +730,7 @@ function get_font {
         dirty)                              font_temp="Fake-News" ;;                                # Thick CAPS
         #dirty)                              font_temp="Dark-Underground" ;;
         dirty-1)                            font_temp="BadSuabiaSwing-Regular" ;;                   # Narrow
-        dirty-2)                            font_temp="Depressionist-3-Revisited" ;;                # Less Narrow
+        dirty-2)                            font_temp="Depressionist-3-Revisited" ;;                # Less Narrow no symbols
         dirty-3)                            font_temp="Very-Damaged-Bold" ;;
         dirty-4)                            font_temp="Impacted2.0-Regular" ;;
         dirty-5)                            font_temp="Dirty-Headline" ;;
