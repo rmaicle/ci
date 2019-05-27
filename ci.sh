@@ -1950,7 +1950,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
         elif [[ "${1}" == "${IMAGE_OP_CONTRAST_SIGMOIDAL}" ]]; then
             shift
             arg_contrast_factor=5
-            arg_contrast_threshold="50%"
+            arg_contrast_threshold="50"
             arg_contrast_reverse=0
             while [ $# -gt 0 ]; do
                 case "${1}" in
@@ -1963,14 +1963,21 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             if [ ${arg_contrast_reverse} -eq 0 ]; then
                 convert                     \
                     "${WORK_FILE}"          \
-                    -sigmoidal-contrast ${arg_contrast_factor},${arg_contrast_threshold} \
+                    -sigmoidal-contrast ${arg_contrast_factor},${arg_contrast_threshold}% \
                     "${WORK_FILE}"
             else
                 convert                     \
                     "${WORK_FILE}"          \
-                    +sigmoidal-contrast ${arg_contrast_factor},${arg_contrast_threshold} \
+                    +sigmoidal-contrast ${arg_contrast_factor},${arg_contrast_threshold}% \
                     "${WORK_FILE}"
             fi
+        elif [[ "${1}" == "${IMAGE_OP_RECOLOR}" ]]; then
+            arg_color_lut_from="${2}"
+            arg_color_lut_to="${3}"
+            shift 3
+            convert -size 10x100 gradient:${arg_color_lut_from}-${arg_color_lut_to} gradient_lut.png
+            convert ${WORK_FILE} gradient_lut.png -clut ${WORK_FILE}
+            rm -f gradient_lut.png
         elif [[ "${1}" == "${IMAGE_OP_COLORIZE}" ]]; then
             shift
             if [[ "${1}" == "-l" ]]; then
