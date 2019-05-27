@@ -580,112 +580,99 @@ function get_font {
         && { echo_err "get_font parameter not found."; return 1; }
 
     case "${1}" in
-        default)                            font_temp="Roboto" ;;
-        default-light)                      font_temp="Roboto-Light" ;;
-        default-medium)                     font_temp="Roboto-Medium" ;;
-        default-bold)                       font_temp="Roboto-Bold" ;;
-        default-black)                      font_temp="Roboto-Black" ;;
-        default-thin)                       font_temp="Roboto-Thin" ;;
-        default-condensed)                  font_temp="Roboto-Condensed" ;;
-        default-condensed-light)            font_temp="Roboto-Condensed-Light" ;;
-        default-condensed-bold)             font_temp="Roboto-Condensed-Bold" ;;
-        default-italic)                     font_temp="Roboto-Italic" ;;
-        default-light-italic)               font_temp="Roboto-Light-Italic" ;;
-        default-medium-italic)              font_temp="Roboto-Medium-Italic" ;;
-        default-bold-italic)                font_temp="Roboto-Bold-Italic" ;;
-        default-black-italic)               font_temp="Roboto-Black-Italic" ;;
-        default-thin-italic)                font_temp="Roboto-Thin-Italic" ;;
-        default-condensed-italic)           font_temp="Roboto-Condensed-Italic" ;;
-        default-condensed-light-italic)     font_temp="Roboto-Condensed-Light-Italic" ;;
-        default-condensed-bold-italic)      font_temp="Roboto-Condensed-Bold-Italic" ;;
-        sans)                               font_temp="Open-Sans-Regular" ;;
-        sans-light)                         font_temp="Open-Sans-Light" ;;
-        sans-semibold)                      font_temp="Open-Sans-SemiBold" ;;
-        sans-bold)                          font_temp="Open-Sans-Bold" ;;
-        sans-extrabold)                     font_temp="Open-Sans-ExtraBold" ;;
-        sans-condensed-light)               font_temp="Open-Sans-Condensed-Light" ;;
-        sans-condensed-bold)                font_temp="Open-Sans-Condensed-Bold" ;;
-        sans-italic)                        font_temp="Open-Sans-Italic" ;;
-        sans-light-italic)                  font_temp="Open-Sans-Light-Italic" ;;
-        sans-semibold-italic)               font_temp="Open-Sans-SemiBold-Italic" ;;
-        sans-bold-italic)                   font_temp="Open-Sans-Bold-Italic" ;;
-        sans-extrabold-italic)              font_temp="Open-Sans-ExtraBold-Italic" ;;
-        sans-condensed-light-italic)        font_temp="Open-Sans-Condensed-Light-Italic" ;;
-        sans-1)                             font_temp="Encode-Sans-Regular" ;;
-        sans-1-thin)                        font_temp="Encode-Sans-Thin" ;;
-        sans-1-extralight)                  font_temp="Encode-Sans-ExtraLight" ;;
-        sans-1-light)                       font_temp="Encode-Sans-Light" ;;
-        sans-1-medium)                      font_temp="Encode-Sans-Medium" ;;
-        sans-1-semibold)                    font_temp="Encode-Sans-Semibold" ;;
-        sans-1-bold)                        font_temp="Encode-Sans-Bold" ;;
-        sans-1-extrabold)                   font_temp="Encode-Sans-ExtraBold" ;;
-        sans-1-black)                       font_temp="Encode-Sans-Black" ;;
-        sans-1-condensed)                   font_temp="Encode-Sans-Condensed-Regular" ;;
-        sans-1-condensed-thin)              font_temp="Encode-Sans-Condensed-Thin" ;;
-        sans-1-condensed-light)             font_temp="Encode-Sans-Condensed-Light" ;;
-        sans-1-condensed-extralight)        font_temp="Encode-Sans-Condensed-ExtraLight" ;;
-        sans-1-condensed-medium)            font_temp="Encode-Sans-Condensed-Medium" ;;
-        sans-1-condensed-semibold)          font_temp="Encode-Sans-Condensed-Semibold" ;;
-        sans-1-condensed-bold)              font_temp="Encode-Sans-Condensed-Bold" ;;
-        sans-1-condensed-extrabold)         font_temp="Encode-Sans-Condensed-ExtraBold" ;;
-        sans-1-condensed-black)             font_temp="Encode-Sans-Condensed-Black" ;;
-        sans-1-semicondensed)               font_temp="Encode-Sans-SemiCondensed-Regular" ;;
-        sans-1-semicondensed-thin)          font_temp="Encode-Sans-SemiCondensed-Thin" ;;
-        sans-1-semicondensed-light)         font_temp="Encode-Sans-SemiCondensed-Light" ;;
-        sans-1-semicondensed-extralight)    font_temp="Encode-Sans-SemiCondensed-ExtraLight" ;;
-        sans-1-semicondensed-medium)        font_temp="Encode-Sans-SemiCondensed-Medium" ;;
-        sans-1-semicondensed-semibold)      font_temp="Encode-Sans-SemiCondensed-Semibold" ;;
-        sans-1-semicondensed-bold)          font_temp="Encode-Sans-SemiCondensed-Bold" ;;
-        sans-1-semicondensed-extrabold)     font_temp="Encode-Sans-SemiCondensed-ExtraBold" ;;
-        sans-1-semicondensed-black)         font_temp="Encode-Sans-SemiCondensed-Black" ;;
-        sans-1-expanded)                    font_temp="Encode-Sans-Expanded-Regular" ;;
-        sans-1-expanded-thin)               font_temp="Encode-Sans-Expanded-Thin" ;;
-        sans-1-expanded-light)              font_temp="Encode-Sans-Expanded-Light" ;;
-        sans-1-expanded-extralight)         font_temp="Encode-Sans-Expanded-ExtraLight" ;;
-        sans-1-expanded-medium)             font_temp="Encode-Sans-Expanded-Medium" ;;
-        sans-1-expanded-semibold)           font_temp="Encode-Sans-Expanded-Semibold" ;;
-        sans-1-expanded-bold)               font_temp="Encode-Sans-Expanded-Bold" ;;
-        sans-1-expanded-extrabold)          font_temp="Encode-Sans-Expanded-ExtraBold" ;;
-        sans-1-expanded-black)              font_temp="Encode-Sans-Expanded-Black" ;;
-        sans-1-semiexpanded)                font_temp="Encode-Sans-SemiExpanded-Regular" ;;
-        sans-1-semiexpanded-thin)           font_temp="Encode-Sans-SemiExpanded-Thin" ;;
-        sans-1-semiexpanded-light)          font_temp="Encode-Sans-SemiExpanded-Light" ;;
-        sans-1-semiexpanded-extralight)     font_temp="Encode-Sans-SemiExpanded-ExtraLight" ;;
-        sans-1-semiexpanded-medium)         font_temp="Encode-Sans-SemiExpanded-Medium" ;;
-        sans-1-semiexpanded-semibold)       font_temp="Encode-Sans-SemiExpanded-Semibold" ;;
-        sans-1-semiexpanded-bold)           font_temp="Encode-Sans-SemiExpanded-Bold" ;;
-        sans-1-semiexpanded-extrabold)      font_temp="Encode-Sans-SemiExpanded-ExtraBold" ;;
-        sans-1-semiexpanded-black)          font_temp="Encode-Sans-SemiExpanded-Black" ;;
-        sans-2)                             font_temp="Lato-Regular" ;;
-        sans-2-extralight)                  font_temp="Lato-Hairline" ;;
-        sans-2-light)                       font_temp="Lato-Light" ;;
-        sans-2-bold)                        font_temp="Lato-Bold" ;;
-        sans-2-black)                       font_temp="Lato-Black" ;;
-        sans-2-italic)                      font_temp="Lato-Italic" ;;
-        sans-2-extralight-italic)           font_temp="Lato-HairlineItalic" ;;
-        sans-2-light-italic)                font_temp="Lato-LightItalic" ;;
-        sans-2-bold-italic)                 font_temp="Lato-Bold-Italic" ;;
-        sans-2-black-italic)                font_temp="Lato-Black-Italic" ;;
-        sans-3)                             font_temp="Oswald-Regular" ;;
-        sans-3-extralight)                  font_temp="Oswald-ExtraLight" ;;
-        sans-3-light)                       font_temp="Oswald-Light" ;;
-        sans-3-medium)                      font_temp="Oswald-Medium" ;;
-        sans-3-semibold)                    font_temp="Oswald-Semibold" ;;
-        sans-3-bold)                        font_temp="Oswald-Bold" ;;
-        sans-4)                             font_temp="Share-Regular" ;;
-        sans-4-bold)                        font_temp="Share-Bold" ;;
-        sans-4-italic)                      font_temp="Share-Italic" ;;
-        sans-4-bold-italic)                 font_temp="Share-Bold-Italic" ;;
-        serif)                              font_temp="PT-Serif" ;;
-        serif-bold)                         font_temp="PT-Serif-Bold" ;;
-        serif-italic)                       font_temp="PT-Serif-Italic" ;;
-        serif-bold-italic)                  font_temp="PT-Serif-Bold-Italic" ;;
-        serif-1)                            font_temp="Crimson-Text-Regular" ;;
-        serif-1-semibold)                   font_temp="Crimson-Text-SemiBold" ;;
-        serif-1-bold)                       font_temp="Crimson-Text-Bold" ;;
-        serif-1-italic)                     font_temp="Crimson-Text-Italic" ;;
-        serif-1-semibold-italic)            font_temp="Crimson-Text-SemiBold-Italic" ;;
-        serif-1-bold-italic)                font_temp="Crimson-Text-Bold-Italic" ;;
+        sans)                               font_temp="Encode-Sans-Regular" ;;                  # a bit comdensed
+        sans-thin)                          font_temp="Encode-Sans-Thin" ;;
+        sans-extralight)                    font_temp="Encode-Sans-ExtraLight" ;;
+        sans-light)                         font_temp="Encode-Sans-Light" ;;
+        sans-medium)                        font_temp="Encode-Sans-Medium" ;;
+        sans-semibold)                      font_temp="Encode-Sans-Semibold" ;;
+        sans-bold)                          font_temp="Encode-Sans-Bold" ;;
+        sans-extrabold)                     font_temp="Encode-Sans-ExtraBold" ;;
+        sans-black)                         font_temp="Encode-Sans-Black" ;;
+
+        sans-semicondensed)                 font_temp="Encode-Sans-SemiCondensed-Regular" ;;
+        sans-semicondensed-thin)            font_temp="Encode-Sans-SemiCondensed-Thin" ;;
+        sans-semicondensed-extralight)      font_temp="Encode-Sans-SemiCondensed-ExtraLight" ;;
+        sans-semicondensed-light)           font_temp="Encode-Sans-SemiCondensed-Light" ;;
+        sans-semicondensed-medium)          font_temp="Encode-Sans-SemiCondensed-Medium" ;;
+        sans-semicondensed-semibold)        font_temp="Encode-Sans-SemiCondensed-Semibold" ;;
+        sans-semicondensed-bold)            font_temp="Encode-Sans-SemiCondensed-Bold" ;;
+        sans-semicondensed-extrabold)       font_temp="Encode-Sans-SemiCondensed-ExtraBold" ;;
+        sans-semicondensed-black)           font_temp="Encode-Sans-SemiCondensed-Black" ;;
+
+        sans-condensed)                     font_temp="Encode-Sans-Condensed-Regular" ;;
+        sans-condensed-thin)                font_temp="Encode-Sans-Condensed-Thin" ;;
+        sans-condensed-extralight)          font_temp="Encode-Sans-Condensed-ExtraLight" ;;
+        sans-condensed-light)               font_temp="Encode-Sans-Condensed-Light" ;;
+        sans-condensed-medium)              font_temp="Encode-Sans-Condensed-Medium" ;;
+        sans-condensed-semibold)            font_temp="Encode-Sans-Condensed-Semibold" ;;
+        sans-condensed-bold)                font_temp="Encode-Sans-Condensed-Bold" ;;
+        sans-condensed-extrabold)           font_temp="Encode-Sans-Condensed-ExtraBold" ;;
+        sans-condensed-black)               font_temp="Encode-Sans-Condensed-Black" ;;
+
+        sans-semiexpanded)                  font_temp="Encode-Sans-SemiExpanded-Regular" ;;
+        sans-semiexpanded-thin)             font_temp="Encode-Sans-SemiExpanded-Thin" ;;
+        sans-semiexpanded-extralight)       font_temp="Encode-Sans-SemiExpanded-ExtraLight" ;;
+        sans-semiexpanded-light)            font_temp="Encode-Sans-SemiExpanded-Light" ;;
+        sans-semiexpanded-medium)           font_temp="Encode-Sans-SemiExpanded-Medium" ;;
+        sans-semiexpanded-semibold)         font_temp="Encode-Sans-SemiExpanded-Semibold" ;;
+        sans-semiexpanded-bold)             font_temp="Encode-Sans-SemiExpanded-Bold" ;;
+        sans-semiexpanded-extrabold)        font_temp="Encode-Sans-SemiExpanded-ExtraBold" ;;
+        sans-semiexpanded-black)            font_temp="Encode-Sans-SemiExpanded-Black" ;;
+
+        sans-expanded)                      font_temp="Encode-Sans-Expanded-Regular" ;;
+        sans-expanded-thin)                 font_temp="Encode-Sans-Expanded-Thin" ;;
+        sans-expanded-extralight)           font_temp="Encode-Sans-Expanded-ExtraLight" ;;
+        sans-expanded-light)                font_temp="Encode-Sans-Expanded-Light" ;;
+        sans-expanded-medium)               font_temp="Encode-Sans-Expanded-Medium" ;;
+        sans-expanded-semibold)             font_temp="Encode-Sans-Expanded-Semibold" ;;
+        sans-expanded-bold)                 font_temp="Encode-Sans-Expanded-Bold" ;;
+        sans-expanded-extrabold)            font_temp="Encode-Sans-Expanded-ExtraBold" ;;
+        sans-expanded-black)                font_temp="Encode-Sans-Expanded-Black" ;;
+
+        sans-1)                             font_temp="Share-Regular" ;;                        # Narrow, stylistic
+        sans-1-bold)                        font_temp="Share-Bold" ;;
+        sans-1-italic)                      font_temp="Share-Italic" ;;
+        sans-1-bold-italic)                 font_temp="Share-Bold-Italic" ;;
+
+        sans-2)                             font_temp="Oswald-Regular" ;;                       # Narrower, a bit thicker
+        sans-2-extralight)                  font_temp="Oswald-ExtraLight" ;;
+        sans-2-light)                       font_temp="Oswald-Light" ;;
+        sans-2-medium)                      font_temp="Oswald-Medium" ;;
+        sans-2-semibold)                    font_temp="Oswald-Semibold" ;;
+        sans-2-bold)                        font_temp="Oswald-Bold" ;;
+
+        serif)                              font_temp="Spectral-Regular" ;;
+        serif-extralight)                   font_temp="Spectral-ExtraLight" ;;
+        serif-light)                        font_temp="Spectral-Light" ;;
+        serif-medium)                       font_temp="Spectral-Medium" ;;
+        serif-semibold)                     font_temp="Spectral-SemiBold" ;;
+        serif-bold)                         font_temp="Spectral-Bold" ;;
+        serif-extrabold)                    font_temp="Spectral-ExtraBold" ;;
+
+        serif-italic)                       font_temp="Spectral-Italic" ;;
+        serif-extralight-italic)            font_temp="Spectral-ExtraLightItalic" ;;
+        serif-light-italic)                 font_temp="Spectral-LightItalic" ;;
+        serif-medium-italic)                font_temp="Spectral-MediumItalic" ;;
+        serif-semibold-italic)              font_temp="Spectral-SemiBoldItalic" ;;
+        serif-bold-italic)                  font_temp="Spectral-BoldItalic" ;;
+        serif-extrabold-italic)             font_temp="Spectral-ExtraBoldItalic" ;;
+
+        serif-1)                            font_temp="IBM-Plex-Serif-Regular" ;;
+        serif-1-thin)                       font_temp="IBM-Plex-Serif-Thin" ;;
+        serif-1-extralight)                 font_temp="IBM-Plex-Serif-ExtraLight" ;;
+        serif-1-light)                      font_temp="IBM-Plex-Serif-Light" ;;
+        serif-1-medium)                     font_temp="IBM-Plex-Serif-Medium" ;;
+        serif-1-semibold)                   font_temp="IBM-Plex-Serif-SemiBold" ;;
+        serif-1-bold)                       font_temp="IBM-Plex-Serif-Bold" ;;
+        serif-1-italic)                     font_temp="IBM-Plex-Serif-Italic" ;;
+        serif-1-thin-italic)                font_temp="IBM-Plex-Serif-ThinItalic" ;;
+        serif-1-extralight-italic)          font_temp="IBM-Plex-Serif-ExtraLightItalic" ;;
+        serif-1-light-italic)               font_temp="IBM-Plex-Serif-LightItalic" ;;
+        serif-1-medium-italic)              font_temp="IBM-Plex-Serif-MediumItalic" ;;
+        serif-1-semibold-italic)            font_temp="IBM-Plex-Serif-SemiBoldItalic" ;;
+        serif-1-bold-italic)                font_temp="IBM-Plex-Serif-BoldItalic" ;;
+
         serif-2)                            font_temp="Cormorant-Regular" ;;
         serif-2-light)                      font_temp="Cormorant-Light" ;;
         serif-2-medium)                     font_temp="Cormorant-Medium" ;;
@@ -696,6 +683,7 @@ function get_font {
         serif-2-medium-italic)              font_temp="Cormorant-Medium-Italic" ;;
         serif-2-semibold-italic)            font_temp="Cormorant-SemiBold-Italic" ;;
         serif-2-bold-italic)                font_temp="Cormorant-Bold-Italic" ;;
+
         serif-3)                            font_temp="GTSectraFine-Regular" ;;
         serif-3-medium)                     font_temp="GTSectraFine-Medium" ;;
         serif-3-bold)                       font_temp="GTSectraFine-Bold" ;;
@@ -704,16 +692,18 @@ function get_font {
         serif-3-medium-italic)              font_temp="GTSectraFine-MediumItalic" ;;
         serif-3-bold-italic)                font_temp="GTSectraFineBold-Italic" ;;
         serif-3-black-italic)               font_temp="GTSectraFine-BlackItalic" ;;
-        serif-4)                            font_temp="Calluna-Regular" ;;
+
         mono)                               font_temp="RM-Courier-Regular" ;;
         mono-vt323)                         font_temp="VT323-Regular" ;;
         mono-fixedsys)                      font_temp="Fixedsys-Excelsior-3.01" ;;
         mono-ocr)                           font_temp="OCR-A-Extended" ;;
+
         typewriter)                         font_temp="F25Executive" ;;
         typewriter-thin)                    font_temp="ELEGANT-TYPEWRITER" ;;
         typewriter-1)                       font_temp="Underwood-Champion" ;;
         typewriter-2)                       font_temp="Sears-Tower" ;;
         typewriter-3)                       font_temp="Rough_Typewriter" ;;
+
         comic)                              font_temp="DigitalStrip" ;;
         comic-1)                            font_temp="SmackAttack-BB" ;;
         comic-2)                            font_temp="Year-supply-of-fairy-cakes" ;;
@@ -724,11 +714,13 @@ function get_font {
         comic-7)                            font_temp="Mouse-Memoirs" ;;
         comic-8)                            font_temp="GROBOLD" ;;
         comic-9)                            font_temp="Helsinki" ;;
+
         display)                            font_temp="Coda-ExtraBold" ;;
         display-1)                          font_temp="Muli-Black" ;;
         display-2)                          font_temp="Chonburi" ;;
+
         dirty)                              font_temp="Fake-News" ;;                                # Thick CAPS
-        #dirty)                              font_temp="Dark-Underground" ;;
+        dirty-0)                            font_temp="Dark-Underground" ;;
         dirty-1)                            font_temp="BadSuabiaSwing-Regular" ;;                   # Narrow
         dirty-2)                            font_temp="Depressionist-3-Revisited" ;;                # Less Narrow no symbols
         dirty-3)                            font_temp="Very-Damaged-Bold" ;;
@@ -737,19 +729,23 @@ function get_font {
         dirty-6)                            font_temp="HighVoltage-Rough" ;;
         dirty-7)                            font_temp="Iron-&-Brine" ;;
         dirty-8)                            font_temp="A-Love-of-Thunder" ;;
+
         brush)                              font_temp="Edo-SZ" ;;
         brush-1)                            font_temp="ProtestPaint-BB" ;;
         brush-1-italic)                     font_temp="ProtestPaint-BB-Italic" ;;
+
         horror)                             font_temp="YouMurdererBB" ;;
         horror-1)                           font_temp="FaceYourFears" ;;
         horror-2)                           font_temp="Something-Strange" ;;
         horror-3)                           font_temp="Gallow-Tree-Free" ;;
+
         old)                                font_temp="OldNewspaperTypes" ;;
         #old-1)                              font_temp="1543HumaneJenson-Normal" ;;
         #old-1-bold)                         font_temp="1543HumaneJenson-Bold" ;;
         acme)                               font_temp="Acme" ;;
         averia)                             font_temp="Averia-Libre-Regular" ;;
         averia-bold)                        font_temp="Averia-Libre-Bold" ;;
+        calluna)                            font_temp="Calluna-Regular" ;;
         scratch)                            font_temp="Scratch" ;;
         something)                          font_temp="Something-in-the-air" ;;
         *)                                  font_temp="${1}"
