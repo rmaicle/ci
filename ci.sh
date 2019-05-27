@@ -1121,38 +1121,34 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
         size_height=$((arg_rectangle_height + arg_rectangle_stroke_width))
         arg_draw="rectangle 0,0 ${arg_rectangle_width},${arg_rectangle_height}"
 
-        convert                                                     \
-            -size ${size_width}x${size_height}                      \
-            xc:none -fill "${arg_rectangle_color}"                  \
-            -stroke "${arg_rectangle_stroke_color}"                 \
-            -strokewidth ${arg_rectangle_stroke_width}              \
-            -draw "${arg_draw}"                                     \
-            "${arg_rectangle_output}"
+        if [ ${size_height} -gt 0 ]; then
+            convert                                                     \
+                -size ${size_width}x${size_height}                      \
+                xc:none -fill "${arg_rectangle_color}"                  \
+                -stroke "${arg_rectangle_stroke_color}"                 \
+                -strokewidth ${arg_rectangle_stroke_width}              \
+                -draw "${arg_draw}"                                     \
+                "${arg_rectangle_output}"
 
-        if [ ${arg_rectangle_corner_radius} -gt 0 ]; then
-#            ${PROGRAM_DIR}/ci_round_corners                 \
-#                "${debug_flag}"                             \
-#                --r ${arg_rectangle_corner_radius}          \
-#                --input "${arg_rectangle_output}"           \
-#                --output "${arg_rectangle_output}"
+            if [ ${arg_rectangle_corner_radius} -gt 0 ]; then
+                draw_fill_black="fill black polygon 0,0 0,${arg_rectangle_corner_radius} ${arg_rectangle_corner_radius},0"
+                draw_fill_white="fill white circle ${arg_rectangle_corner_radius},${arg_rectangle_corner_radius} ${arg_rectangle_corner_radius},0"
+                convert                                                 \
+                    "${arg_rectangle_output}"                           \
+                    \( +clone -alpha extract                            \
+                        -draw "${draw_fill_black} ${draw_fill_white}"   \
+                        \( +clone -flip \) -compose multiply -composite \
+                        \( +clone -flop \) -compose multiply -composite \
+                    \)                                                  \
+                    -alpha off                                          \
+                    -compose copyopacity                                \
+                    -composite  "${arg_rectangle_output}"
+            fi
 
-            draw_fill_black="fill black polygon 0,0 0,${arg_rectangle_corner_radius} ${arg_rectangle_corner_radius},0"
-            draw_fill_white="fill white circle ${arg_rectangle_corner_radius},${arg_rectangle_corner_radius} ${arg_rectangle_corner_radius},0"
-            convert                                                 \
-                "${arg_rectangle_output}"                           \
-                \( +clone -alpha extract                            \
-                    -draw "${draw_fill_black} ${draw_fill_white}"   \
-                    \( +clone -flip \) -compose multiply -composite \
-                    \( +clone -flop \) -compose multiply -composite \
-                \)                                                  \
-                -alpha off                                          \
-                -compose copyopacity                                \
-                -composite  "${arg_rectangle_output}"
+            # Make the output file our current work file.
+            # The original file can or may be used for some other operation(s).
+            cp -f "${arg_rectangle_output}" "${WORK_FILE}"
         fi
-
-        # Make the output file our current work file.
-        # The original file can or may be used for some other operation(s).
-        cp -f "${arg_rectangle_output}" "${WORK_FILE}"
 
     elif [[ "${1}" == "${OP_QUAD}" ]]; then
 
