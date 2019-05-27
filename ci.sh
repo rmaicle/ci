@@ -2484,7 +2484,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
 
             echo_debug "Merging work file to canvas:"
             echo_debug "  Gravity: ${arg_merge_gravity}"
-            echo_debug "  Position: +${arg_merge_xposition}+${arg_merge_yposition}"
+            echo_debug "  Position: ${arg_merge_xposition} ${arg_merge_yposition}"
             echo_debug "  X offset: ${arg_merge_xoffset}"
             echo_debug "  Y offset: ${arg_merge_yoffset}"
             echo_debug "  Opaqueness: ${arg_merge_opaqueness}"
