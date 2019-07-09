@@ -838,6 +838,9 @@ text_prev_y=0
 text_next_x=0
 text_next_y=0
 
+text_widths=()
+text_heights=()
+
 while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
     echo_debug "Operation: ${1}"
 
@@ -1106,6 +1109,20 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 mogrify -trim "${arg_text_output}"
             fi
 
+            size_width=`identify -format "%w" "${arg_text_output}"`
+            size_height=`identify -format "%h" "${arg_text_output}"`
+
+            echo_debug "  Text Width: ${size_width}"
+            echo_debug "  Text Height: ${size_height}"
+
+            text_widths+=(${size_width})
+            text_heights+=(${size_height})
+
+            echo_debug "  Text Width: ${#text_widths[*]}"
+            echo_debug "  Text Height: ${#text_heights[*]}"
+            echo_debug "  Text Width: ${text_widths[-1]}"
+            echo_debug "  Text Height: ${text_heights[-1]}"
+
             # Make a copy of the image file in our directory
             cp -f "${arg_text_output}" "./${WORK_FILE}"
         fi # if string is not empty
@@ -1129,8 +1146,20 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
 
         while [ $# -gt 0 ]; do
             case "${1}" in
-                -w)         arg_rectangle_width=${2}; shift 2 ;;
-                -h)         arg_rectangle_height=${2}; shift 2 ;;
+                -w)         if [[ "${2}" == "prev_text_width" ]]; then
+                                arg_rectangle_width=${text_widths[-1]}
+                            else
+                                arg_rectangle_width=${2}
+                            fi
+                            shift 2
+                            ;;
+                -h)         if [[ "${2}" == "prev_text_height" ]]; then
+                                arg_rectangle_height=${text_heights[-1]}
+                            else
+                                arg_rectangle_height=${2}
+                            fi
+                            shift 2
+                            ;;
                 -r)         arg_rectangle_corner_radius=${2}; shift 2 ;;
                 -c)         arg_rectangle_color="${2}"; shift 2 ;;
                 -sw)        arg_rectangle_stroke_width=${2}; shift 2 ;;
@@ -2006,74 +2035,56 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                     +sigmoidal-contrast ${arg_contrast_factor},${arg_contrast_threshold}% \
                     "${WORK_FILE}"
             fi
-        elif [[ "${1}" == "${IMAGE_OP_RECOLOR}" ]]; then
-            arg_color_lut_from="${2}"
-            arg_color_lut_to="${3}"
-            shift 3
-            convert -size 10x100 gradient:${arg_color_lut_from}-${arg_color_lut_to} gradient_lut.png
-            convert ${WORK_FILE} gradient_lut.png -clut ${WORK_FILE}
-            rm -f gradient_lut.png
-        elif [[ "${1}" == "${IMAGE_OP_COLORIZE}" ]]; then
+        elif [ "${1}" == "${IMAGE_OP_GRAYSCALE}" ]; then
             shift
-            if [[ "${1}" == "-l" ]]; then
-                arg_colorize_black="${2}"
-                arg_colorize_white="${3}"
-                shift 3
-                arg_colorize_channel=""
+            arg_grayscale_red=29.9
+            arg_grayscale_green=58.7
+            arg_grayscale_blue=11.4
+            arg_grayscale_form="add"
+            arg_grayscale_colorspace="gray"
+            arg_grayscale_brightness=10
+            arg_grayscale_contrast=10
                 while [ $# -gt 0 ]; do
                     case "${1}" in
-                        -t)     arg_colorize_channel=" -channel ALL"; shift 2 ;;
+                    -r)     arg_grayscale_red="${2}"; shift 2 ;;
+                    -g)     arg_grayscale_green="${2}"; shift 2 ;;
+                    -b)     arg_grayscale_blue="${2}"; shift 2 ;;
+                    -f)     arg_grayscale_form=${2}; shift 2 ;;
+                    -cs)    arg_grayscale_colorspace=${2}; shift 2 ;;
+                    -b)     arg_grayscale_brightness=${2}; shift 2 ;;
+                    -c)     arg_grayscale_contrast=${2}; shift 2 ;;
                         *)      break ;;
                     esac
                 done
-                echo_debug "Image operation: colorize (level adjustment)"
-                echo_debug "  Black: ${arg_colorize_black}"
-                echo_debug "  White: ${arg_colorize_white}"
-                if [ -z "${arg_colorize_channel}" ]; then
-                    echo_debug "  Transparency: exclude"
-                else
-                    echo_debug "  Transparency: include"
-                fi
-                mogrify                                                         \
-                    ${arg_colorize_channel}                                     \
-                    +level-colors ${arg_colorize_black},${arg_colorize_white}   \
+            echo_debug "Image operation: grayscale"
+            echo_debug "  RGB: ${arg_grayscale_red} ${arg_grayscale_green} ${arg_grayscale_blue}"
+            echo_debug "  Form: ${arg_grayscale_form}"
+            echo_debug "  Colorspace: ${arg_grayscale_colorspace}"
+            echo_debug "  Brightness/Contrast: ${arg_grayscale_brightness} ${arg_grayscale_contrast}"
+            ${FRED_DIR}/color2gray                  \
+                -r "${arg_grayscale_red}"           \
+                -g "${arg_grayscale_green}"         \
+                -b "${arg_grayscale_blue}"          \
+                -f ${arg_grayscale_form}            \
+                -c ${arg_grayscale_colorspace}      \
+                -B ${arg_grayscale_brightness}      \
+                -C ${arg_grayscale_contrast}        \
+                "${WORK_FILE}"                      \
                     "${WORK_FILE}"
-            elif [[ "${1}" == "-r" ]]; then
-                arg_colorize_color_from="${2}"
-                arg_colorize_color_to="${3}"
-                shift 3
-                arg_colorize_fuzz=40
-                arg_colorize_gain=100
-                arg_colorize_threshold=0
-                arg_colorize_brightness=0
-                arg_colorize_saturation=0
+        elif [ "${1}" == "${IMAGE_OP_GRAYSCALE_SIGMOIDAL}" ]; then
+            shift
+            arg_tone_factor=10
+            arg_tone_threshold="40%"
                 while [ $# -gt 0 ]; do
                     case "${1}" in
-                        -f)     arg_colorize_fuzz=${2}; shift 2 ;;
-                        -g)     arg_colorize_gain=${2}; shift 2 ;;
-                        -t)     arg_colorize_threshold=${2}; shift 2 ;;
-                        -b)     arg_colorize_brightness=${2}; shift 2 ;;
-                        -s)     arg_colorize_saturation=${2}; shift 2 ;;
+                    -f)     arg_tone_factor=${2}; shift 2 ;;
+                    -t)     arg_tone_threshold=${2}; shift 2 ;;
                         *)      break ;;
                     esac
                 done
-                echo_debug "Image operation: colorize (replace color advance)"
-                echo_debug "  From Color: ${arg_colorize_color_from}"
-                echo_debug "  To Color: ${arg_colorize_color_to}"
-                echo_debug "  Fuzz: ${arg_colorize_fuzz}"
-                echo_debug "  Gain: ${arg_colorize_gain}"
-                echo_debug "  Threshold: ${arg_colorize_threshold}"
-                echo_debug "  Brightness: ${arg_colorize_brightness}"
-                echo_debug "  Saturation: ${arg_colorize_saturation}"
-                ${FRED_DIR}/replacecolor                \
-                    -i "${arg_colorize_color_from}"     \
-                    -o "${arg_colorize_color_to}"       \
-                    -f ${arg_colorize_fuzz}             \
-                    -g ${arg_colorize_gain}             \
-                    -t ${arg_colorize_threshold}        \
-                    -b ${arg_colorize_brightness}       \
-                    -s ${arg_colorize_saturation}       \
-                    "${WORK_FILE}"                      \
+            mogrify                     \
+                -colorspace gray        \
+                -sigmoidal-contrast ${arg_tone_factor},${arg_tone_threshold} \
                     "${WORK_FILE}"
             elif [[ "${1}" == "-x" || "${1}" == "-xr" ]]; then
                 arg_colorize_option="${1}"
@@ -2221,6 +2232,12 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                     "${WORK_FILE}"
                 rm -f duotone_clut.gif
             fi
+
+            # ==================================================================
+            # Add colorization (see fred's script)
+            # Colorization converts image to grayscale and tints it.
+            # ==================================================================
+
         elif [ "${1}" == "${IMAGE_OP_MODULATE}" ]; then
             shift
             arg_modulate_hue="100"
@@ -2243,57 +2260,165 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 "${WORK_FILE}"          \
                 -modulate ${arg_modulate_brightness},${arg_modulate_saturation},${arg_modulate_hue} \
                 "${WORK_FILE}"
-        elif [ "${1}" == "${IMAGE_OP_GRAYSCALE}" ]; then
-            shift
-            arg_grayscale_red=29.9
-            arg_grayscale_green=58.7
-            arg_grayscale_blue=11.4
-            arg_grayscale_form="add"
-            arg_grayscale_colorspace="gray"
-            arg_grayscale_brightness=10
-            arg_grayscale_contrast=10
+        elif [[ "${1}" == "${IMAGE_OP_ADJUST}" ]]; then
+            arg_adjust_black=""
+            arg_adjust_white=""
+            arg_adjust_channel=""
             while [ $# -gt 0 ]; do
                 case "${1}" in
-                    -r)     arg_grayscale_red="${2}"; shift 2 ;;
-                    -g)     arg_grayscale_green="${2}"; shift 2 ;;
-                    -b)     arg_grayscale_blue="${2}"; shift 2 ;;
-                    -f)     arg_grayscale_form=${2}; shift 2 ;;
-                    -cs)    arg_grayscale_colorspace=${2}; shift 2 ;;
-                    -b)     arg_grayscale_brightness=${2}; shift 2 ;;
-                    -c)     arg_grayscale_contrast=${2}; shift 2 ;;
+                    -b)     arg_adjust_black="${2}"; shift 2 ;;
+                    -w)     arg_adjust_white="${2}"; shift 2 ;;
+                    -t)     arg_adjust_channel=" -channel ALL "; shift 2 ;;
                     *)      break ;;
                 esac
             done
-            echo_debug "Image operation: grayscale"
-            echo_debug "  RGB: ${arg_grayscale_red} ${arg_grayscale_green} ${arg_grayscale_blue}"
-            echo_debug "  Form: ${arg_grayscale_form}"
-            echo_debug "  Colorspace: ${arg_grayscale_colorspace}"
-            echo_debug "  Brightness/Contrast: ${arg_grayscale_brightness} ${arg_grayscale_contrast}"
-            ${FRED_DIR}/color2gray                  \
-                -r "${arg_grayscale_red}"           \
-                -g "${arg_grayscale_green}"         \
-                -b "${arg_grayscale_blue}"          \
-                -f ${arg_grayscale_form}            \
-                -c ${arg_grayscale_colorspace}      \
-                -B ${arg_grayscale_brightness}      \
-                -C ${arg_grayscale_contrast}        \
-                "${WORK_FILE}"                      \
+            echo_debug "Image operation: level adjustment"
+            echo_debug "  Black: ${arg_adjust_black}"
+            echo_debug "  White: ${arg_adjust_white}"
+            if [ -z "${arg_adjust_channel}" ]; then
+                echo_debug "  Transparency: exclude"
+            else
+                echo_debug "  Transparency: include"
+            fi
+            arg_colors=""
+            if [ -z "${arg_adjust_black}" ]; then
+                echo_err "Missing argument for parameter -b"
+            else
+                arg_colors="${arg_adjust_black},"
+            fi
+            if [ -z "${arg_adjust_white}" ]; then
+                arg_colors+="${arg_adjust_white}"
+            fi
+            mogrify                             \
+                ${arg_colorize_channel}         \
+                -level-colors ${arg_colors}     \
                 "${WORK_FILE}"
-        elif [ "${1}" == "${IMAGE_OP_GRAYSCALE_SIGMOIDAL}" ]; then
-            shift
-            arg_tone_factor=10
-            arg_tone_threshold="40%"
+        elif [[ "${1}" == "${IMAGE_OP_RECOLOR}" ]]; then
+            arg_recolor_lut_from="${2}"
+            arg_recolor_lut_to="${3}"
+            shift 3
+            arg_recolor_lut_size=10
             while [ $# -gt 0 ]; do
                 case "${1}" in
-                    -f)     arg_tone_factor=${2}; shift 2 ;;
-                    -t)     arg_tone_threshold=${2}; shift 2 ;;
+                    -t)     arg_recolor_lut_size=${2}; shift 2 ;;
                     *)      break ;;
                 esac
             done
-            mogrify                     \
-                -colorspace gray        \
-                -sigmoidal-contrast ${arg_tone_factor},${arg_tone_threshold} \
+            echo_debug "Image operation: recolor (using LUT)"
+            echo_debug "  Black: ${arg_recolor_lut_from}"
+            echo_debug "  White: ${arg_recolor_lut_to}"
+            echo_debug "  LUT size: ${arg_recolor_lut_size}"
+            convert -size 1x${arg_recolor_lut_size} gradient:${arg_recolor_lut_from}-${arg_recolor_lut_to} gradient_lut.png
+            convert ${WORK_FILE} gradient_lut.png -clut ${WORK_FILE}
+            rm -f gradient_lut.png
+        elif [[ "${1}" == "${IMAGE_OP_COLORIZE}" ]]; then
+            shift
+            if [[ "${1}" == "-r" ]]; then
+                arg_colorize_color_from="${2}"
+                arg_colorize_color_to="${3}"
+                shift 3
+                arg_colorize_fuzz=40
+                arg_colorize_gain=100
+                arg_colorize_threshold=0
+                arg_colorize_brightness=0
+                arg_colorize_saturation=0
+            while [ $# -gt 0 ]; do
+                case "${1}" in
+                        -f)     arg_colorize_fuzz=${2}; shift 2 ;;
+                        -g)     arg_colorize_gain=${2}; shift 2 ;;
+                        -t)     arg_colorize_threshold=${2}; shift 2 ;;
+                        -b)     arg_colorize_brightness=${2}; shift 2 ;;
+                        -s)     arg_colorize_saturation=${2}; shift 2 ;;
+                    *)      break ;;
+                esac
+            done
+                echo_debug "Image operation: colorize (replace color advance)"
+                echo_debug "  From Color: ${arg_colorize_color_from}"
+                echo_debug "  To Color: ${arg_colorize_color_to}"
+                echo_debug "  Fuzz: ${arg_colorize_fuzz}"
+                echo_debug "  Gain: ${arg_colorize_gain}"
+                echo_debug "  Threshold: ${arg_colorize_threshold}"
+                echo_debug "  Brightness: ${arg_colorize_brightness}"
+                echo_debug "  Saturation: ${arg_colorize_saturation}"
+                ${FRED_DIR}/replacecolor                \
+                    -i "${arg_colorize_color_from}"     \
+                    -o "${arg_colorize_color_to}"       \
+                    -f ${arg_colorize_fuzz}             \
+                    -g ${arg_colorize_gain}             \
+                    -t ${arg_colorize_threshold}        \
+                    -b ${arg_colorize_brightness}       \
+                    -s ${arg_colorize_saturation}       \
+                    "${WORK_FILE}"                      \
                 "${WORK_FILE}"
+            elif [[ "${1}" == "-x" || "${1}" == "-xr" ]]; then
+                arg_colorize_option="${1}"
+                shift
+                if [ $# -lt 4 ]; then
+                    echo_err "Missing arguments in colorize -t option."
+                fi
+                arg_colorize_color_from="${1}"
+                arg_colorize_color_red=${2}
+                arg_colorize_color_green=${3}
+                arg_colorize_color_blue=${4}
+                shift 4
+                #arg_colorize_color_destination="${2}"
+                #shift 2
+                arg_colorize_fuzz=100
+                arg_colorize_transparency=100
+                [[ "${1}" == "-f" ]] && { arg_colorize_fuzz=${2}; shift 2; }
+                [[ "${1}" == "-q" ]] && { arg_colorize_transparency=${2}; shift 2; }
+                transparency=$((arg_colorize_transparency / 100))
+                echo_debug "Image operation: colorize (replace color)"
+                echo_debug "  From color: ${arg_colorize_color_from}"
+                echo_debug "  To RGB color: ${arg_colorize_color_red},${arg_colorize_color_green},${arg_colorize_color_blue}"
+                echo_debug "  Fuzz: ${arg_colorize_fuzz}"
+                echo_debug "  Transparency: ${transparency}"
+                if [[ "${arg_colorize_option}" == "-x" ]]; then
+                    convert                                     \
+                        "${WORK_FILE}"                          \
+                        -fuzz ${arg_colorize_fuzz}%             \
+                        -alpha on                               \
+                        -fill "rgba(${arg_colorize_color_red},${arg_colorize_color_green},${arg_colorize_color_blue})" \
+                        -opaque "${arg_colorize_color_from}"    \
+                        "${WORK_FILE}"
+                elif [[ "${arg_colorize_option}" == "-xr" ]]; then
+                    convert                                     \
+                        "${WORK_FILE}"                          \
+                        -fuzz ${arg_colorize_fuzz}%             \
+                        -alpha on                               \
+                        -fill "rgba(${arg_colorize_color_red},${arg_colorize_color_green},${arg_colorize_color_blue},${transparency})" \
+                        +opaque "${arg_colorize_color_from}"    \
+                        "${WORK_FILE}"
+                fi
+            elif [[ "${1}" == "-t" || "${1}" == "-tr" ]]; then
+                arg_colorize_option="${1}"
+                arg_colorize_color_from="${2}"
+                shift 2
+                arg_colorize_fuzz=10
+                [[ "${1}" == "-f" ]] && { arg_colorize_fuzz=${2}; shift 2; }
+                echo_debug "Image operation: colorize (make color transparent)"
+                echo_debug "  From color: ${arg_colorize_color_from}"
+                echo_debug "  Fuzz: ${arg_colorize_fuzz}"
+                if [[ "${arg_colorize_option}" == "-t" ]]; then
+                    convert                                         \
+                        "${WORK_FILE}"                              \
+                        -fuzz ${arg_colorize_fuzz}%                 \
+                        -transparent "${arg_colorize_color_from}"   \
+                        "${WORK_FILE}"
+                elif [[ "${arg_colorize_option}" == "-tr" ]]; then
+                    convert                                         \
+                        "${WORK_FILE}"                              \
+                        -fuzz ${arg_colorize_fuzz}%                 \
+                        +transparent "${arg_colorize_color_from}"   \
+                        "${WORK_FILE}"
+                fi
+            elif [[ "${1}" == "-n" ]]; then
+                shift
+                mogrify -negate "${WORK_FILE}"
+            elif [[ "${1}" == "-g" ]]; then
+                shift
+                mogrify +negate "${WORK_FILE}"
+            fi
         elif [[ "${1}" == "${IMAGE_OP_GRADIENT}" ]]; then
             shift
             image_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
@@ -2501,10 +2626,24 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                                 shift 3 ;;
                     -x)         arg_merge_xposition=${2}; shift 2 ;;
                     -y)         arg_merge_yposition=${2}; shift 2 ;;
-                    -ox)        arg_merge_xoffset=${2}; shift 2 ;;
-                    -oy)        arg_merge_yoffset=${2}; shift 2 ;;
+                    -ox)        if [[ "${2}" == "prev_text_width" ]]; then
+                                    arg_merge_xoffset=${text_widths[-1]}
+                                else
+                                    arg_merge_xoffset=${2}
+                                fi
+                                shift 2
+                                ;;
+                    -oy)        if [[ "${2}" == "prev_text_height" ]]; then
+                                    arg_merge_yoffset=${text_heights[-1]}
+                                else
+                                    arg_merge_yoffset=${2}
+                                fi
+                                shift 2
+                                ;;
                     -px)        arg_merge_xposition=${text_prev_x}; shift ;;
                     -py)        arg_merge_yposition=${text_prev_y}; shift ;;
+
+
                     -nx)        arg_merge_xposition=${text_next_x}; shift ;;
                     -ny)        arg_merge_yposition=${text_next_y}; shift ;;
                     -q)         arg_merge_opaqueness="${2}"; shift 2 ;;
