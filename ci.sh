@@ -1336,7 +1336,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
         fi
         arg_logo_width=${LOGO_WIDTH[${arg_canvas_size}]}
         arg_logo_x=$((arg_logo_width / 2))
-        arg_logo_y=$((arg_logo_width / 2 + 1))
+        arg_logo_y=$((arg_logo_width / 2))
         arg_logo_gravity=southeast
         arg_logo_color="black"
         arg_logo_output="${LOGO_FILE}"
