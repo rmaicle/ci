@@ -127,6 +127,7 @@ declare -a -r MAJOR_OPERATIONS=(
     "${OP_STRIP_EXIF}"
 )
 
+declare -r IMAGE_OP_ADJUST="-adjust"
 declare -r IMAGE_OP_BLUR="-blur"
 declare -r IMAGE_OP_BORDER="-border"
 declare -r IMAGE_OP_CHOP="-chop"
@@ -167,6 +168,7 @@ declare -r IMAGE_OP_NOMERGE="-nomerge"
 declare -a -r IMAGE_OPERATIONS=(
     "${IMAGE_OP_BLUR}"
     "${IMAGE_OP_BORDER}"
+    "${IMAGE_OP_ADJUST}"
     "${IMAGE_OP_RECOLOR}"
     "${IMAGE_OP_COLORIZE}"
     "${IMAGE_OP_CONTRAST}"
