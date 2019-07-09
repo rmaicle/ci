@@ -693,7 +693,7 @@ function get_font {
         serif-bold-italic)                  font_temp="Spectral-BoldItalic" ;;
         serif-extrabold-italic)             font_temp="Spectral-ExtraBoldItalic" ;;
 
-        serif-1)                            font_temp="IBM-Plex-Serif-Regular" ;;
+        serif-1)                            font_temp="IBM-Plex-Serif" ;;
         serif-1-thin)                       font_temp="IBM-Plex-Serif-Thin" ;;
         serif-1-extralight)                 font_temp="IBM-Plex-Serif-ExtraLight" ;;
         serif-1-light)                      font_temp="IBM-Plex-Serif-Light" ;;
