@@ -16,30 +16,26 @@ declare debug_flag=""
 declare -i -r CANVAS_CUSTOM=0
 declare -i -r CANVAS_DEFAULT=1
 declare -i -r CANVAS_BIG=2
-declare -i -r CANVAS_BIGGER=3
-declare -i -r CANVAS_LARGE=4
-declare -i -r CANVAS_HUGE=5
-declare -i -r CANVAS_SQUARE=6
-declare -i -r CANVAS_SQUARE_BIG=7
-declare -i -r CANVAS_SQUARE_BIGGER=8
-declare -i -r CANVAS_SQUARE_LARGE=9
-declare -i -r CANVAS_SQUARE_HUGE=10
-declare -i -r CANVAS_TALL=11
-declare -i -r CANVAS_TALLER=12
-declare -i -r CANVAS_TOWER=13
-declare -i -r CANVAS_WIDE=14
-declare -i -r CANVAS_A_FOUR=15
+declare -i -r CANVAS_LARGE=3
+declare -i -r CANVAS_HUGE=4
+declare -i -r CANVAS_SQUARE=5
+declare -i -r CANVAS_SQUARE_BIG=6
+declare -i -r CANVAS_SQUARE_LARGE=7
+declare -i -r CANVAS_SQUARE_HUGE=8
+declare -i -r CANVAS_TALL=9
+declare -i -r CANVAS_TALLER=10
+declare -i -r CANVAS_TOWER=11
+declare -i -r CANVAS_WIDE=12
+declare -i -r CANVAS_A_FOUR=13
 
 declare -a -r CANVAS_SIZE_STRINGS=(
     "custom"
     "default"
     "big"
-    "bigger"
     "large"
     "huge"
     "square"
     "square-big"
-    "square-bigger"
     "square-large"
     "square-huge"
     "tall"
@@ -94,16 +90,14 @@ declare -a -r CANVAS_SIZE_STRINGS=(
 declare -A CANVAS_WIDTH
 declare -A CANVAS_HEIGHT
 
-CANVAS_WIDTH[default]=580
-CANVAS_WIDTH[big]=725
-CANVAS_WIDTH[bigger]=906
-CANVAS_WIDTH[large]=1133
-CANVAS_WIDTH[huge]=1416
-CANVAS_WIDTH[square]=580
-CANVAS_WIDTH[square-big]=725
-CANVAS_WIDTH[square-bigger]=906
-CANVAS_WIDTH[square-large]=1133
-CANVAS_WIDTH[square-huge]=1416
+CANVAS_WIDTH[default]=1024
+CANVAS_WIDTH[big]=1152
+CANVAS_WIDTH[large]=1280
+CANVAS_WIDTH[huge]=1408
+CANVAS_WIDTH[square]=1024
+CANVAS_WIDTH[square-big]=1152
+CANVAS_WIDTH[square-large]=1280
+CANVAS_WIDTH[square-huge]=1408
 CANVAS_WIDTH[tall]=640
 CANVAS_WIDTH[taller]=720
 CANVAS_WIDTH[tower]=800
@@ -114,16 +108,14 @@ CANVAS_WIDTH[wide-bigger]=1350
 # A4 is 8.27x1169 at 96 dpi
 CANVAS_WIDTH[a-four]=794
 
-CANVAS_HEIGHT[default]=331
-CANVAS_HEIGHT[big]=414
-CANVAS_HEIGHT[bigger]=518
-CANVAS_HEIGHT[large]=647
-CANVAS_HEIGHT[huge]=809
-CANVAS_HEIGHT[square]=580
-CANVAS_HEIGHT[square-big]=725
-CANVAS_HEIGHT[square-bigger]=906
-CANVAS_HEIGHT[square-large]=1133
-CANVAS_HEIGHT[square-huge]=1416
+CANVAS_HEIGHT[default]=576
+CANVAS_HEIGHT[big]=648
+CANVAS_HEIGHT[large]=720
+CANVAS_HEIGHT[huge]=792
+CANVAS_HEIGHT[square]=1024
+CANVAS_HEIGHT[square-big]=1152
+CANVAS_HEIGHT[square-large]=1280
+CANVAS_HEIGHT[square-huge]=1408
 CANVAS_HEIGHT[tall]=960
 CANVAS_HEIGHT[taller]=1080
 CANVAS_HEIGHT[tower]=1200
@@ -136,34 +128,44 @@ CANVAS_HEIGHT[a-four]=1122
 
 declare -r OP_QUERY="--query"
 declare -r OP_CANVAS="--canvas"
+declare -r OP_BACKGROUND="--background"
 declare -r OP_IMAGE="--image"
 declare -r OP_TEXT="--text"
 declare -r OP_RECTANGLE="--rectangle"
 declare -r OP_QUAD="--quad"
 declare -r OP_ELLIPSE="--ellipse"
 declare -r OP_GRID="--grid"
+declare -r OP_CROSS="--cross"
+declare -r OP_VLINE="--vline"
+declare -r OP_HLINE="--hline"
 declare -r OP_SPLAT="--splat"
 declare -r OP_LOGO="--logo"
 declare -r OP_TRIM="--trim"
 declare -r OP_CUSTOM="--custom"
 declare -r OP_ADD_EXIF="--add-exif"
 declare -r OP_STRIP_EXIF="--strip-exif"
+declare -r OP_TO_PDF="--to-pdf"
 
 declare -a -r MAJOR_OPERATIONS=(
     "${OP_QUERY}"
     "${OP_CANVAS}"
+    "${OP_BACKGROUND}"
     "${OP_IMAGE}"
     "${OP_TEXT}"
     "${OP_RECTANGLE}"
     "${OP_QUAD}"
     "${OP_ELLIPSE}"
     "${OP_GRID}"
+    "${OP_CROSS}"
+    "${OP_VLINE}"
+    "${OP_HLINE}"
     "${OP_SPLAT}"
     "${OP_LOGO}"
     "${OP_TRIM}"
     "${OP_CUSTOM}"
     "${OP_ADD_EXIF}"
     "${OP_STRIP_EXIF}"
+    "${OP_TO_PDF}"
 )
 
 declare -r IMAGE_OP_ADJUST="-adjust"
@@ -241,16 +243,14 @@ declare -a -r IMAGE_OPERATIONS=(
 
 declare -A LOGO_WIDTH
 LOGO_WIDTH[custom]=30
-LOGO_WIDTH[default]=15
-LOGO_WIDTH[big]=20
-LOGO_WIDTH[bigger]=30
-LOGO_WIDTH[large]=35
-LOGO_WIDTH[huge]=40
-LOGO_WIDTH[square]=15
-LOGO_WIDTH[square-big]=20
-LOGO_WIDTH[square-bigger]=30
-LOGO_WIDTH[square-large]=35
-LOGO_WIDTH[square-huge]=40
+LOGO_WIDTH[default]=30
+LOGO_WIDTH[big]=35
+LOGO_WIDTH[large]=40
+LOGO_WIDTH[huge]=45
+LOGO_WIDTH[square]=30
+LOGO_WIDTH[square-big]=35
+LOGO_WIDTH[square-large]=40
+LOGO_WIDTH[square-huge]=45
 LOGO_WIDTH[tall]=30
 LOGO_WIDTH[taller]=35
 LOGO_WIDTH[tower]=40
@@ -292,12 +292,10 @@ function show_usage {
     echo "  --canvas size                Define pre-defined canvas 'size'"
     echo "                                 default          ${CANVAS_WIDTH[default]}x${CANVAS_HEIGHT[default]}"
     echo "                                 big              ${CANVAS_WIDTH[big]}x${CANVAS_HEIGHT[big]}"
-    echo "                                 bigger           ${CANVAS_WIDTH[bigger]}x${CANVAS_HEIGHT[bigger]}"
     echo "                                 large            ${CANVAS_WIDTH[large]}x${CANVAS_HEIGHT[large]}"
     echo "                                 huge             ${CANVAS_WIDTH[huge]}x${CANVAS_HEIGHT[huge]}"
     echo "                                 square           ${CANVAS_WIDTH[square]}x${CANVAS_HEIGHT[square]}"
     echo "                                 square-big       ${CANVAS_WIDTH[square-big]}x${CANVAS_HEIGHT[square-big]}"
-    echo "                                 square-bigger    ${CANVAS_WIDTH[square-bigger]}x${CANVAS_HEIGHT[square-bigger]}"
     echo "                                 square-large     ${CANVAS_WIDTH[square-large]}x${CANVAS_HEIGHT[square-large]}"
     echo "                                 square-huge      ${CANVAS_WIDTH[square-huge]}x${CANVAS_HEIGHT[square-huge]}"
     echo "                                 tall             ${CANVAS_WIDTH[tall]}x${CANVAS_HEIGHT[tall]}"
@@ -316,6 +314,8 @@ function show_usage {
     echo "                                   overrides -w and -h options"
     echo "    [-c color]                   Canvas fill color; default is white"
     echo "    [-o file]                    Write output to file"
+    echo ""
+    echo "  --background file            Use image file as new background; for use with '--image canvas...'"
     echo ""
     echo "  --image input                Use image"
     echo "                                 Input could be a file or one of these values:"
@@ -350,7 +350,7 @@ function show_usage {
     echo "  --rectangle                  Draw rectangle"
     echo "    [-w width]                   Width in pixels; default is canvas width"
     echo "    [-h height]                  Height in pixels; default is canvas height"
-    echo "    [-r radius]                  x,y corner radius in pixels; default is 0,0"
+    # echo "    [-r radius]                  x,y corner radius in pixels; default is 0,0"
     echo "    [-c color]                   Fill color; default is black"
     echo "    [-sw width]                  Stroke width in pixels; default is 0"
     echo "    [-sc color]                  Stroke color; default is none"
@@ -371,11 +371,15 @@ function show_usage {
     echo "    [-h height]                  Height in pixels; default is half height"
     echo "    [-r radius]                  Circle radius in pixels; default is half height"
     echo "    [-c color]                   Fill color; default is black"
-    echo "    [-sc width]                  Stroke width in pixels; default is 0"
+    echo "    [-sw width]                  Stroke width in pixels; default is 0"
     echo "    [-sc color]                  Stroke color; default is none"
+    echo "    [-e pixels]                  extra border in pixels; default is 0"
     echo "    [-o file]                    Write output to file; default is ${ELLIPSE_FILE}"
     echo ""
     echo "  --grid pixels color          Draw grid with pixels width/height using color"
+    echo "  --cross color                Draw cross lines from center of the canvas using color"
+    echo "  --vline -x color             Draw vertical line at x using color"
+    echo "  --hline -y color             Draw horizontal line at y using color"
     echo ""
     echo "  --splat                      Draw blood splats"
     echo "    text                         Text"
@@ -414,8 +418,8 @@ function show_usage {
     echo ""
     echo "  -resize                      Resize image"
     echo "    [-lab]                       Use LAB colorspace"
-    echo "    [-w]                         Width in pixels; default is canvas width"
-    echo "    [-h]                         Height in pixels; default is canvas height"
+    # echo "    [-w]                         Width in pixels; default is canvas width"
+    # echo "    [-h]                         Height in pixels; default is canvas height"
     echo "    [-ow]                        Offset width in pixels added to width; default is 0"
     echo "    [-oh]                        Offset height in pixels added to height; default is 0"
     echo "    [-s]                         Scale (fill | shrink | enlarge) base on dimension;"
@@ -459,7 +463,9 @@ function show_usage {
     echo "  -corner                      Rounded corner"
     echo "    [-r radius]                  Corner radius in pixels; default is 6"
     echo "  -border                      Draw border"
+    echo "    [-b color]                   Background color; default is none"
     echo "    [-c color]                   Color; default is none"
+    echo "    [-inner]                     Draw an inner border; default is an outer border"
     echo "    [-w pixels]                  Width in pixels (preferrably even number); default is 4"
     echo "    [-r pixels]                  Radius in pixels for rounded corner"
     echo "  -vignette                    Vignette"
@@ -543,9 +549,8 @@ function show_usage {
     echo "  -gradient                    Create gradient color"
     echo "    [-width]                     Width in pixels; default is canvas width"
     echo "    [-height]                    Height in pixels; default is canvas height"
-    echo "    [-m]                         Use as mask to transparent to opaque gradient,"
-    echo "                                   black is transparent, white is opaque."
-    echo "    [-c \"color\"]                 Space-separated pairs of color and percent location;"
+    echo "    [-m]                         Use as mask from opaque (white) to transparent (black)"
+    echo "    [-c \"color\"]               Space-separated pairs of color and percent location;"
     echo "                                   default=\"black white\""
     echo "                                   Ex. \"none blue\" and \"blue none\" will output blue to none"
     echo "                                   Ex. \"red yellow 33 blue 66 red\""
@@ -603,7 +608,7 @@ function show_usage {
     echo "    Side (linear): to-top | to-right | to-bottom | to-left"
     echo "    Corner (linear): to-topright | to-bottomright | to-bottomleft | to-topleft"
     echo "    Side (circle or ellipse): closest-side | furthest-side"
-    echo "    Corner (linear): closest-corner | furthest-corner"
+     echo "    Corner (linear): closest-corner | furthest-corner"
     echo "  Position: <+|->xposition<+|->yposition; +0+0, +10-20"
     echo "  Dimension: widthxheight; 100x200"
     echo "  Scale: fill | shrink | enlarge"
@@ -655,6 +660,7 @@ function get_font {
         && { echo_err "get_font parameter not found."; return 1; }
 
     case "${1}" in
+        # Big line spacing
         sans-regular)                       font_temp="Fira-Sans-Regular" ;;
         sans-thin)                          font_temp="Fira-Sans-Thin" ;;
         sans-extralight)                    font_temp="Fira-Sans-ExtraLight" ;;
@@ -776,21 +782,21 @@ function get_font {
         sans-x-extrabold)                   font_temp="Transpass-ExtraBold" ;;
         sans-x-black)                       font_temp="Transpass-Black" ;;
 
-        serif)                              font_temp="Spectral-Regular" ;;
-        serif-extralight)                   font_temp="Spectral-ExtraLight" ;;
-        serif-light)                        font_temp="Spectral-Light" ;;
-        serif-medium)                       font_temp="Spectral-Medium" ;;
-        serif-semibold)                     font_temp="Spectral-SemiBold" ;;
-        serif-bold)                         font_temp="Spectral-Bold" ;;
-        serif-extrabold)                    font_temp="Spectral-ExtraBold" ;;
+        # serif)                              font_temp="Spectral-Regular" ;;
+        # serif-extralight)                   font_temp="Spectral-ExtraLight" ;;
+        # serif-light)                        font_temp="Spectral-Light" ;;
+        # serif-medium)                       font_temp="Spectral-Medium" ;;
+        # serif-semibold)                     font_temp="Spectral-SemiBold" ;;
+        # serif-bold)                         font_temp="Spectral-Bold" ;;
+        # serif-extrabold)                    font_temp="Spectral-ExtraBold" ;;
 
-        serif-italic)                       font_temp="Spectral-Italic" ;;
-        serif-extralight-italic)            font_temp="Spectral-ExtraLightItalic" ;;
-        serif-light-italic)                 font_temp="Spectral-LightItalic" ;;
-        serif-medium-italic)                font_temp="Spectral-MediumItalic" ;;
-        serif-semibold-italic)              font_temp="Spectral-SemiBoldItalic" ;;
-        serif-bold-italic)                  font_temp="Spectral-BoldItalic" ;;
-        serif-extrabold-italic)             font_temp="Spectral-ExtraBoldItalic" ;;
+        # serif-italic)                       font_temp="Spectral-Italic" ;;
+        # serif-extralight-italic)            font_temp="Spectral-ExtraLightItalic" ;;
+        # serif-light-italic)                 font_temp="Spectral-LightItalic" ;;
+        # serif-medium-italic)                font_temp="Spectral-MediumItalic" ;;
+        # serif-semibold-italic)              font_temp="Spectral-SemiBoldItalic" ;;
+        # serif-bold-italic)                  font_temp="Spectral-BoldItalic" ;;
+        # serif-extrabold-italic)             font_temp="Spectral-ExtraBoldItalic" ;;
 
         serif-1)                            font_temp="IBM-Plex-Serif" ;;
         serif-1-thin)                       font_temp="IBM-Plex-Serif-Thin" ;;
@@ -844,10 +850,10 @@ function get_font {
         comic-3)                            font_temp="Komika-Title---Axis" ;;
         comic-4)                            font_temp="BadaBoom-BB" ;;
         comic-5)                            font_temp="Bangers-Regular" ;;
-        comic-6)                            font_temp="Yikes!" ;;
-        comic-7)                            font_temp="Mouse-Memoirs" ;;
+        #comic-6)                            font_temp="Yikes!" ;;
+        #comic-7)                            font_temp="Mouse-Memoirs" ;;
         comic-8)                            font_temp="GROBOLD" ;;
-        comic-9)                            font_temp="Helsinki" ;;
+        #comic-9)                            font_temp="Helsinki" ;;
 
         display-1)                          font_temp="Oswald-Regular" ;;                   # Narrower, a bit thicker
         display-1-extralight)               font_temp="Oswald-ExtraLight" ;;
@@ -873,8 +879,6 @@ function get_font {
         dirty-8)                            font_temp="A-Love-of-Thunder" ;;                # Thick, all caps
 
         brush)                              font_temp="Edo-SZ" ;;
-        brush-1)                            font_temp="ProtestPaint-BB" ;;
-        brush-1-italic)                     font_temp="ProtestPaint-BB-Italic" ;;
 
         horror)                             font_temp="YouMurdererBB" ;;
         horror-1)                           font_temp="FaceYourFears" ;;
@@ -1079,6 +1083,17 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             cp -f "${arg_canvas_output}" "${OUTPUT_FILE}"
         fi
 
+    elif [[ "${1}" == "${OP_BACKGROUND}" ]]; then
+
+        if [[ ! -f "${2}" ]]; then
+            echo "Cannot find image file: '${2}'"
+            echo "Aborting."
+            exit 1
+        fi
+        # [[ -f "${OUTPUT_FILE}" ]] && rm -f "${OUTPUT_FILE}"
+        # cp -f "${2}" "${OUTPUT_FILE}"
+        shift 2
+
     elif [[ "${1}" == "${OP_IMAGE}" ]]; then
 
         # This is moved here because recoloring the canvas only yields
@@ -1211,6 +1226,8 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
 
             size_width=$((arg_text_width + arg_text_offset_width + (arg_text_stroke_width * 2)))
             size_height=$((arg_text_height + arg_text_offset_height))
+            echo_debug "  Computed text width: ${size_width}"
+            echo_debug "  Computed text height: ${size_height}"
 
             if [ ${size_width} -eq 0 ]; then
                 echo_err "Text width cannot be zero."
@@ -1285,10 +1302,10 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             text_widths+=(${size_width})
             text_heights+=(${size_height})
 
-            echo_debug "  Text Width: ${#text_widths[*]}"
-            echo_debug "  Text Height: ${#text_heights[*]}"
-            echo_debug "  Text Width: ${text_widths[-1]}"
-            echo_debug "  Text Height: ${text_heights[-1]}"
+            #echo_debug "  Text Width: ${#text_widths[*]}"
+            #echo_debug "  Text Height: ${#text_heights[*]}"
+            #echo_debug "  Text Width: ${text_widths[-1]}"
+            #echo_debug "  Text Height: ${text_heights[-1]}"
 
             # Make a copy of the image file in our directory
             cp -f "${arg_text_output}" "./${WORK_FILE}"
@@ -1416,12 +1433,12 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
         echo_debug "  Stroke width: ${arg_quad_stroke_width}"
         echo_debug "  Stroke color: ${arg_quad_stroke_color}"
 
-        arg_draw="polygon ${arg_quad_ul} ${arg_quad_ll} ${arg_quad_lr} ${arg_quad_ur}"
+        arg_draw="polygon ${arg_quad_ul},0 ${arg_quad_ll},${arg_canvas_height} ${arg_quad_lr},${arg_canvas_height} ${arg_quad_ur},0"
 
         if [ ${arg_quad_stroke_width} -eq 0 ]; then
             convert                                             \
                 -size ${arg_canvas_width}x${arg_canvas_height}  \
-                xc:none -fill "${arg_quad_color}"               \
+                xc:none -fill ${arg_quad_color}                 \
                 -draw "${arg_draw}"                             \
                 "${arg_quad_output}"
         else
@@ -1434,7 +1451,10 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 "${arg_quad_output}"
         fi
 
-        convert -trim "${arg_quad_output}"
+        if [[ ! -f "${arg_quad_output}" ]]; then
+            echo_err "Quad file not found: '${arg_quad_output}'"
+            exit 1
+        fi
 
         # Make the output file our current work file.
         # The original file can or may be used for some other operation(s).
@@ -1450,6 +1470,8 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
         arg_ellipse_background_color="none"
         arg_ellipse_stroke_width=0
         arg_ellipse_stroke_color="none"
+        # Only because when shadow is applied, it is 'cut' at the borders
+        arg_extra_border=0
         arg_ellipse_output="${ELLIPSE_FILE}"
 
         while [ $# -gt 0 ]; do
@@ -1464,6 +1486,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 -bc)        arg_ellipse_background_color="${2}"; shift 2 ;;
                 -sw)        arg_ellipse_stroke_width=${2}; shift 2 ;;
                 -sc)        arg_ellipse_stroke_color="${2}"; shift 2 ;;
+                -e)         arg_extra_border=${2}; shift 2 ;;
                 -o)         arg_ellipse_output="${2}"; shift 2 ;;
                 *)          break ;;
             esac
@@ -1478,8 +1501,8 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
         fi
 
         # Add width and height because of the stroke
-        size_width=$(( (half_width * 2) + (arg_ellipse_stroke_width * 2) + 1))
-        size_height=$(( (half_height * 2) + (arg_ellipse_stroke_width * 2) + 1))
+        size_width=$(( (half_width * 2) + (arg_ellipse_stroke_width * 2) + 1 + arg_extra_border))
+        size_height=$(( (half_height * 2) + (arg_ellipse_stroke_width * 2) + 1 + arg_extra_border))
         # Get the center point
         x_pos=$((size_width / 2))
         y_pos=$((size_height / 2))
@@ -1518,6 +1541,47 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             -s ${arg_grid_pixels}   \
             -c "${arg_grid_color}"  \
             "${OUTPUT_FILE}"        \
+            "${OUTPUT_FILE}"
+
+    elif [[ "${1}" == "${OP_CROSS}" ]]; then
+
+        arg_grid_color="${2}"
+        shift 2
+        arg_half_width=$(( ${arg_canvas_width} / 2 ))
+        arg_half_height=$(( ${arg_canvas_height} / 2 ))
+
+        magick                                                                          \
+            "${OUTPUT_FILE}"                                                            \
+            -stroke ${arg_grid_color}                                                   \
+            -strokewidth 1                                                              \
+            -draw "line ${arg_half_width},0 ${arg_half_width},${arg_canvas_height}"     \
+            -draw "line 0,${arg_half_height} ${arg_canvas_width},${arg_half_height}"    \
+            "${OUTPUT_FILE}"
+
+    elif [[ "${1}" == "${OP_VLINE}" ]]; then
+
+        arg_x="${2}"
+        arg_color="${3}"
+        shift 3
+
+        magick                                                    \
+            "${OUTPUT_FILE}"                                      \
+            -stroke ${arg_color}                                  \
+            -strokewidth 1                                        \
+            -draw "line ${arg_x},0 ${arg_x},${arg_canvas_height}" \
+            "${OUTPUT_FILE}"
+
+    elif [[ "${1}" == "${OP_HLINE}" ]]; then
+
+        arg_y="${2}"
+        arg_color="${3}"
+        shift 3
+
+        magick                                                   \
+            "${OUTPUT_FILE}"                                     \
+            -stroke ${arg_color}                                 \
+            -strokewidth 1                                       \
+            -draw "line 0,${arg_y} ${arg_canvas_width},${arg_y}" \
             "${OUTPUT_FILE}"
 
     elif [[ "${1}" == "${OP_SPLAT}" ]]; then
@@ -1728,7 +1792,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
         eval "${1} ${WORK_FILE}"
         shift
 
-    elif [ "${1}" == "--add-exif" ]; then
+    elif [[ "${1}" == "${OP_ADD_EXIF}" ]]; then
 
         shift
         arg_exif_artist=""
@@ -1760,10 +1824,27 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             echo "Missing ExifTool"
         fi
 
-    elif [ "${1}" == "--strip-exif" ]; then
+    elif [[ "${1}" == "${OP_STRIP_EXIF}" ]]; then
 
         shift
         mogrify -strip "${WORK_FILE}"
+
+    elif [[ "${1}" == "${OP_TO_PDF}" ]]; then
+
+        arg_dpi="${2}"
+        arg_output_file="${OUTPUT_FILE%.*}"
+        shift 2
+
+        if [[ -z "${arg_dpi}" ]]; then
+            echo_err "DPI for PDF ouput not specified."
+            exit 1
+        fi
+
+        magick                          \
+            "${OUTPUT_FILE}"            \
+            -density ${arg_dpi}         \
+            -set units PixelsPerInch    \
+            "${arg_output_file}.pdf"
 
     fi # major operations
 
@@ -1805,6 +1886,9 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             size_height=0
             size_dimension=""
 
+            image_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
+            image_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
+
             while [ $# -gt 0 ]; do
                 case "${1}" in
                     -lab)   arg_resize_colorspace_lab=1; shift 1 ;;
@@ -1815,9 +1899,11 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                             with_height=1
                             shift 2 ;;
                     -ow)    arg_resize_offset_width=${2}
+                            arg_resize_offset_height=0
                             with_width=1
                             shift 2 ;;
                     -oh)    arg_resize_offset_height=${2}
+                            arg_resize_offset_width=0
                             with_height=1
                             shift 2 ;;
                     -s)     arg_resize_scale="${2}"; shift 2 ;;
@@ -1825,24 +1911,34 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 esac
             done
 
+            if [ ${arg_resize_offset_width} -ne 0 ] || [ ${arg_resize_offset_height} -ne 0 ]; then
+                arg_resize_width=${image_width}
+                arg_resize_height=${image_height}
+            fi
             size_width=$((arg_resize_width + arg_resize_offset_width))
             size_height=$((arg_resize_height + arg_resize_offset_height))
 
             size_dimension="${size_width}x${size_height}"
             if [ ${with_width} -eq 1 ] && [ ${with_height} -eq 0 ]; then
-                #size_dimension="${size_width}x${arg_resize_height}"
                 size_dimension="${size_width}x"
             elif [ ${with_width} -eq 0 ] && [ ${with_height} -eq 1 ]; then
-                #size_dimension="${arg_resize_width}x${size_height}"
                 size_dimension="x${size_height}"
             fi
 
             # Append Size/dimension adjustment
-            case "${arg_resize_scale}" in
-                fill)       size_dimension+="^" ;;
-                shrink)     size_dimension+=">" ;;
-                enlarge)    size_dimension+="<" ;;
-            esac
+            if [ ${with_width} -eq 1 ]; then
+                [ ${size_width} -gt ${image_width} ] && size_dimension+="<"
+                [ ${size_width} -lt ${image_width} ] && size_dimension+=">"
+            elif [ ${with_height} -eq 1 ]; then
+                [ ${size_height} -gt ${image_height} ] && size_dimension+="<"
+                [ ${size_height} -lt ${image_height} ] && size_dimension+=">"
+            else
+                case "${arg_resize_scale}" in
+                    fill)       size_dimension+="^" ;;
+                    shrink)     size_dimension+=">" ;;
+                    enlarge)    size_dimension+="<" ;;
+                esac
+            fi
             echo_debug "Image operation: Resize"
             echo_debug " Colorspace: ${arg_resize_colorspace_lab}"
             echo_debug " Width: ${arg_resize_width}"
@@ -1871,73 +1967,79 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                     -colorspace sRGB                                    \
                     "${WORK_FILE}"
             fi
+            unset image_width
+            unset image_height
         elif [[ "${1}" == "${IMAGE_OP_RESIZE_DIM}" ]]; then
             shift
-            if [ ${arg_canvas_width} -eq 0 ] && [ ${arg_canvas_height} -eq 0 ]; then
-                echo_err "No canvas dimension specified."
-                exit 1
-            fi
+            echo "Operation now deprecated."
+            echo "Use ${IMAGE_OP_RESIZE} operation instead."
 
-            with_width=0
-            with_height=0
-            size_width=0
-            size_height=0
-            arg_resize_offset_width=0
-            arg_resize_offset_height=0
-            arg_resize_canvas_offset_width=0
-            arg_resize_canvas_offset_height=0
-            size_dimension=""
+            # if [ ${arg_canvas_width} -eq 0 ] && [ ${arg_canvas_height} -eq 0 ]; then
+            #     echo_err "No canvas dimension specified."
+            #     exit 1
+            # fi
 
-            while [ $# -gt 0 ]; do
-                case "${1}" in
-                    -w)     arg_resize_width=${2}
-                            [ ${arg_resize_width} -gt 0 ] && with_width=1
-                            shift 2 ;;
-                    -h)     arg_resize_height=${2}
-                            [ ${arg_resize_height} -gt 0 ] && with_height=1
-                            shift 2 ;;
-                    -ow)    arg_resize_offset_width=${2}; shift 2 ;;
-                    -oh)    arg_resize_offset_height=${2}; shift 2 ;;
-                    -cow)   arg_resize_canvas_offset_width=${2}; shift 2 ;;
-                    -coh)   arg_resize_canvas_offset_height=${2}; shift 2 ;;
-                    *)      break ;;
-                esac
-            done
+            # with_width=0
+            # with_height=0
+            # size_width=0
+            # size_height=0
+            # arg_resize_offset_width=0
+            # arg_resize_offset_height=0
+            # arg_resize_canvas_offset_width=0
+            # arg_resize_canvas_offset_height=0
+            # size_dimension=""
 
-            if [ ${with_width} -gt 0 ]; then
-                size_dimension="${arg_resize_width}"
-            elif [ ${with_height} -gt 0 ]; then
-                size_dimension+="x${arg_resize_height}"
-            else
-                if [ ${arg_resize_offset_width} -ne 0 ]; then
-                    size_width=$((arg_resize_width + arg_resize_offset_width))
-                    size_dimension="${size_width}"
-                elif [ ${arg_resize_offset_height} -ne 0 ]; then
-                    size_height=$((arg_resize_height + arg_resize_offset_height))
-                    size_dimension+="x${size_height}"
-                else
-                    if [ ${arg_resize_canvas_offset_width} -ne 0 ]; then
-                        size_width=$((arg_canvas_width + arg_resize_canvas_offset_width))
-                        size_dimension="${size_width}"
-                    elif [ ${arg_resize_canvas_offset_height} -ne 0 ]; then
-                        size_height=$((arg_canvas_height + arg_resize_canvas_offset_height))
-                        size_dimension="x${size_height}"
-                    else
-                        arg_resize_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
-                        arg_resize_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
-                        size_dimension="${arg_resize_width}x${arg_resize_height}"
-                    fi
-                fi
-            fi
+            # while [ $# -gt 0 ]; do
+            #     case "${1}" in
+            #         -w)     arg_resize_width=${2}
+            #                 [ ${arg_resize_width} -gt 0 ] && with_width=1
+            #                 shift 2 ;;
+            #         -h)     arg_resize_height=${2}
+            #                 [ ${arg_resize_height} -gt 0 ] && with_height=1
+            #                 shift 2 ;;
+            #         -ow)    arg_resize_offset_width=${2}; shift 2 ;;
+            #         -oh)    arg_resize_offset_height=${2}; shift 2 ;;
+            #         -cow)   arg_resize_canvas_offset_width=${2}; shift 2 ;;
+            #         -coh)   arg_resize_canvas_offset_height=${2}; shift 2 ;;
+            #         *)      break ;;
+            #     esac
+            # done
 
-            echo_debug "Image operation: Resize Dimension"
-            echo_debug "  Dimension: ${size_dimension}"
-            convert                                 \
-                "${WORK_FILE}"                      \
-                `#-gravity center`                  \
-                `#-background none`                 \
-                -adaptive-resize ${size_dimension}  \
-                "${WORK_FILE}"
+            # if [ ${with_width} -gt 0 ]; then
+            #     size_dimension="${arg_resize_width}"
+            # elif [ ${with_height} -gt 0 ]; then
+            #     size_dimension+="x${arg_resize_height}"
+            # else
+            #     if [ ${arg_resize_offset_width} -ne 0 ]; then
+
+            #         size_width=$((arg_resize_width + arg_resize_offset_width))
+            #         size_dimension="${size_width}"
+            #     elif [ ${arg_resize_offset_height} -ne 0 ]; then
+            #         size_height=$((arg_resize_height + arg_resize_offset_height))
+            #         size_dimension+="x${size_height}"
+            #     else
+            #         if [ ${arg_resize_canvas_offset_width} -ne 0 ]; then
+            #             size_width=$((arg_canvas_width + arg_resize_canvas_offset_width))
+            #             size_dimension="${size_width}"
+            #         elif [ ${arg_resize_canvas_offset_height} -ne 0 ]; then
+            #             size_height=$((arg_canvas_height + arg_resize_canvas_offset_height))
+            #             size_dimension="x${size_height}"
+            #         else
+            #             arg_resize_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
+            #             arg_resize_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
+            #             size_dimension="${arg_resize_width}x${arg_resize_height}"
+            #         fi
+            #     fi
+            # fi
+
+            # echo_debug "Image operation: Resize Dimension"
+            # echo_debug "  Dimension: ${size_dimension}"
+            # convert                                 \
+            #     "${WORK_FILE}"                      \
+            #     `#-gravity center`                  \
+            #     `#-background none`                 \
+            #     -adaptive-resize ${size_dimension}  \
+            #     "${WORK_FILE}"
         elif [[ "${1}" == "${IMAGE_OP_FLIP}" ]]; then
             shift
             echo_debug "Image operation: Flip"
@@ -1987,7 +2089,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 fi
             done
         elif [[ "${1}" == "${IMAGE_OP_CROP}" ]]; then
-                "${WORK_FILE}"
+            # "${WORK_FILE}"
             shift
             arg_crop_position="0x0"
             arg_crop_gravity=northwest
@@ -2184,18 +2286,22 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             shift
             arg_border_background_color="none"
             arg_border_color="none"
+            arg_border_inner=0
             arg_border_width=4
             arg_border_corner_radius=0
             while [ $# -gt 0 ]; do
                 case "${1}" in
                     -b)     arg_border_background_color="${2}"; shift 2 ;;
                     -c)     arg_border_color="${2}"; shift 2 ;;
+                    -inner) arg_border_inner=1; shift ;;
                     -w)     arg_border_width=${2}; shift 2 ;;
                     -r)     arg_border_corner_radius=${2}; shift 2 ;;
                     *)      break ;;
                 esac
             done
             echo_debug "Image operation: Border"
+            echo_debug "  Inner: ${arg_border_inner}"
+            echo_debug "  Background color: ${arg_border_background_color}"
             echo_debug "  Color: ${arg_border_color}"
             echo_debug "  Width: ${arg_border_width}"
             echo_debug "  Corner radius: ${arg_border_corner_radius}"
@@ -2209,8 +2315,13 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 arg_original_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
                 arg_original_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
 
-                arg_width=$(( arg_original_width + arg_border_width ))
-                arg_height=$(( arg_original_height + arg_border_width ))
+                if [ ${arg_border_inner} -eq 1 ]; then
+                    arg_width=${arg_original_width}
+                    arg_height=${arg_original_height}
+                else
+                    arg_width=$(( arg_original_width + arg_border_width ))
+                    arg_height=$(( arg_original_height + arg_border_width ))
+                fi
 
                 # Adjustment to make the rectangle corners match the image corners
                 arg_corner_radius=$(( arg_border_corner_radius + 1 ))
@@ -2233,6 +2344,45 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                     -composite                                          \
                     int_rr.png
 
+                # If border is inner, scrape the sides of the image
+                if [ ${arg_border_inner} -eq 1 ]; then
+                    arg_width=$(( arg_original_width - (arg_border_width * 2) ))
+                    arg_height=$(( arg_original_height - (arg_border_width * 2) ))
+                    #convert                                 \
+                    #    "${WORK_FILE}"                      \
+                    #    -gravity north                      \
+                    #    -chop 0x$arg_border_width           \
+                    #    "${WORK_FILE}"
+                    #convert                                 \
+                    #    "${WORK_FILE}"                      \
+                    #    -gravity south                      \
+                    #    -chop 0x$arg_border_width           \
+                    #    "${WORK_FILE}"
+                    #convert                                 \
+                    #    "${WORK_FILE}"                      \
+                    #    -gravity east                       \
+                    #    -chop ${arg_border_width}x0         \
+                    #    "${WORK_FILE}"
+                    #convert                                 \
+                    #    "${WORK_FILE}"                      \
+                    #    -gravity west                       \
+                    #    -chop ${arg_border_width}x0         \
+                    #    "${WORK_FILE}"
+
+                    convert                                 \
+                        "${WORK_FILE}"                      \
+                        -gravity north                      \
+                        -chop 0x$arg_border_width           \
+                        -gravity south                      \
+                        -chop 0x$arg_border_width           \
+                        -gravity east                       \
+                        -chop ${arg_border_width}x0         \
+                        -gravity west                       \
+                        -chop ${arg_border_width}x0         \
+                        "${WORK_FILE}"
+                    cp -f "${WORK_FILE}" int_cropped.png
+                fi
+
                 # Round the corners of the image
                 draw_fill_black="fill black polygon 0,0 0,${arg_border_corner_radius} ${arg_border_corner_radius},0"
                 draw_fill_white="fill white circle ${arg_border_corner_radius},${arg_border_corner_radius} ${arg_border_corner_radius},0"
@@ -2247,21 +2397,30 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                     -compose copyopacity                                \
                     -composite                                          \
                     "${WORK_FILE}"
-                cp "${WORK_FILE}" int_image_rounded.png
+
+                cp -f "${WORK_FILE}" int_cropped_rounded.png
 
                 # Overlay the image on the rectangle image
                 # NOTE: Image becomes monochrome, using -colorspace and -type
                 #       seem to fix it. Verify.
+                arg_border_pos_x=0
+                arg_border_pos_y=0
+                if [ ${arg_border_inner} -eq 1 ]; then
+                    arg_border_pos_x=${arg_border_width}
+                    arg_border_pos_y=${arg_border_width}
+                fi
                 convert                     \
                     int_rr.png              \
                     "${WORK_FILE}"          \
                     -colorspace sRGB        \
                     -type truecoloralpha    \
-                    -gravity center         \
+                    -gravity northwest      \
+                    -geometry "+${arg_border_pos_x}+${arg_border_pos_y}"    \
                     -composite              \
                     "${WORK_FILE}"
+                cp -f "${WORK_FILE}" int_bordered.png
 
-                rm -f int_rr.png
+                #rm -f int_rr.png
             fi
         elif [[ "${1}" == "${IMAGE_OP_VIGNETTE}" ]]; then
             shift
@@ -2538,15 +2697,21 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                     *)      break ;;
                 esac
             done
-            echo_debug "Image operation: modulate ${arg_modulate_brightness},${arg_modulate_saturation},${arg_modulate_hue}"
             echo_debug "Image operation: modulate"
             echo_debug "  Brightness: ${arg_modulate_brightness}"
             echo_debug "  Saturation: ${arg_modulate_saturation}"
             echo_debug "  Hue: ${arg_modulate_hue}"
-            convert                     \
-                "${WORK_FILE}"          \
-                -modulate ${arg_modulate_brightness},${arg_modulate_saturation},${arg_modulate_hue} \
-                "${WORK_FILE}"
+
+            if [ ${arg_modulate_hue} -ne 100 ] ||
+                [ ${arg_modulate_saturation} -ne 100 ] ||
+                [ ${arg_modulate_brightness} -ne 100 ]; then
+                convert                     \
+                    "${WORK_FILE}"          \
+                    -modulate ${arg_modulate_brightness},${arg_modulate_saturation},${arg_modulate_hue} \
+                    "${WORK_FILE}"
+            else
+                echo_debug "Skipping modulate operation."
+            fi
         elif [[ "${1}" == "${IMAGE_OP_ADJUST}" ]]; then
             arg_adjust_black=""
             arg_adjust_white=""
@@ -2720,6 +2885,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             fi
         elif [[ "${1}" == "${IMAGE_OP_GRADIENT}" ]]; then
             shift
+            # Uses the image dimension instead of the canvas
             image_width=`convert "${WORK_FILE}" -ping -format '%w' info:`
             image_height=`convert "${WORK_FILE}" -ping -format '%h' info:`
 
@@ -2851,8 +3017,9 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             arg_shadow_color="black"
             arg_shadow_radius=80
             arg_shadow_sigma=3
-            arg_shadow_xoffset=+5
-            arg_shadow_yoffset=+5
+            arg_shadow_xoffset=+0
+            arg_shadow_yoffset=+0
+            arg_shadow_output=""
             while [ $# -gt 0 ]; do
                 case "${1}" in
                     -c)     arg_shadow_color=${2}; shift 2 ;;
@@ -2863,18 +3030,10 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                             shift 3 ;;
                     -x)     arg_shadow_xoffset="${2}"; shift 2 ;;
                     -y)     arg_shadow_yoffset="${2}"; shift 2 ;;
+                    -o)     arg_shadow_output="${2}"; shift 2 ;;
                     *)      break ;;
                 esac
             done
-#            ${PROGRAM_DIR}/ci_shadow            \
-#                "${debug_flag}"                 \
-#                --c "${arg_shadow_color}"       \
-#                --r ${arg_shadow_radius}        \
-#                --s ${arg_shadow_sigma}         \
-#                --x ${arg_shadow_xoffset}       \
-#                --y ${arg_shadow_yoffset}       \
-#                --input "${WORK_FILE}"          \
-#                --output "${WORK_FILE}"
             arg_shadow="${arg_shadow_radius}x${arg_shadow_sigma}${arg_shadow_xoffset}${arg_shadow_yoffset}"
             convert                                     \
                 "${WORK_FILE}"                          \
@@ -2885,7 +3044,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 -background none                        \
                 -layers merge +repage                   \
                 "${WORK_FILE}"
-
+            [[ ! -z "${arg_shadow_output}" ]] && cp -f "${WORK_FILE}" "${arg_shadow_output}"
         elif [[ "${1}" == "${IMAGE_OP_SHADOW_ADVANCE}" ]]; then
             shift
             arg_shadow_type=outer
@@ -2893,6 +3052,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             arg_shadow_radius=80
             arg_shadow_sigma=3
             arg_shadow_direction=135
+            arg_shadow_output=""
             while [ $# -gt 0 ]; do
                 case "${1}" in
                     -t)     arg_shadow_type="${2}"; shift 2 ;;
@@ -2900,6 +3060,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                     -r)     arg_shadow_radius=${2}; shift 2 ;;
                     -s)     arg_shadow_sigma=${2}; shift 2 ;;
                     -d)     arg_shadow_direction=${2}; shift 2 ;;
+                    -o)     arg_shadow_output="${2}"; shift 2 ;;
                     *)      break ;;
                 esac
             done
@@ -2912,6 +3073,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
                 -b white                        \
                 "${WORK_FILE}"                  \
                 "${WORK_FILE}"
+            [[ ! -z "${arg_shadow_output}" ]] && cp -f "${WORK_FILE}" "${arg_shadow_output}"
         elif [[ "${1}" == "${IMAGE_OP_GRID}" ]]; then
             arg_grid_pixels=${2}
             arg_grid_color="${3}"
@@ -2931,6 +3093,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             cp -f "${WORK_FILE}" "${arg_nomerge_output}"
         elif [[ "${1}" == "${IMAGE_OP_MERGE}" ]]; then
             shift
+            arg_merge_background=""
             arg_merge_gravity="northwest"
             arg_merge_xpos=0
             arg_merge_ypos=0
@@ -2945,6 +3108,7 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
 
             while [ $# -gt 0 ]; do
                 case "${1}" in
+                    -b)         arg_merge_background="${2}"; shift 2 ;;
                     -g)         arg_merge_gravity=${2}; shift 2 ;;
                     -p)         arg_merge_xpos=${2}
                                 arg_merge_ypos=${3}
@@ -2998,22 +3162,27 @@ while [ $# -gt 0 ] && [[ "${MAJOR_OPERATIONS[@]}" =~ "${1}" ]]; do
             fi
 
             echo_debug "Merging work file to canvas:"
+            echo_debug "  Background: ${arg_merge_background}"
             echo_debug "  Gravity: ${arg_merge_gravity}"
             echo_debug "  Position: ${arg_merge_xpos} ${arg_merge_ypos}"
             echo_debug "  X offset: ${arg_merge_xoffset}"
             echo_debug "  Y offset: ${arg_merge_yoffset}"
             echo_debug "  Opaqueness: ${arg_merge_opaqueness}"
 
-        convert                                                 \
-            "${OUTPUT_FILE}"                                    \
-            "${WORK_FILE}"                                      \
-            -colorspace sRGB                                    \
-            -compose dissolve                                   \
-            -define compose:args=${arg_merge_opaqueness}        \
-            -gravity ${arg_merge_gravity}                       \
-            -geometry "+${arg_merge_xpos}+${arg_merge_ypos}"    \
-            -composite                                          \
-            "${OUTPUT_FILE}"
+            if [ ! -z "${arg_merge_background}" ]; then
+                rm -f "${OUTPUT_FILE}"
+                cp -f "${arg_merge_background}" "${OUTPUT_FILE}"
+            fi
+            convert                                                 \
+                "${OUTPUT_FILE}"                                    \
+                "${WORK_FILE}"                                      \
+                -colorspace sRGB                                    \
+                -compose dissolve                                   \
+                -define compose:args=${arg_merge_opaqueness}        \
+                -gravity ${arg_merge_gravity}                       \
+                -geometry "+${arg_merge_xpos}+${arg_merge_ypos}"    \
+                -composite                                          \
+                "${OUTPUT_FILE}"
 
             if [ -n "${arg_merge_output}" ]; then
                 cp -f "${OUTPUT_FILE}" "${arg_merge_output}"
